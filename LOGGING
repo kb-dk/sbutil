@@ -1,0 +1,29 @@
+LOGGING CONVENTIONS IN THE SBUTIL MODULE
+
+For each class definition, declare and initialize 
+a log attribute as follows:
+      
+      
+      import org.apache.commons.logging.Log;
+      import org.apache.commons.logging.LogFactory; 
+      
+      public class CLASS
+      {
+          private Log log = LogFactory.getLog(CLASS.class);
+          ...
+      ...          
+
+              
+NO STATIC LOGGERS 
+from http://jakarta.apache.org/commons/logging/guide.html:
+
+For application code, declaring the log member
+as "static" is more efficient as one Log object is created 
+per class, and is recommended. However this is not safe to 
+do for a class which may be deployed via a "shared" classloader
+in a servlet or j2ee container or similar environment. 
+
+If the class may end up invoked with different thread-context-classloader
+values set then the member must not be declared static. 
+The use of "static" should therefore be avoided in code within any 
+"library" type project. 
