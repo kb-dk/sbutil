@@ -237,7 +237,6 @@
                            value="dk.statsbiblioteket.util.qa.PackageScannerDriver"/>
             </manifest>
         </jar>
-        <!--<move file="${qa-scan.jar}" todir="${dist.dir}"/> // superflous-->
     </target>
 
     <target name=".src.zip" depends="prepare">        
