@@ -2,7 +2,7 @@
 <project default="all" name="sbutil" basedir=".">
 
     <property name="project.name" value="sbutil" />
-    <property name="project.version" value="0.2.0" />
+    <property name="project.version" value="0.2.1" />
     <property name="builder" value="mke" />
     <property name="release" value="${project.name}-${project.version}" />
 
@@ -28,7 +28,6 @@
     <property name="dist.dir" value="${basedir}/dist"/>
     <property name="doc.dir" value="${basedir}/doc"/>                
     <property name="tmp.dir" value="${basedir}/tmp"/>
-    <property name="changelog" value="changelog.html"/>
     <property name="qa-scan.jar" value="${dist.dir}/qaScan-${project.version}.jar"/>
     <property name="release.src.zip" value="${dist.dir}/${project.name}-${project.version}-src.zip"/>
     <property name="release.apidocs.zip" value="${dist.dir}/${project.name}-${project.version}-apidocs.zip"/>
@@ -101,7 +100,6 @@
         <delete dir="${dist.dir}"/>
         <delete dir="${doc.dir}"/>
         <delete dir="${tmp.dir}"/>
-        <delete file="${changelog}"/>                
     </target>
     
     <target name="compile" depends="prepare">
@@ -140,28 +138,13 @@
         <jar basedir="${build.dir}" compress="true" jarfile="${release}.jar"/>
     </target>
     
-    <target name="changelog">
-        <cvschangelog cvsroot=":pserver:mke@hera.statsbiblioteket.dk:/home/cvs-base/sb"
-                      cvsrsh="ssh"
-                      destfile="changelog.xml" />
-        <style in="changelog.xml" 
-               out="${changelog}" 
-               style="${lib.dir}/ant-changelog.xsl">
-          <param name="title" expression="SBUtil ChangeLog"/>
-          <param name="module" expression="sbutil"/>
-          <param name="cvsweb" expression="http://hera.statsbiblioteket.dk/cgi-bin/viewcvs.cgi/"/>
-        </style>
-        <delete file="changelog.xml" />
-    </target>
-    
-    <target name="release" depends="clean, jar, changelog, doc, .qa-scan.release, .src.zip">
+    <target name="release" depends="clean, jar, doc, .qa-scan.release, .src.zip">
         <!-- TODO: Insert build num and date like this:
         <replaceregexp file="rep.test" match="\$Id[^\$]*\$" replace="Hello - ${build.time}"/>
         -->
         <property name="prefix" value="${release}"/>
         <zip destfile="${dist.dir}/${release}.zip">
             <zipfileset prefix="${prefix}" file="${release}.jar"/>
-            <zipfileset prefix="${prefix}" file="${changelog}"/>
             <zipfileset prefix="${prefix}" file="README"/>
             <zipfileset prefix="${prefix}" file="MAINTAINERS"/>
             <zipfileset prefix="${prefix}" file="POLICY"/>
@@ -277,7 +260,7 @@
     </target>
     
     <target name=".qa.report" depends=".qa-scan.release">
-        <java fork="true" jar="${qa-scan.jar}" output="/home/mikkel/public_html/qa.html">
+        <java fork="true" jar="${qa-scan.jar}" output="${user.dir}/qa-report.html">
             <arg value="-s"/>
             <arg value="http://hera/cgi-bin/viewcvs.cgi/sbutil/src/"/>
             <arg value="-p"/>
