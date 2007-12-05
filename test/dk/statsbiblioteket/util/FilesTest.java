@@ -79,6 +79,11 @@ public class FilesTest extends TestCase {
         Files.delete(tmpDir);
     }
 
+    public void testDeleteFileByName () throws Exception {
+        Files.copy(new File(inputDir), tmpDir, true);
+        Files.delete(tmpDir.getAbsolutePath());
+    }
+
     public void testCopyDir () throws Exception {
         Files.copy(new File(inputDir), tmpDir, true);
     }

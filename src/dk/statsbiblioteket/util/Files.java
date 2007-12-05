@@ -228,6 +228,15 @@ public class Files {
     }
 
     /**
+      * @see #delete(java.io.File)
+      * @param path to file or directory to be deleted
+      * @throws java.io.FileNotFoundException if the path doesn't exist
+      */
+     public static void delete (String path) throws IOException {
+         delete(new File (path));
+     }
+
+    /**
      * Converts a byte array to String, assuming UTF-8.
      *
      * @param in an array of bytes representing an UTF-8 String.
