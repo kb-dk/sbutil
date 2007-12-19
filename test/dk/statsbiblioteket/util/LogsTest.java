@@ -51,6 +51,11 @@ public class LogsTest extends TestCase {
         super.tearDown();
     }
 
+    public void testNullExpansion () {
+        Log log = LogFactory.getLog(LogsTest.class);
+        Logs.log (log, Logs.Level.WARN, "Null expansion:", (Object[])null);
+    }
+
     public static Test suite() {
         return new TestSuite(LogsTest.class);
     }

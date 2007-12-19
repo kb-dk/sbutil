@@ -71,7 +71,7 @@ public class Logs {
         int maxLength = verbose ? VERBOSE_MAXLENGTH : DEFAULT_MAXLENGTH;
         int maxDepth =  verbose ? VERBOSE_MAXDEPTH  : DEFAULT_MAXDEPTH;
         String expanded = message;
-        if (elements.length > 0) {
+        if (elements != null && elements.length > 0) {
             expanded += expand(elements, maxLength, maxDepth);
         }
         switch (level) {
@@ -97,6 +97,14 @@ public class Logs {
                     log.info(expanded);
                 } else {
                     log.info(expanded, error);
+                }
+                break;
+            case WARN:
+                if (!log.isWarnEnabled()) { return; }
+                if (error == null) {
+                    log.warn(expanded);
+                } else {
+                    log.warn(expanded, error);
                 }
                 break;
             case ERROR:
@@ -134,9 +142,9 @@ public class Logs {
 
     /**
      * Log a message at a given log level
-     * @param log
-     * @param level
-     * @param message
+     * @param log The logger to log to
+     * @param level The log level at which the log entry shold be registered
+     * @param message Message string to log
      * @param elements
      */
     public static void log(Log log, Level level, String message,
@@ -145,6 +153,10 @@ public class Logs {
     }
 
     protected static String expand(Object... elements) {
+        if (elements == null) {
+            return "";
+        }
+
         // Check if we have void argument list
         if (elements.length == 0) {
             return "";
