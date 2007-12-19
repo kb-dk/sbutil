@@ -203,6 +203,7 @@
             <test name="dk.statsbiblioteket.util.XPropertiesTest" />
             <test name="dk.statsbiblioteket.util.ZipsTest" />
             <test name="dk.statsbiblioteket.util.qa.PackageScannerTest" />
+            <test name="dk.statsbiblioteket.util.console.FormatterTest" />
         </junit>
     </target>
 
