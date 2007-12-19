@@ -121,10 +121,24 @@ public class Logs {
         }
     }
 
+    /**
+     * Log a throwable with a message at a given log level.
+     * @param log The logger to log to
+     * @param level The log level at which the log entry shold be registered
+     * @param message Message string to log
+     * @param t Throwable which' stack trace will be included in the log
+     */
     public static void log(Log log, Level level, String message, Throwable t) {
         log (log, level , message, t, false);
     }
 
+    /**
+     * Log a message at a given log level
+     * @param log
+     * @param level
+     * @param message
+     * @param elements
+     */
     public static void log(Log log, Level level, String message,
                            Object... elements) {
         log (log, level , message, null, false, elements);
