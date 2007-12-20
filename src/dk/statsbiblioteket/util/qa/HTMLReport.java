@@ -24,11 +24,11 @@ package dk.statsbiblioteket.util.qa;
 
 import java.io.PrintStream;
 import java.io.File;
+import java.io.OutputStream;
 import java.util.*;
 
 /**
- * A {@link Report} implementation printing html to a {@link PrintStream}
- * (such as {@code System.out}).
+ * A {@link Report} implementation printing html to its output stream.
  * It can integrate with a ViewCVS or other VCS webservice
  * bu passing an Url to the constructor taking a
  * {@code baseSrcPath}.
@@ -306,6 +306,10 @@ public class HTMLReport implements Report {
         
         out.println (FOOTER_TEMPLATE);
         out.flush();
+    }
+
+    public void setOutputStream(OutputStream out) {
+        this.out = new PrintStream (out);
     }
 
     /**

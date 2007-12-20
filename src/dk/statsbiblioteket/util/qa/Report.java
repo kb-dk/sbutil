@@ -22,8 +22,11 @@
  */
 package dk.statsbiblioteket.util.qa;
 
+import java.io.OutputStream;
+
 /**
- * Output handler for the {@link PackageScanner}.
+ * Output handler for the {@link PackageScanner}. The default output goes
+ * to {@link System#out} but this can be changed with {@link #setOutputStream}. 
  * @see HTMLReport
  */
 @QAInfo(state = QAInfo.State.QA_NEEDED,
@@ -43,4 +46,10 @@ public interface Report {
      * be added beyond this point.
      */
     public void end ();
+
+    /**
+     * Set the stream to use for output. Default is {@link System#out}.
+     * @param out output stream to print the report to
+     */
+    public void setOutputStream (OutputStream out);
 }

@@ -25,6 +25,7 @@ package dk.statsbiblioteket.util.qa;
 import junit.framework.TestCase;
 
 import java.io.File;
+import java.io.FileOutputStream;
 
 
 /**
@@ -37,7 +38,12 @@ public class PackageScannerTest extends TestCase {
 
     String CLASS_DIR = "classes";
     String PACKAGE_SCANNER = "dk/statsbiblioteket/util/qa/PackageScanner.class";
-    static Report report = new BasicReport();
+    Report report;
+
+    public void setUp () throws Exception {
+        report = new BasicReport ();
+        report.setOutputStream(new FileOutputStream("/dev/null"));
+    }
 
     public void testDynamicClassloader () throws Exception {
         DynamicClassLoader loader
@@ -63,6 +69,7 @@ public class PackageScannerTest extends TestCase {
 
     public void testHTMLReportOutput () throws Exception {
         Report htmlReport = new HTMLReport("BlahFoo", "http://hera/cgi-bin/viewcvs.cgi/sbutil/src/");
+        htmlReport.setOutputStream(new FileOutputStream("/dev/null"));
         PackageScanner scanner = new PackageScanner(htmlReport,
                                                     new File(CLASS_DIR),
                                                     PACKAGE_SCANNER);
@@ -72,6 +79,7 @@ public class PackageScannerTest extends TestCase {
 
     public void testHTMLScanDirectory () throws Exception {
         Report htmlReport = new HTMLReport("SB Util", "http://hera/cgi-bin/viewcvs.cgi/sbutil/src/");
+        htmlReport.setOutputStream(new FileOutputStream("/dev/null"));
         PackageScanner scanner = new PackageScanner(htmlReport,
                                                     new File(CLASS_DIR));
         scanner.scan();

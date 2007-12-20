@@ -22,6 +22,9 @@
  */
 package dk.statsbiblioteket.util.qa;
 
+import java.io.OutputStream;
+import java.io.PrintStream;
+
 /**
  * Super simple implementation of a {@link Report}. Just prints
  * {@link ReportElement#toString} to std out.
@@ -29,6 +32,13 @@ package dk.statsbiblioteket.util.qa;
 @QAInfo(state = QAInfo.State.QA_NEEDED,
         level = QAInfo.Level.NORMAL)
 public class BasicReport implements Report {
+
+    private PrintStream out;
+
+    public BasicReport () {
+        out = System.out;
+    }
+
     public void add(ReportElement element) {
         if (element.getType() != ReportElement.ElementType.ERROR) {
             // Ignore elements without QAInfo
@@ -43,10 +53,16 @@ public class BasicReport implements Report {
                 return;
             }
         }
-        System.out.println (element);        
+        out.println (element);
     }
 
     public void end() {
         // no action nedded
     }
+
+    public void setOutputStream(OutputStream out) {
+        this.out = new PrintStream(out);
+    }
+
+
 }
