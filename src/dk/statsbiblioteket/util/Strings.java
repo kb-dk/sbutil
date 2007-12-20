@@ -26,6 +26,7 @@ import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.util.Collection;
 
 /**
  * Convenience methods for string manipulations.
@@ -46,5 +47,43 @@ public class Strings {
         PrintWriter printer = new PrintWriter(writer);
         exception.printStackTrace(printer);
         return writer.toString();
+    }
+
+    /**
+     * <p>Concatenate all elements in a collection with a given delimiter.
+     * For example if a list contains "foo", "bar", and "baz" and the delimiter
+     * is ":" the returned string will be</p>
+     * <p>
+     * <code>
+     *   "foo:bar:baz"
+     * </code>
+     * </p>
+     * If any of the collection's elements are null the empty string will simply
+     * be used.
+     * @param c The collection which elements will be concatenated as strings
+     * @param delimiter symbol(s) to put in between elements
+     * @return A string representation of the collection. If the collection
+     *         is empty the empty string will be returned.
+     * @throws NullPointerException if the collection or delimiter is null.
+     */
+    public static String join (Collection c, String delimiter) {
+        if (c == null) {
+            throw new NullPointerException("Collection argument is null");
+        } else if (delimiter == null) {
+            throw new NullPointerException("Delimiter argument is null");
+        }
+
+        String result = null;
+
+        for (Object o : c) {
+            if (result == null) {
+                result = (o == null ? "" : o.toString());
+            } else {
+                result += delimiter + (o == null ? "" : o.toString());
+            }
+
+        }
+
+        return result == null ? "" : result;
     }
 }

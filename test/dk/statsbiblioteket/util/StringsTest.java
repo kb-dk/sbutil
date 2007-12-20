@@ -24,12 +24,11 @@ package dk.statsbiblioteket.util;
 
 import junit.framework.TestCase;
 
+import java.util.List;
+import java.util.ArrayList;
+
 /**
- * Created by IntelliJ IDEA.
- * User: mikkel
- * Date: Mar 1, 2007
- * Time: 4:48:18 PM
- * To change this template use File | Settings | File Templates.
+ * Test suite for the {@link Strings} class.
  */
 public class StringsTest extends TestCase {
 
@@ -50,4 +49,47 @@ public class StringsTest extends TestCase {
         assertNotNull(trace);
         assertTrue(!"".equals(trace));
     }
+
+    public void testJoinNulls () throws Exception {
+        List l = new ArrayList();
+
+        try {
+            Strings.join (l, null);
+            fail ("A null delimiter should cause a NPE");
+        } catch (NullPointerException e) {
+            // expected
+        }
+
+        try {
+            Strings.join (null, "");
+            fail ("A null collection should cause a NPE");
+        } catch (NullPointerException e) {
+            // expected
+        }
+
+        // Check that we do not fail if the list contains a null
+        l.add ("foo");
+        l.add (null);
+        l.add (new ArrayList());
+        System.out.println (Strings.join(l, ":"));
+    }
+
+    public void testJoinEmptyList () throws Exception {
+        String s = Strings.join (new ArrayList(), ":");
+        assertEquals("", s);
+
+        s = Strings.join (new ArrayList(), "");
+        assertEquals("", s);
+    }
+
+    public void testKnownCases () throws Exception {
+        List l = new ArrayList();
+        l.add ("foo");
+        l.add ("bar");
+        l.add ("baz");
+
+        String s = Strings.join (l, " ABE ");
+        assertEquals("foo ABE bar ABE baz", s);
+    }
+    
 }
