@@ -68,7 +68,7 @@ public class ConnectionManagerTest extends TestCase {
         // Verify state if we allocate another connection handle
         ConnectionContext ctx2 = cm.get(connId);
         assertEquals(1, cm.getConnections().size());
-        assertEquals(ctx1, ctx2);
+        assertEquals(ctx1, ctx2); // Contexts on same connection should be shared
         assertEquals(2, ctx1.getRefCount());
         assertEquals(2, ctx2.getRefCount()); // Redundant since ctx1 == ctx2
 
@@ -89,6 +89,35 @@ public class ConnectionManagerTest extends TestCase {
         assertEquals(0, ctx2.getRefCount());
     }
 
+    public void doTestErrors (ConnectionManager<? extends TestIFace> cm,
+                              ConnectionFactory<? extends TestIFace> cf,
+                              String connId)
+                                                            throws Exception {
+
+        System.out.println ("TestErrors");
+        ConnectionContext ctx1 = cm.get(connId);
+
+        // Check that all is in order
+        assertEquals(1, cm.getConnections().size());
+        assertEquals(1, ctx1.getRefCount());
+
+        // Claim that the connection is buggy, this should purge the ctx from the cache
+        cm.reportError(ctx1, "Hey this connection is just totally b0rked! RLY!");
+        assertEquals(0, cm.getConnections().size());
+
+        // Get a new connection with same id
+        ConnectionContext ctx2 = cm.get(connId);
+        assertEquals(1, cm.getConnections().size());
+        assertEquals(1, ctx2.getRefCount());
+        assertTrue(ctx1 != ctx2);
+
+        cm.release (ctx1);
+        cm.release(ctx2);
+        assertEquals(0, ctx1.getRefCount());
+        assertEquals(0, ctx2.getRefCount());
+
+    }
+
     public void doAllTests (ConnectionManager<? extends TestIFace> cm,
                             ConnectionFactory<? extends TestIFace> cf,
                             String connId)
@@ -97,6 +126,7 @@ public class ConnectionManagerTest extends TestCase {
         doTestGetConnection(cm, cf, connId);
         doTestBookkeeping(cm, cf, connId);
         doTestMultiRef(cm, cf, connId);
+        doTestErrors(cm, cf, connId);
     }
 
     public void testRemote () throws Exception {

@@ -162,6 +162,10 @@ public class ConnectionManager<E> {
      * <p>Any call to {@link #get} should be followed by a matching call to
      * this method. It is equivalent to remembering closing your file
      * descriptors.</p>
+     *
+     * <p>Equivalently you may call {@link ConnectionContext#unref} instead
+     * of calling this method.</p>
+     *
      * <p>It is advised that consumers release their connections in a
      * <code>finally</code> clause.</p>
      * @param ctx context to be released
