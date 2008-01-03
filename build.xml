@@ -2,7 +2,7 @@
 <project default="all" name="sbutil" basedir=".">
 
     <property name="project.name" value="sbutil" />
-    <property name="project.version" value="0.2.2" />
+    <property name="project.version" value="0.2.3" />
     <property name="builder" value="mke" />
     <property name="release" value="${project.name}-${project.version}" />
 
@@ -184,7 +184,7 @@
              to be able to pick resources from the classpath up (like
              resource bundles). JUnit will override the classpath. -->
         <junit printsummary="withOutAndErr" haltonfailure="yes"
-               haltonerror="yes" fork="yes">
+               haltonerror="yes" fork="yes" maxmemory="512m">
             <sysproperty key="java.class.path" value="${test.base}"/>
             <classpath refid="test.base.path" />            
             <formatter type="${test.formatter}" usefile="${test.usefile}" />
@@ -195,7 +195,9 @@
             <test name="dk.statsbiblioteket.util.FilesTest" />
             <test name="dk.statsbiblioteket.util.I18nTest" />
             <test name="dk.statsbiblioteket.util.i18n.EscapeUTF8StreamTest" />
-            <test name="dk.statsbiblioteket.util.LineReaderTest" />
+            <!-- LineReader tests temporarily disabled. See bug 1183:
+                 https://gforge.statsbiblioteket.dk/tracker/index.php?func=detail&aid=1183&group_id=9&atid=137
+            <test name="dk.statsbiblioteket.util.LineReaderTest" />-->
             <test name="dk.statsbiblioteket.util.LogsTest" />
             <test name="dk.statsbiblioteket.util.ProfilerTest" />
             <test name="dk.statsbiblioteket.util.StreamsTest" />
@@ -204,6 +206,7 @@
             <test name="dk.statsbiblioteket.util.ZipsTest" />
             <test name="dk.statsbiblioteket.util.qa.PackageScannerTest" />
             <test name="dk.statsbiblioteket.util.console.FormatterTest" />
+            <test name="dk.statsbiblioteket.util.rpc.ConnectionManagerTest" />
         </junit>
     </target>
 
