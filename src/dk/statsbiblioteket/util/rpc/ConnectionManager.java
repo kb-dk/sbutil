@@ -16,19 +16,98 @@ import org.apache.commons.logging.LogFactory;
  * service crashes and and comes back up by "magical" means. Failure
  * handling is provided free of charge.</p>
  *
+ * <p>Using a connection manager to manage RMI connections is simple.
+ * Assume we want to use a remote interface {@code Pingable}:
+ *
+ * <pre>
+ * interface Pingable extends Remote {
+ *
+ *     public String ping () throws RemoteException;
+ *
+ * }
+ * </pre>
+ * 
+ * If you export that interface over RMI you can connect to it like so:
+ *
+ * <pre>
+ * // Basic set up
+ * ConnectionFactory&lt;Pingable&gt; cf = new RMIConnectionFactory&lt;Pingable&gt;();
+ * ConnectionManager&lt;Pingable&gt; cm = new ConnectionManager&lt;Pingable&gt;(cf);
+ *
+ * // When you need a connection do
+ * ConnectionContext&lt;Pingable&gt; ctx = cm.get("//localhost:2767/ping_service");
+ * Pingable server = ctx.getConnection();
+ * System.out.println ("Ping response: " + server.ping());
+ * ctx.unref()
+ * </pre>
+ * </p>
+ *
+ * <h2>Abstracting Out The RPC Implementation</h2>
+ * <p>Here follows how to abstract out the RMI dependency on the client side in the
+ * previous example.</p>
+ *
+ * <p>Modify {@code Pingable} to be non-{@code Remote} and throw
+ * {@code IOException}s instead:
+ *
+ * <pre>
+ * interface Pingable {
+ *
+ *     public String ping () throws IOException;
+ *
+ * }
+ * </pre>
+ *
+ * Now extend that interface with a remote interface:
+ *
+ * <pre>
+ * interface RemotePingable extends Remote, Pingable {
+ *
+ *     public String ping () throws RemoteException;
+ *
+ * }
+ * </pre>
+ *
+ * Create a {@link ConnectionFactory}{@code <Pingable>} using a
+ * {@link RMIConnectionFactory} or something else underneath:
+ *
+ * <pre>
+ * public class MyConnectionFactory extends ConnectionFactory&lt;Pingable&gt; {
+ *
+ *     // This backend should be dynamically loaded from a configuration parameter
+ *     ConnectionFactory&lt;? extends Pingable&gt; backend = new RMIConnectionFactory&lt;RemotePingable&gt;();
+ *
+ *     public Pingable createConnection (String connectionId) {
+ *         return backend.createConnection(connectionId);
+ *     }
+ * }
+ * </pre>
+ *
+ * With this in hand we can do
+ *
+ * <pre>
+ * // Basic set up
+ * ConnectionFactory&lt;Pingable&gt; mycf = new MyConnectionFactory();
+ * ConnectionManager&lt;Pingable&gt; cm = new ConnectionManager&lt;Pingable&gt;(mycf);
+ *
+ * // When you need a connection do
+ * ConnectionContext&lt;Pingable&gt; ctx = cm.get("//localhost:2767/ping_service");
+ * Pingable server = ctx.getConnection();
+ * System.out.println ("Ping response: " + server.ping());
+ * ctx.unref()
+ * </pre>
+ *
+ * </p>
+ *
  */
 public class ConnectionManager<E> {
 
-    /**
-     * Number of seconds before a connection with zero reference count is
-     * dropped.
-     */
-    protected int lingerTime;
+    private int lingerTime;
 
     private ConnectionFactory<E> connFactory;
     private HashMap<String, ConnectionContext<E>> connections;
     private Log log;
     private ConnectionMonitor<E> connectionMonitor;
+    private boolean isClosed;
 
 
     private class ConnectionMonitor<T> implements Runnable {
@@ -86,7 +165,7 @@ public class ConnectionManager<E> {
 
         connFactory = connFact;
         connections = new HashMap<String,ConnectionContext<E>>();
-
+        isClosed = false;
         setLingerTime(10);
 
         connectionMonitor = new ConnectionMonitor<E>(this);
@@ -96,25 +175,45 @@ public class ConnectionManager<E> {
 
     /**
      * @param seconds number of seconds before dropping unreferenced connections
-     * @see #lingerTime
+     * @throws IllegalStateException if the mananger has been closed
      */
     public void setLingerTime (int seconds) {
+        if (isClosed) {
+            throw new IllegalStateException("Manager is closed");
+        }
         lingerTime = seconds;
     }
 
     /**
      * @return number of seconds before dropping unreferenced connections
-     * @see #lingerTime
      */
     public int getLingerTime () {
         return lingerTime;
     }
 
+    /**
+     * Get a {@link Collection} of all active {@link ConnectionContext}s
+     * @return a collection containing all currently cached connections
+     */
     public Collection<ConnectionContext<E>> getConnections () {
         return connections.values();
     }
 
+    /**
+     * Remove a connection from the cache. This can only be done if the
+     * connection's refcount is zero.
+     * @param connectionId id of connection to remove
+     * @throws NullPointerException if {@code connectionId} is {@code null}
+     */
     private synchronized void purgeConnection(String connectionId) {
+        if (isClosed) {
+            throw new IllegalStateException("Manager is closed");
+        }
+
+        if (connectionId == null) {
+            throw new NullPointerException("connectionId is null");
+        }
+
         ConnectionContext ctx = connections.get (connectionId);
 
         if (ctx == null) {
@@ -131,13 +230,24 @@ public class ConnectionManager<E> {
     }
 
     /**
-     * Use this method to obtain a connection to the service with id
+     * <p>Use this method to obtain a connection to the service with id
      * {@code connectionId}. Make sure you call {@link #release} on the
-     * instance id when you are done using the connection.
+     * returned context when you are done using the connection.</p>
+     *
      * @param connectionId instance id of the service to get a connection for
      * @return a connection to a service or {@code null} on error
+     * @throws IllegalStateException if the manager has been closed
+     * @throws NullPointerException if {@code connectionId} is {@code null}
      */
     public synchronized ConnectionContext<E> get (String connectionId) {
+        if (isClosed) {
+            throw new IllegalStateException("Manager is closed");
+        }
+
+        if (connectionId == null) {
+            throw new NullPointerException("connectionId is null");
+        }
+
         ConnectionContext<E> ctx = connections.get (connectionId);
 
         if (ctx == null) {
@@ -169,6 +279,7 @@ public class ConnectionManager<E> {
      * <p>It is advised that consumers release their connections in a
      * <code>finally</code> clause.</p>
      * @param ctx context to be released
+     * @throws NullPointerException if {@code ctx} is {@code null}
      */
     public synchronized void release (ConnectionContext<E> ctx) {
         if (ctx == null) {
@@ -178,6 +289,12 @@ public class ConnectionManager<E> {
         ctx.unref();
     }
 
+    /**
+     * Mark the connection as broken, and the manager will not reuse it.
+     * @param ctx connection which is broken
+     * @param t the cause of the error
+     * @throws NullPointerException if {@code ctx} is {@code null}
+     */
     public void reportError (ConnectionContext<E> ctx, Throwable t) {
 
         if (ctx == null) {
@@ -188,6 +305,12 @@ public class ConnectionManager<E> {
         connections.remove(ctx.getConnectionId());
     }
 
+    /**
+     * Mark the connection as broken, and the manager will not reuse it.
+     * @param ctx connection which is broken
+     * @param msg a description of the error
+     * @throws NullPointerException if {@code ctx} is {@code null}
+     */
     public void reportError (ConnectionContext<E> ctx, String msg) {
 
         if (ctx == null) {
@@ -198,9 +321,17 @@ public class ConnectionManager<E> {
         connections.remove(ctx.getConnectionId());
     }
 
+    /**
+     * <p>Close the manager for any further connections, and release all currently
+     * cached connections.</p>
+     *
+     * <p>Calling {@link #get} or {@link #setLingerTime} on a closed manager
+     * raises an {@link IllegalStateException}.</p>
+     */
     public void close () {
         connectionMonitor.stop();
         connections.clear();
+        isClosed = true;
     }
 
 }

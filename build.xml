@@ -116,7 +116,7 @@
                 destdir="${doc.dir}"
                 author="true"
                 version="true"
-                access="private"
+                access="protected"
                 windowtitle="Statsbiblioteket Utility Module"
                 additionalparam="-breakiterator">
             <packageset dir="${src.dir}">

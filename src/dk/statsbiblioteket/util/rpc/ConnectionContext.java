@@ -3,6 +3,8 @@ package dk.statsbiblioteket.util.rpc;
 /**
  * A thread safe reference counted object wrapping a connection of type
  * {@code E}.
+ *
+ * @see ConnectionManager
  */
 public class ConnectionContext<E> {
 

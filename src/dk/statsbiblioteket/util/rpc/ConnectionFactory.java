@@ -5,6 +5,7 @@ package dk.statsbiblioteket.util.rpc;
  * for a {@link ConnectionManager}.
  *
  * @see RMIConnectionFactory
+ * @see ConnectionManager
  */
 public abstract class ConnectionFactory<E> {
 
