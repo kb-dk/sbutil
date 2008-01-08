@@ -129,6 +129,18 @@ public class LineReaderTest extends TestCase {
         dumpSpeedRA();
     }
 
+/*    public void testMem() throws Exception {
+        System.out.println("Total mem before allocation: "
+                           + Runtime.getRuntime().totalMemory());
+        //noinspection MismatchedReadAndWriteOfArray
+        int[] a = new int[1024*1024*10];
+        for (int i = 0 ; i < a.length ; i++) {
+            a[i] = i;
+        }
+        System.out.println("Total mem after allocation: " 
+                           + Runtime.getRuntime().totalMemory());
+    }*/
+
     private int SPEED_SEEKS = 20000;
     private int SEQUENTIAL_RUNS = 50;
     public void dumpSpeedLR() throws Exception {
