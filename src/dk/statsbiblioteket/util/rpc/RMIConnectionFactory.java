@@ -35,6 +35,7 @@ public class RMIConnectionFactory<E extends Remote>
      * @param connectionId RMI address of the server exposing the interface
      * @return a newly created {@link Remote} interface or {@code null} on error
      */
+    @SuppressWarnings("unchecked")
     public E createConnection(String connectionId) {
         int retries = 0;
         Exception lastError = null;
@@ -43,6 +44,8 @@ public class RMIConnectionFactory<E extends Remote>
             log.debug ("Looking up '" + connectionId + "'");
             try {
                 Thread.sleep(graceTime*1000);
+
+                // Unchecked cast here
                 return (E) Naming.lookup(connectionId);
             } catch (MalformedURLException e) {
                 lastError = e;
