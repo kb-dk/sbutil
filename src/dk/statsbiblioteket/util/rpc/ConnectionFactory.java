@@ -77,6 +77,5 @@ public abstract class ConnectionFactory<E> {
      * @return A connection
      */
     public abstract E createConnection (String connectionId);
-    
 
 }

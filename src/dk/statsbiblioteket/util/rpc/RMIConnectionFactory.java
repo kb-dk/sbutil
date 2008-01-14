@@ -43,8 +43,6 @@ public class RMIConnectionFactory<E extends Remote>
         for (retries = 0; retries < connectionRetries; retries++) {
             log.debug ("Looking up '" + connectionId + "'");
             try {
-                Thread.sleep(graceTime*1000);
-
                 // Unchecked cast here
                 return (E) Naming.lookup(connectionId);
             } catch (MalformedURLException e) {
@@ -53,6 +51,10 @@ public class RMIConnectionFactory<E extends Remote>
                 lastError = e;
             } catch (RemoteException e) {
                 lastError = e;
+            }
+
+            try {
+                Thread.sleep(graceTime*1000);
             } catch (InterruptedException e) {
                 log.error ("Interrupted. Aborting connection creation.");
                 break;

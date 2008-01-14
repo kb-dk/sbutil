@@ -329,9 +329,15 @@ public class ConnectionManager<E> {
      * raises an {@link IllegalStateException}.</p>
      */
     public void close () {
+        log.debug("Closed"); 
         connectionMonitor.stop();
         connections.clear();
         isClosed = true;
+    }
+
+    protected void finalize () throws Throwable {
+        close();        
+        super.finalize();
     }
 
 }
