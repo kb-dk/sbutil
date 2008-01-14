@@ -133,7 +133,7 @@ public class ConnectionManagerTest extends TestCase {
         String connId = "//localhost:2767/test";
         TestRemoteIFaceImpl server = new TestRemoteIFaceImpl(connId);
         ConnectionFactory<TestRemoteIFace> cf = new RMIConnectionFactory<TestRemoteIFace>();
-        ConnectionManager<TestRemoteIFace> cm = new ConnectionManager<TestRemoteIFace>(cf);
+        ConnectionManager<TestIFace> cm = new ConnectionManager<TestIFace>(cf);
 
         cm.setLingerTime(1);
 

@@ -103,7 +103,7 @@ public class ConnectionManager<E> {
 
     private int lingerTime;
 
-    private ConnectionFactory<E> connFactory;
+    private ConnectionFactory<? extends E> connFactory;
     private HashMap<String, ConnectionContext<E>> connections;
     private Log log;
     private ConnectionMonitor<E> connectionMonitor;
@@ -156,7 +156,7 @@ public class ConnectionManager<E> {
      * @throws NullPointerException if the {@link ConnectionFactory} is
      *                              {@code null}
      */
-    public ConnectionManager (ConnectionFactory<E> connFact) {
+    public ConnectionManager (ConnectionFactory<? extends E> connFact) {
         if (connFact == null) {
             throw new NullPointerException("ConnectionFactory is null");
         }
