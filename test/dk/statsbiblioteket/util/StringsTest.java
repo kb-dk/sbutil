@@ -51,7 +51,7 @@ public class StringsTest extends TestCase {
     }
 
     public void testJoinNulls () throws Exception {
-        List l = new ArrayList();
+        List<Object> l = new ArrayList<Object>();
 
         try {
             Strings.join (l, null);
@@ -83,7 +83,7 @@ public class StringsTest extends TestCase {
     }
 
     public void testKnownCases () throws Exception {
-        List l = new ArrayList();
+        List<Object> l = new ArrayList<Object>();
         l.add ("foo");
         l.add ("bar");
         l.add ("baz");

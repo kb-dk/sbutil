@@ -281,7 +281,7 @@ public class ConnectionManager<E> {
      * @param ctx context to be released
      * @throws NullPointerException if {@code ctx} is {@code null}
      */
-    public synchronized void release (ConnectionContext<E> ctx) {
+    public synchronized void release (ConnectionContext ctx) {
         if (ctx == null) {
             throw new NullPointerException("ConnectionContext is null");
         }
@@ -295,7 +295,7 @@ public class ConnectionManager<E> {
      * @param t the cause of the error
      * @throws NullPointerException if {@code ctx} is {@code null}
      */
-    public void reportError (ConnectionContext<E> ctx, Throwable t) {
+    public void reportError (ConnectionContext ctx, Throwable t) {
 
         if (ctx == null) {
             throw new NullPointerException("ConnectionContext is null");
@@ -311,7 +311,7 @@ public class ConnectionManager<E> {
      * @param msg a description of the error
      * @throws NullPointerException if {@code ctx} is {@code null}
      */
-    public void reportError (ConnectionContext<E> ctx, String msg) {
+    public void reportError (ConnectionContext ctx, String msg) {
 
         if (ctx == null) {
             throw new NullPointerException("ConnectionContext is null");
