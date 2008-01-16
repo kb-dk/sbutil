@@ -142,9 +142,10 @@ public class NativeRunner  {
                               InputStream processInput, File startingDir) {
         pb.command(commands);
         pb.directory(startingDir);
-        Map<String,String> env = pb.environment();
-
-        env.putAll(enviroment);
+        if (enviroment != null){
+            Map<String,String> env = pb.environment();
+            env.putAll(enviroment);
+        }
         this.processInput = processInput;
     }
 
