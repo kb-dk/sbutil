@@ -28,6 +28,8 @@ import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
@@ -658,5 +660,40 @@ public class XPropertiesTest extends TestCase {
         } catch (ClassCastException e) {
             // Expected
         }
+    }
+
+    public void testStore () throws Exception {
+        XProperties props = new XProperties ();
+        File file = new File ("xyz-test-xprops.xml");
+        FileOutputStream fout;
+
+        if (file.exists()) {
+            fail ("Test file " + file + " already exists. Please delete it.");
+        }
+
+        // Try to store
+        fout = new FileOutputStream(file);
+        props.store(fout, null);
+        fout.close();
+        assertTrue(file.exists());
+
+        // Load
+        props.load (new FileInputStream(file));
+        assertEquals(0, props.size());
+
+        // Add values and write
+        props.put("key", "value");
+        fout = new FileOutputStream(file);
+        props.store(fout, null);
+        fout.close();
+
+        // Try to load
+        props = new XProperties();
+        assertEquals(0, props.size());
+        props.load(new FileInputStream(file));
+        assertEquals(1, props.size());
+
+
+        file.delete();
     }
 }
