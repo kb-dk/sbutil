@@ -206,7 +206,7 @@
             <test name="dk.statsbiblioteket.util.ZipsTest" />
             <test name="dk.statsbiblioteket.util.qa.PackageScannerTest" />
             <test name="dk.statsbiblioteket.util.console.FormatterTest" />
-            <test name="dk.statsbiblioteket.util.rpc.ConnectionManagerTest" />
+            <test name="dk.statsbiblioteket.util.rpc.RMIConnectionManagerTest" />
         </junit>
     </target>
 
