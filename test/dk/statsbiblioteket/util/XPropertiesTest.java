@@ -35,6 +35,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
@@ -568,16 +569,26 @@ public class XPropertiesTest extends TestCase {
     }
 
     public void testEnvironment() throws Exception {
-        System.setProperty("XProperty:foo", "bar");
-        System.setProperty("XProperty:int", "87");
-        System.setProperty("XProperty:negative", "-43");
-        System.setProperty("XProperty:double", "12.13");
-        System.setProperty("XProperty:negdouble", "-14.0");
-        System.setProperty("XProperty:true", "true");
-        System.setProperty("XProperty:false", "false");
-        System.setProperty("XProperty:sub/int", "88");
-        System.setProperty("XProperty:uboat/deep/s", "flam");
+        new Properties(null);
+
+        Properties sysProps = new Properties();
+        sysProps.setProperty("XProperty:foo", "bar");
+        sysProps.setProperty("XProperty:int", "87");
+        sysProps.setProperty("XProperty:negative", "-43");
+        sysProps.setProperty("XProperty:double", "12.13");
+        sysProps.setProperty("XProperty:negdouble", "-14.0");
+        sysProps.setProperty("XProperty:true", "true");
+        sysProps.setProperty("XProperty:false", "false");
+        sysProps.setProperty("XProperty:sub/int", "88");
+        sysProps.setProperty("XProperty:uboat/deep/s", "flam");
+
+        System.getProperties().putAll(sysProps);
+
         XProperties properties = new XProperties();
+
+        assertEquals("Should contain imported sysprops",
+                     sysProps.size(), properties.size());
+
         assertEquals("Environment-specified Strings should work",
                      "bar", properties.getString("foo"));
         assertEquals("Environment-specified ints should work",
@@ -597,16 +608,27 @@ public class XPropertiesTest extends TestCase {
         assertEquals("Environment-specified subsubproperty should work",
                      "flam", properties.getSubProperty("uboat").
                 getSubProperty("deep").getString("s"));
+
+        // Clean up
+        for (Object prop : sysProps.keySet()) {
+            System.clearProperty((String)prop);
+        }
+        assertEquals("System XProperties was not cleaned up",
+                     0, new XProperties().size());
     }
 
     public void testException() throws Exception {
-        System.setProperty("XProperty:foo", "bar");
-        System.setProperty("XProperty:int", "87");
-        System.setProperty("XProperty:negative", "-43");
-        System.setProperty("XProperty:true", "true");
-        System.setProperty("XProperty:false", "false");
-        System.setProperty("XProperty:sub/int", "88");
-        System.setProperty("XProperty:uboat/deep/s", "flam");
+        Properties sysProps = new Properties();
+        sysProps.setProperty("XProperty:foo", "bar");
+        sysProps.setProperty("XProperty:int", "87");
+        sysProps.setProperty("XProperty:negative", "-43");
+        sysProps.setProperty("XProperty:true", "true");
+        sysProps.setProperty("XProperty:false", "false");
+        sysProps.setProperty("XProperty:sub/int", "88");
+        sysProps.setProperty("XProperty:uboat/deep/s", "flam");
+
+        System.getProperties().putAll(sysProps);
+
         XProperties properties = new XProperties();
         try {
             properties.getBoolean("gnaf");
@@ -644,13 +666,24 @@ public class XPropertiesTest extends TestCase {
         } catch (NullPointerException e) {
             // Expected
         }
+
+        // Clean up
+        for (Object prop : sysProps.keySet()) {
+            System.clearProperty((String)prop);
+        }
+        assertEquals("System XProperties was not cleaned up",
+                     0, new XProperties().size());
     }
 
     public void testCast() throws Exception {
-        System.setProperty("XProperty:true", "true");
-        System.setProperty("XProperty:false", "false");
-        System.setProperty("XProperty:sub/int", "88");
-        System.setProperty("XProperty:uboat/deep/s", "flam");
+        Properties sysProps = new Properties();
+        sysProps.setProperty("XProperty:true", "true");
+        sysProps.setProperty("XProperty:false", "false");
+        sysProps.setProperty("XProperty:sub/int", "88");
+        sysProps.setProperty("XProperty:uboat/deep/s", "flam");
+
+        System.getProperties().putAll(sysProps);
+
         XProperties properties = new XProperties();
         assertEquals("Requesting a boolean as boolean should work fine",
                      false, properties.getBoolean("false"));
@@ -660,40 +693,49 @@ public class XPropertiesTest extends TestCase {
         } catch (ClassCastException e) {
             // Expected
         }
+
+        // Clean up
+        for (Object prop : sysProps.keySet()) {
+            System.clearProperty((String)prop);
+        }
+        assertEquals("System XProperties was not cleaned up",
+                     0, new XProperties().size());
     }
 
     public void testStore () throws Exception {
-        XProperties props = new XProperties ();
         File file = new File ("xyz-test-xprops.xml");
-        FileOutputStream fout;
 
-        if (file.exists()) {
-            fail ("Test file " + file + " already exists. Please delete it.");
+        try {
+            XProperties props = new XProperties ();
+            FileOutputStream fout;
+
+            if (file.exists()) {
+                fail ("Test file " + file + " already exists. Please delete it.");
+            }
+
+            // Try to store
+            fout = new FileOutputStream(file);
+            props.store(fout, null);
+            fout.close();
+            assertTrue(file.exists());
+
+            // Load
+            props.load (new FileInputStream(file));
+            assertEquals(0, props.size());
+
+            // Add values and write
+            props.put("key", "value");
+            fout = new FileOutputStream(file);
+            props.store(fout, null);
+            fout.close();
+
+            // Try to load
+            props = new XProperties();
+            assertEquals(0, props.size());
+            props.load(new FileInputStream(file));
+            assertEquals(1, props.size());
+        } finally {
+            file.delete();
         }
-
-        // Try to store
-        fout = new FileOutputStream(file);
-        props.store(fout, null);
-        fout.close();
-        assertTrue(file.exists());
-
-        // Load
-        props.load (new FileInputStream(file));
-        assertEquals(0, props.size());
-
-        // Add values and write
-        props.put("key", "value");
-        fout = new FileOutputStream(file);
-        props.store(fout, null);
-        fout.close();
-
-        // Try to load
-        props = new XProperties();
-        assertEquals(0, props.size());
-        props.load(new FileInputStream(file));
-        assertEquals(1, props.size());
-
-
-        file.delete();
     }
 }
