@@ -115,6 +115,7 @@ public class ConnectionManager<E> {
         private ConnectionManager<T> owner;
         private Log log;
         private boolean mayRun;
+        private Thread thread;
 
         private ConnectionMonitor (ConnectionManager<T> owner) {
             this.owner = owner;
@@ -125,6 +126,14 @@ public class ConnectionManager<E> {
         public synchronized void stop () {
             mayRun = false;
             this.notify();
+            if (thread != null) {
+                thread.interrupt();
+            }
+        }
+
+        public synchronized void runInThread () {
+            thread = new Thread(this, this.getClass().getSimpleName());
+            thread.start();
         }
 
         public void run() {
@@ -169,7 +178,7 @@ public class ConnectionManager<E> {
         setLingerTime(10);
 
         connectionMonitor = new ConnectionMonitor<E>(this);
-        new Thread (connectionMonitor, "ConnectionMonitor").start();
+        connectionMonitor.runInThread();
 
     }
 

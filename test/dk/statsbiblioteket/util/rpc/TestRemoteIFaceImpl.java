@@ -43,6 +43,12 @@ public class TestRemoteIFaceImpl extends UnicastRemoteObject
         return msg;
     }
 
+    public void close () throws Exception {
+        log.info ("Unbinding " + this.getClass().getSimpleName());
+        Registry reg = LocateRegistry.getRegistry(2767);
+        reg.unbind("test");
+    }
+
     public static void main (String[] args) {
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new RMISecurityManager());
