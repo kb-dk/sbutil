@@ -59,28 +59,31 @@ import com.thoughtworks.xstream.io.xml.DomDriver;
 import dk.statsbiblioteket.util.qa.QAInfo;
 
 /**
- * The State and University Library of Denmark
- * User: te, kfc
- * Date: Nov 22, 2005
- * Time: 11:16:38 AM
- * CVS:  $Id: XProperties.java,v 1.10 2007/12/04 13:22:01 mke Exp $
- *
- * Human Readable Properties with XStream backend.
+ * <p>Human Readable Properties with XStream backend.</p>
 
- * An extension of java.util.properties, that uses XStream from Thoughtworks to
- * create human readable property files for many different objects. The store(),
- * load(), storeToXML() and loadFromXML() calls are overwritten.
+ * <p>An extension of java.util.properties, that uses XStream from Thoughtworks to
+ * create human readable property files for many different objects. The
+ * {@link #store}, {@link #load}, {@link #storeToXML} and {@link #loadFromXML}
+ * calls are overwritten.</p>
  *
- * XProperties provides storage in human readable XML.
+ * <p>XProperties provides storage in human readable XML.
  * It also allows for easy storage of arbitrary complex objects, within the
- * bounds of XStream. See http://xstream.codehaus.org/ for details.
+ * bounds of XStream.
+ * See <a href="http://xstream.codehaus.org">xstream.codehaus.org</a>
+ * for details.</p>
  *
- * The properties can be overridden from the command line, by setting the
+ * <p>The properties can be overridden from the command line, by setting the
  * environment in the following manner:<br/>
  * <code>-DXProperty:foo=bar -DXProperty:mysubproperty/foo=bar</code>
- * Slashes separates sub properties. -?[0-9]+ are stored as integers,
- * -?[0-9]+\.[0-9]+ are stored as doubles, "true" and "false" are stored as
- * booleans, all other values are stored as Strings.
+ * Slashes separates sub properties. {@code -?[0-9]+} are stored as integers,
+ * {@code -?[0-9]+\.[0-9]+} are stored as doubles, {@code true} and
+ * {@code false} are stored as booleans, all other values are stored as
+ * {@link String}s.</p>
+ *
+ * <h2>File Format</h2>
+ * FIXME: The file format is currently broken.
+ * See
+ * <a href="https://gforge.statsbiblioteket.dk/tracker/index.php?&aid=1189">bug 1189</a>
  */
 @QAInfo(state=QAInfo.State.QA_NEEDED,
         level=QAInfo.Level.NORMAL)
@@ -580,6 +583,10 @@ public class XProperties extends Properties implements Converter {
                     + " resource %s", resourceName);
             log.warn(msg);
             throw new InvalidPropertiesException(msg, exst);
+        } catch (ClassCastException e) {
+            throw new InvalidPropertiesException("Input stream does not look "
+                                                 + "like a valid XProperties "
+                                                 + "file", e);
         } finally {
             instream.close();
         }
