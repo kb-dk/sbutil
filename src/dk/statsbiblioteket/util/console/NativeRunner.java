@@ -1,7 +1,7 @@
-/* $Id$
- * $Revision$
- * $Date$
- * $Author$
+/* $Id: NativeRunner.java 32 2008-01-16 16:08:49Z abr $
+ * $Revision: 32 $
+ * $Date: 2008-01-16 16:08:49 +0000 (Wed, 16 Jan 2008) $
+ * $Author: abr $
  *
  * The Summa project.
  * Copyright (C) 2005-2007  The State and University Library
@@ -22,9 +22,9 @@
  */
 /*
  * The State and University Library of Denmark
- * CVS:  $Id$
+ * CVS:  $Id: NativeRunner.java 32 2008-01-16 16:08:49Z abr $
  */
-package dk.statsbiblioteket.util.NativeExecution;
+package dk.statsbiblioteket.util.console;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 

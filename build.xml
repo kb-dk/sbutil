@@ -206,8 +206,8 @@
             <test name="dk.statsbiblioteket.util.ZipsTest" />
             <test name="dk.statsbiblioteket.util.qa.PackageScannerTest" />
             <test name="dk.statsbiblioteket.util.console.FormatterTest" />
+            <test name="dk.statsbiblioteket.util.console.NativeRunnerTest" />
             <test name="dk.statsbiblioteket.util.rpc.RMIConnectionManagerTest" />
-            <test name="dk.statsbiblioteket.util.NativeExecution.NativeRunner" />
         </junit>
     </target>
 
