@@ -108,6 +108,12 @@ public class NativeRunnerTest extends TestCase {
                      "flim\n", runner.getProcessOutputAsString());
     }
 
+    public void testNullEnvironment () throws Exception {
+        // Make sure we don't throw NPEs on null envs
+        NativeRunner runner = new NativeRunner(Arrays.asList("/bin/echo", "boo"),
+                                               null);
+    }
+
 
     public void testFeedProcess() throws Exception{
         Map<String,String> env = new HashMap<String,String>();
