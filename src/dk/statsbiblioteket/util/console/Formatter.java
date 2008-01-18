@@ -5,9 +5,9 @@ package dk.statsbiblioteket.util.console;
  */
 public class Formatter {
 
-    Color foreground;
-    Color background;
-    Hint hint;
+    private Color foreground;
+    private Color background;
+    private Hint hint;
 
     private static final String controlStart = "\033[";
     private static final String controlEnd = "m";
@@ -72,6 +72,15 @@ public class Formatter {
      */
     public void setHint (Hint hint) {
         this.hint = hint;
+    }
+
+    /**
+     * Clear all hints, for-, or background colors.
+     */
+    public void reset () {
+        hint = null;
+        background = null;
+        foreground = null;
     }
 
     /**

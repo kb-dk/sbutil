@@ -49,4 +49,14 @@ public class FormatterTest extends TestCase {
         assertEquals ("Hints should work",
                     controlBright + "foo" + controlReset, f.format("foo"));
     }
+
+    public void testFormatReset () throws Exception {
+        f.setHint(Hint.BRIGHT);
+        f.setBackground(Color.RED);
+        f.setForeground(Color.BLUE);
+        assertTrue(f.format("").length() > 0);
+
+        f.reset();
+        assertEquals(0, f.format("").length());
+    }
 }
