@@ -29,10 +29,7 @@ package dk.statsbiblioteket.util.console;
 import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.*;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -84,7 +81,9 @@ public class ProcessRunner  {
      */
     public ProcessRunner(String command) {
         this();
-        pb.command(command);
+        List<String> l = new ArrayList<String>();
+        l.add(command);
+        setParameters(l,null,null,null);
     }
 
     /**
@@ -93,7 +92,35 @@ public class ProcessRunner  {
      */
     public ProcessRunner(List<String> commands) {
         this();
-        pb.command(commands);
+        setParameters(commands,null,null,null);
+    }
+
+    public ProcessRunner(List<String> commands, Map<String,String> enviroment) {
+        this();
+        setParameters(commands,enviroment,null,null);
+    }
+
+
+    public ProcessRunner(List<String> commands, InputStream processInput ){
+        this();
+        setParameters(commands,null,processInput,null);
+    }
+
+    public ProcessRunner(List<String> commands, File startingDir){
+        this();
+        setParameters(commands,null,null,startingDir);
+    }
+
+    public ProcessRunner(List<String> commands, Map<String,String> enviroment,
+                         InputStream processInput){
+        this();
+        setParameters(commands,enviroment,processInput,null);
+    }
+
+    public ProcessRunner(List<String> commands, InputStream processInput,
+                         File startingDir){
+        this();
+        setParameters(commands,null,processInput,startingDir);
     }
 
     /**
@@ -123,10 +150,6 @@ public class ProcessRunner  {
         setParameters(commands, enviroment, processInput,startingDir);
     }
 
-    public ProcessRunner(List<String> commands, Map<String,String> enviroment) {
-        this();
-        setParameters(commands,enviroment,null,null);
-    }
 
     /**
      * Set the parameters of a NativeRunner.
