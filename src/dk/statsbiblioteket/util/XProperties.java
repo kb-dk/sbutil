@@ -22,41 +22,24 @@
  */
 package dk.statsbiblioteket.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Properties;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
-import com.thoughtworks.xstream.io.StreamException;
-import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
+import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.xml.DomDriver;
-
 import dk.statsbiblioteket.util.qa.QAInfo;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.*;
+import java.net.URL;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * <p>Human Readable Properties with XStream backend.</p>
@@ -116,15 +99,14 @@ public class XProperties extends Properties implements Converter {
     /** Initialise a set of properties with defaults, and load properties from
      * resourceName. If resourceName is not found, initialise an empty set of
      * resources, but use the name as filename on next call to {@link #store}.
-     * See {@link #load(String, boolean, boolean) for details about how
+     * See {@link #load(String, boolean, boolean)} for details about how
      * resources are loaded.
      * @param resourceName Name of resource.
      * @param defaults Default properties.
      * @throws InvalidPropertiesException if resourceName is found but not
      * well-formed.
      * @throws IOException if resourceName is found but has io errors while
-     * reading.
-     */
+     * reading. */
     public XProperties(String resourceName, XProperties defaults)
             throws InvalidPropertiesException, IOException {
         this(defaults);
@@ -558,7 +540,8 @@ public class XProperties extends Properties implements Converter {
         try {
 
             objectIn = xstream.createObjectInputStream(inreader);
-            XProperties properties = (XProperties)objectIn.readObject();
+            Object o = objectIn.readObject();
+            XProperties properties = (XProperties) o;
             for (Map.Entry<Object, Object> entries: properties.getEntries()) {
                 put(entries.getKey(), entries.getValue());
             }
