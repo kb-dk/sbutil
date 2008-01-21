@@ -92,9 +92,10 @@ public @interface QAInfo {
      * format as in {@link #reviewers}.</p>
      * <p>It is suggested to use the {@code Author} keyword for CVS controlled
      * code.</p>
-     * <p>Note that this annotation does not necessarily imply the one who
-     * is the original author of the code, but rather who authored the change
-     * that affected the QA process.</p>
+     * <p>This annotation should name the primary responsibly party for this
+     * piece of code. In most cases it will be the original author of the
+     * document, but if the file receives heavy editing by other parties, they
+     * may end up being more appropriate for the listed author.</p>
      * @return
      */
     String author() default "";
@@ -114,8 +115,15 @@ public @interface QAInfo {
     String deadline() default "";
 
     /**
-     * Developers responsible for revieving this class or method.
-     * Fx {"mke", "te"}  - use same convention as {@link #author}.
+     * <p>Developers responsible for revieving this class or method.</p>
+     * 
+     * <p>Fx <code>{"mke", "te"}</code>  - use same convention as
+     * {@link #author}.</p>
+     *
+     * <p>It is advised to keep a list of all reviewers here, with the last
+     * one in the list being the last person to review the code. This way it
+     * will be easy to construct a simple audit trail for the code.</p>
+     *
      * @return the login of the developers responsible for reviewing this item
      */
     String[] reviewers() default {};  // Note use of array
