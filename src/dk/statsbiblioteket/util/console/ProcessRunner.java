@@ -33,19 +33,17 @@ import java.util.*;
 
 
 /**
- * Native command executor. Based on ProcessBuilder. Incorporates timeout for
- * spawned processes.
+ * <p>Native command executor. Based on ProcessBuilder. Incorporates timeout for
+ * spawned processes.</p>
  *
  * <p>Give the arguments, enviroment and starting directory when instantiating
- * this class. Then use either execute or executeNoCollect to spawn the process.
- * Execute automatically empties the output and error streams, which can then be
- * read after the process have returned.<br>
- * ExecuteNoCollect does not, so they might be filled, and block the process, until
- * they are emptied again.
+ * this class. Then use either {@link #execute} or {@link #executeNoCollect}
+ * to spawn the process.</p>
  *
- * <p>Input to the program, it if for example is a 
- *
- *
+ * <p>{@link #execute} automatically empties the output
+ * and error streams, which can then be read after the process have returned.
+ * {@link #executeNoCollect} does not, so they might be filled, and block the
+ * process, until they are emptied again.</p>
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
@@ -69,7 +67,7 @@ public class ProcessRunner  {
     private final ProcessBuilder pb;
 
     /**
-     * No argument constructor. Cannot run, use setParameters.
+     * No argument constructor. Cannot run, use {@link #setParameters}.
      */
     public ProcessRunner(){
         pb = new ProcessBuilder();
