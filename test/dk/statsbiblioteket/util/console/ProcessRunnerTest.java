@@ -110,8 +110,8 @@ public class ProcessRunnerTest extends TestCase {
 
     public void testNullEnvironment () throws Exception {
         // Make sure we don't throw NPEs on null envs
-        ProcessRunner runner = new ProcessRunner(Arrays.asList("/bin/echo", "boo"),
-                                               null);
+        ProcessRunner runner = new ProcessRunner(Arrays.asList("/bin/echo",
+                                                               "boo"));
     }
 
 

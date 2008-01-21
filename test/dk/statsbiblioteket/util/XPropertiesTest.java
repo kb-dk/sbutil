@@ -516,19 +516,19 @@ public class XPropertiesTest extends TestCase {
         PrintWriter pw = new PrintWriter(sw);
         properties.list(pw);
         assertTrue("Should generate simple output 1 but was:\n" + sw.toString(),
-                   sw.toString().matches("(?s)(?m)\\s*<xproperties>\\s*"
+                   sw.toString().matches("(?s)(?m)\\s*<xstream>\\s*"
                                          + "<xproperties>\\s*"
                                          + "<entry>\\s*"
                                          + "<key>Foo</key>\\s*"
                                   + "<value\\s*class=\"string\">Bar</value>\\s*"
                                          + "</entry>\\s*"
                                          + "</xproperties>\\s*"
-                                         + "</xproperties>\\s*"));
+                                         + "</xstream>\\s*"));
         ByteArrayOutputStream ba = new ByteArrayOutputStream();
         properties.put("Foo2", 7);
         properties.list(new PrintStream(ba));
         assertTrue("Should generate simple output 2 but was:\n" + sw.toString(),
-                   ba.toString().matches("(?s)(?m)\\s*<xproperties>\\s*"
+                   ba.toString().matches("(?s)(?m)\\s*<xstream>\\s*"
                                          + "<xproperties>\\s*"
                                          + "<entry>\\s*"
                                          + "<key>Foo2</key>\\s*"
@@ -539,7 +539,7 @@ public class XPropertiesTest extends TestCase {
                                   + "<value\\s*class=\"string\">Bar</value>\\s*"
                                          + "</entry>\\s*"
                                          + "</xproperties>\\s*"
-                                         + "</xproperties>\\s*"));
+                                         + "</xstream>\\s*"));
     }
 
     public void dumpNothing() {
