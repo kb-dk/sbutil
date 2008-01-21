@@ -40,12 +40,12 @@ public class StreamsTest extends TestCase {
         return result;
     }
 
-    public void testPipeStream() throws Exception {
+    public void testPipe() throws Exception {
         int INSIZE = 200;
         byte[] inbytes = getByteArray(INSIZE);
         ByteArrayInputStream in = new ByteArrayInputStream(inbytes);
         ByteArrayOutputStream out = new ByteArrayOutputStream(500);
-        Streams.pipeStream(in, out);
+        Streams.pipe(in, out);
         byte[] outbytes = out.toByteArray();
         assertEquals("Input and output streams should be the same size",
                      inbytes.length, outbytes.length);

@@ -33,6 +33,7 @@ import java.util.HashMap;
  */
 @QAInfo(state=QAInfo.State.QA_NEEDED,
         level=QAInfo.Level.NORMAL)
+@Deprecated
 public class Projects {
 
     private static HashMap<Class,File> projectRoots = new HashMap<Class,File> ();

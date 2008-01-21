@@ -38,6 +38,17 @@ import java.net.URL;
         level=QAInfo.Level.NORMAL)
 public class Streams {
 
+    @Deprecated
+    public static void pipeStream(InputStream in, OutputStream out, int bufSize)
+                                                            throws IOException {
+        pipe (in, out, bufSize);
+    }
+
+    @Deprecated
+    public static void pipeStream(InputStream in,
+                                  OutputStream out) throws IOException {
+        pipe(in, out);
+    }
 
     /**
      * Copies the contents of an InputStream to an OutputStream, then closes
@@ -49,7 +60,7 @@ public class Streams {
      * @throws java.io.IOException If any sort of read/write error occurs on
      *                             either stream.
      */
-    public static void pipeStream(InputStream in, OutputStream out, int bufSize)
+    public static void pipe (InputStream in, OutputStream out, int bufSize)
                                                             throws IOException {
         try {
             byte[] buf = new byte[bufSize];
@@ -73,9 +84,9 @@ public class Streams {
      * @throws java.io.IOException If any sort of read/write error occurs on
      *                             either stream.
      */
-    public static void pipeStream(InputStream in,
-                                  OutputStream out) throws IOException {
-        pipeStream(in, out, 4096);
+    public static void pipe(InputStream in, OutputStream out)
+                                                            throws IOException {
+        pipe(in, out, 4096);
     }
 
     /**

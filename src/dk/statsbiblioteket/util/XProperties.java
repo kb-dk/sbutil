@@ -699,7 +699,7 @@ public class XProperties extends Properties implements Converter {
         log.debug("Storing resource");
         // xmlns="http://statsbiblioteket.dk/dtd/XProperties.dtd"
         ObjectOutputStream objectOut
-                = xstream.createObjectOutputStream(out, "xproperties");
+                = xstream.createObjectOutputStream(out, "xstream");
         objectOut.writeObject(this);
         objectOut.close();
     }
