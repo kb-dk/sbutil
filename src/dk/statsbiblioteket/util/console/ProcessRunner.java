@@ -44,10 +44,13 @@ import java.util.*;
  * and error streams, which can then be read after the process have returned.
  * {@link #executeNoCollect} does not, so they might be filled, and block the
  * process, until they are emptied again.</p>
+ *
+ * <p> This code is not yet entirely thread safe. Be sure to only call a given
+ * processRunner from one thread, and do not reuse it. </p>
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
-        author = "te,ab")
+        author = "abr")
 public class ProcessRunner  {
     private InputStream processInput =   null;
     private InputStream processOutput = null;
@@ -66,59 +69,59 @@ public class ProcessRunner  {
 
     private final ProcessBuilder pb;
 
-    /**
-     * No argument constructor. Cannot run, use {@link #setParameters}.
-     */
+ //   private final Object locker = new Object();
+
+    private long timeout = Long.MAX_VALUE;
+
     public ProcessRunner(){
         pb = new ProcessBuilder();
     }
 
-    /**
-     * Just this one command
-     * @param command the command to run
-     */
     public ProcessRunner(String command) {
         this();
         List<String> l = new ArrayList<String>();
         l.add(command);
-        setParameters(l,null,null,null);
+        setCommand(l);
     }
 
-    /**
-     * This list of commands
-     * @param commands the list of commands to run
-     */
     public ProcessRunner(List<String> commands) {
         this();
-        setParameters(commands,null,null,null);
+        setCommand(commands);
     }
 
     public ProcessRunner(List<String> commands, Map<String,String> enviroment) {
         this();
-        setParameters(commands,enviroment,null,null);
+        setCommand(commands);
+        setEnviroment(enviroment);
     }
 
 
     public ProcessRunner(List<String> commands, InputStream processInput ){
         this();
-        setParameters(commands,null,processInput,null);
+        setCommand(commands);
+        setInputStream(processInput);
     }
 
     public ProcessRunner(List<String> commands, File startingDir){
         this();
-        setParameters(commands,null,null,startingDir);
+        setCommand(commands);
+        setStartingDir(startingDir);
     }
 
     public ProcessRunner(List<String> commands, Map<String,String> enviroment,
                          InputStream processInput){
         this();
-        setParameters(commands,enviroment,processInput,null);
+        setCommand(commands);
+        setEnviroment(enviroment);
+        setInputStream(processInput);
     }
 
     public ProcessRunner(List<String> commands, InputStream processInput,
                          File startingDir){
         this();
-        setParameters(commands,null,processInput,startingDir);
+        setCommand(commands);
+        setInputStream(processInput);
+        setStartingDir(startingDir);
     }
 
     /**
@@ -130,7 +133,9 @@ public class ProcessRunner  {
     public ProcessRunner(List<String> commands, Map<String,String> enviroment,
                         File startingDir) {
         this();
-        setParameters(commands, enviroment, null,startingDir);
+        setCommand(commands);
+        setEnviroment(enviroment);
+        setStartingDir(startingDir);
     }
 
     /**
@@ -145,12 +150,39 @@ public class ProcessRunner  {
     public ProcessRunner(List<String> commands, Map<String,String> enviroment,
                         InputStream processInput, File startingDir) {
         this();
-        setParameters(commands, enviroment, processInput,startingDir);
+        setCommand(commands);
+        setEnviroment(enviroment);
+        setInputStream(processInput);
+        setStartingDir(startingDir);
     }
 
 
+    public synchronized void setEnviroment(Map<String,String> enviroment){
+        if (enviroment != null){
+            Map<String,String> env = pb.environment();
+            env.putAll(enviroment);
+        }
+    }
+
+    public synchronized void setInputStream(InputStream processInput){
+        this.processInput = processInput;
+    }
+
+    public synchronized void setStartingDir(File startingDir){
+        pb.directory(startingDir);
+    }
+
+    public synchronized void setCommand(List<String> commands){
+        pb.command(commands);
+    }
+
+    public synchronized void setTimeout(long timeout){
+        this.timeout = timeout;
+    }
+
     /**
-     * Set the parameters of a NativeRunner.
+     * Set the parameters of a NativeRunner. Deprecated, use the acesser methods
+     * instead.
      * @param commands The commands to run
      * @param enviroment The enviroment the proces lives in
      * @param processInput An inputstream from which the commands to the proces
@@ -158,16 +190,14 @@ public class ProcessRunner  {
      * interactive.
      * @param startingDir The starting dir for the commands
      */
+    @Deprecated
     public void setParameters(List<String> commands,
                               Map<String,String> enviroment,
                               InputStream processInput, File startingDir) {
-        pb.command(commands);
-        pb.directory(startingDir);
-        if (enviroment != null){
-            Map<String,String> env = pb.environment();
-            env.putAll(enviroment);
-        }
-        this.processInput = processInput;
+        setCommand(commands);
+        setEnviroment(enviroment);
+        setInputStream(processInput);
+        setStartingDir(startingDir);
     }
 
     /**
@@ -191,19 +221,33 @@ public class ProcessRunner  {
             ByteArrayOutputStream pError =
                     collectProcessOutput(p.getErrorStream(), maxError);
             feedProcess(p, processInput);
-            while (true) {
+
+            long startTime = System.currentTimeMillis();
+
+            int return_value;
+            while (true){
+                //is the thread finished?
                 try {
-                    p.waitFor();
+                    //then return
+                    return_value =  p.exitValue();
                     break;
-                } catch (InterruptedException e) {
-                    // Ignoring interruptions, we just want to try waiting
-                    // again.
+                }catch (IllegalThreadStateException e){
+                    //not finished
                 }
+                //is the runtime exceeded?
+                if (System.currentTimeMillis()-startTime > timeout){
+                    //then return
+                    p.destroy();
+                    throw new Exception("Process timed out");
+                }
+                //else sleep again
+                wait (POLLING_INTERVAL);
+
             }
             waitForThreads();
             processOutput = new ByteArrayInputStream(pOut.toByteArray());
             processError = new ByteArrayInputStream(pError.toByteArray());
-            return p.exitValue();
+            return return_value;
         } catch (IOException e) {
             throw new Exception("Failure while running "
                     + stringsToString(
@@ -246,31 +290,18 @@ public class ProcessRunner  {
      * Execute the native commands. Standard and error output will not be
      * collected. It is the responsibility of the caller to empty these
      * OutputStreams, which can be accessed by {@link #getProcessOutput} and
-     * {@link #getProcessError}. The maxRuntime is Long.MAX_VALUE.
+     * {@link #getProcessError}.
      * @return the exit value from the native commands.
      * @throws Exception if execution of the native commands failed.
      */
-    public int executeNoCollect() throws Exception {
-        return executeNoCollect(Long.MAX_VALUE);
-    }
-
-    /**
-     * Execute the native commands while blocking. Standard and error output will not be
-     * collected. It is the responsibility of the caller to empty these
-     * OutputStreams, which can be accessed by {@link #getProcessOutput} and
-     * {@link #getProcessError}.
-     * @param maxRuntime the maximum number of milliseconds that the native
-     *                   commands is allowed to run.
-     * @return the exit value from the native commands.
-     * @throws Exception if execution of the native commands failed or
-     *                   timed out.
-     */
-    public synchronized int executeNoCollect(final long maxRuntime) throws Exception {
+    public synchronized int executeNoCollect() throws Exception {
         try {
             Process p = pb.start();
             processOutput = p.getInputStream();
             processError = p.getErrorStream();
+
             feedProcess(p, processInput);
+
             long startTime = System.currentTimeMillis();
 
             while (true){
@@ -282,7 +313,7 @@ public class ProcessRunner  {
                     //not finished
                 }
                 //is the runtime exceeded?
-                if (System.currentTimeMillis()-startTime > maxRuntime){
+                if (System.currentTimeMillis()-startTime > timeout){
                     //then return
                     p.destroy();
                     throw new Exception("Process timed out");
@@ -292,11 +323,32 @@ public class ProcessRunner  {
 
             }
 
-        } catch (IOException e) {
-          throw new Exception("Failure while running "
+
+        } catch (RuntimeException e) {
+            throw new Exception("Failure while running "
                     + stringsToString(
                     (String[])(pb.command().toArray())), e);
         }
+    }
+
+    /**
+     * Execute the native commands while blocking. Standard and error output will not be
+     * collected. It is the responsibility of the caller to empty these
+     * OutputStreams, which can be accessed by {@link #getProcessOutput} and
+     * {@link #getProcessError}.<br>
+     * Deprecated. Use {@link #setTimeout} and {@link #executeNoCollect()} instead.
+     * @param maxRuntime the maximum number of milliseconds that the native
+     *                   commands is allowed to run.
+     * @return the exit value from the native commands.
+     * @throws Exception if execution of the native commands failed or
+     *                   timed out.
+     */
+    @Deprecated
+    public synchronized int executeNoCollect(final long maxRuntime)
+            throws Exception {
+        setTimeout(maxRuntime);
+        return executeNoCollect();
+
     }
 
     /**
@@ -368,9 +420,10 @@ public class ProcessRunner  {
             // No complaints here - null just means no input
             return;
         }
+
         final OutputStream pIn = process.getOutputStream();
         final InputStream given = processInput;
-        new Thread() {
+        Thread t = new Thread() {
             public void run() {
                 try {
                     OutputStream writer = null;
@@ -392,7 +445,17 @@ public class ProcessRunner  {
                             "process.", e);
                 }
             }
-        }.start();
+        };
+
+        Thread.UncaughtExceptionHandler u =
+                new Thread.UncaughtExceptionHandler() {
+                    public void uncaughtException(Thread t, Throwable e) {
+                        //Might not be the prettiest solution...
+                    }
+                };
+        t.setUncaughtExceptionHandler(u);
+        t.start();
+
     }
 
     /**
