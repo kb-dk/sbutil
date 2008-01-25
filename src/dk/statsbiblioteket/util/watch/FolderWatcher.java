@@ -48,7 +48,7 @@ import dk.statsbiblioteket.util.LineReader;
         author="te")
 public class FolderWatcher extends Observable<FolderListener> implements
                                                               Runnable {
-    private static Logger log = Logger.getLogger(LineReader.class);
+    private static Logger log = Logger.getLogger(FolderWatcher.class);
 
     private File watchedFolder;
     private List<File> oldContent;
