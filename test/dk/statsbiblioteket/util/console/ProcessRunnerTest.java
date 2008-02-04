@@ -73,22 +73,24 @@ public class ProcessRunnerTest extends TestCase {
 
     public void testSimpleCall() throws Exception {
         ProcessRunner runner = new ProcessRunner("true");
+        runner.run();
         assertEquals("The execution of true should work fine",
-                     0, runner.executeNoCollect());
+                     0, runner.getReturnCode());
+
         runner = new ProcessRunner("false");
+        runner.run();
         assertEquals("The execution of false should give 1",
-                     1, runner.executeNoCollect());
+                     1, runner.getReturnCode());
     }
 
     public void testTimeout() throws Exception {
 
         ProcessRunner runner = new ProcessRunner(Arrays.asList("sleep","2"));
 
-        try {
-            runner.executeNoCollect(100);
+        runner.setTimeout(100);
+        runner.run();
+        if(!runner.isTimedOut()){
             fail("The execution of sleep should time out");
-        } catch(Exception e) {
-            // Expected behaviour
         }
     }
 
@@ -99,11 +101,13 @@ public class ProcessRunnerTest extends TestCase {
 
 
         ProcessRunner runner =
-                new ProcessRunner(Arrays.asList("/bin/sh","-c", "echo $FLAM"),env);
+                new ProcessRunner(Arrays.asList("/bin/sh","-c", "echo $FLAM"));
+        runner.setEnviroment(env);
         //Nessesary for the command variable expansion to work correctly
 
+        runner.run();
         assertEquals("The execution of echo should work fine",
-                     0, runner.executeNoCollect());
+                     0, runner.getReturnCode());
         assertEquals("The result of echo should be flim",
                      "flim\n", runner.getProcessOutputAsString());
     }
@@ -127,11 +131,16 @@ public class ProcessRunnerTest extends TestCase {
         out.write("echo $FLAM");
         out.flush();
         ProcessRunner runner =
-                new ProcessRunner(Arrays.asList("/bin/sh"),env,in,null);
+                new ProcessRunner(Arrays.asList("/bin/sh"));
+        runner.setEnviroment(env);
+        runner.setInputStream(in);
+
+        runner.run();
+
         //Nessesary for the command variable expansion to work correctly
 
         assertEquals("The execution of echo should work fine",
-                     0, runner.executeNoCollect());
+                     0, runner.getReturnCode());
         assertEquals("The result of echo should be flim",
                      "flim\n", runner.getProcessOutputAsString());
 
