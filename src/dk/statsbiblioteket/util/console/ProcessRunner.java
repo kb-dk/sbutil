@@ -33,17 +33,21 @@ import java.util.*;
 
 
 /**
- * <p>Native command executor. Based on ProcessBuilder. Incorporates timeout for
- * spawned processes.</p>
+ * <p>Native command executor. Based on ProcessBuilder.
+ * <ul>
+ * <li> Incorporates timeout for spawned processes.
+ * <li> Handle automatic collection of bytes from the output and
+ * error streams, to ensure that they dont block.
+ * <li> Handles automatic feeding of input to the process.
+ * <li> Blocking while executing
+ * <li> Implements Runnable, to be wrapped in a Thread.
+ * </ul>
+ * </p>
  *
- * <p>Give the arguments, enviroment and starting directory when instantiating
- * this class. Then use either {@link #execute} or {@link #executeNoCollect}
- * to spawn the process.</p>
- *
- * <p>{@link #execute} automatically empties the output
- * and error streams, which can then be read after the process have returned.
- * {@link #executeNoCollect} does not, so they might be filled, and block the
- * process, until they are emptied again.</p>
+ * Use the Assessor methods to configure the Enviroment, input, collecting
+ * behavoiur, timeout and startingDir.
+ * Use the getters to get the output and error streams as strings, along with
+ * the return code and if the process timed out.
  *
  * <p> This code is not yet entirely thread safe. Be sure to only call a given
  * processRunner from one thread, and do not reuse it. </p>
@@ -69,7 +73,7 @@ public class ProcessRunner implements Runnable{
 
     private final ProcessBuilder pb;
 
- //   private final Object locker = new Object();
+    //   private final Object locker = new Object();
 
     private long timeout = Long.MAX_VALUE;
 
@@ -95,80 +99,17 @@ public class ProcessRunner implements Runnable{
         setCommand(commands);
     }
 
-            @Deprecated
-    public ProcessRunner(List<String> commands, Map<String,String> enviroment) {
-        this();
-        setCommand(commands);
-        setEnviroment(enviroment);
-    }
-
-                               @Deprecated
-    public ProcessRunner(List<String> commands, InputStream processInput ){
-        this();
-        setCommand(commands);
-        setInputStream(processInput);
-    }
-
-            @Deprecated
-    public ProcessRunner(List<String> commands, File startingDir){
-        this();
-        setCommand(commands);
-        setStartingDir(startingDir);
-    }
-
-            @Deprecated
-    public ProcessRunner(List<String> commands, Map<String,String> enviroment,
-                         InputStream processInput){
-        this();
-        setCommand(commands);
-        setEnviroment(enviroment);
-        setInputStream(processInput);
-    }
-
-            @Deprecated
-    public ProcessRunner(List<String> commands, InputStream processInput,
-                         File startingDir){
-        this();
-        setCommand(commands);
-        setInputStream(processInput);
-        setStartingDir(startingDir);
-    }
 
     /**
-     * Run these commands in this directory, with this enviroment.
-     * @param commands The commands to run
-     * @param enviroment The enviroment the proces lives in
-     * @param startingDir The starting dir for the commands
+     * Sets the enviroment that the process should run in. For the the equivalent
+     * to the command
+     * <pre>
+     * export FLIM=flam
+     * echo $FLIM
+     * </pre>
+     * put "FLIM","flam" in the enviroment.
+     * @param enviroment The Map containing the mapping in the enviroment.
      */
-            @Deprecated
-    public ProcessRunner(List<String> commands, Map<String,String> enviroment,
-                        File startingDir) {
-        this();
-        setCommand(commands);
-        setEnviroment(enviroment);
-        setStartingDir(startingDir);
-    }
-
-    /**
-     * Run these commands in this directory, with this enviroment.
-     * @param commands The commands to run
-     * @param enviroment The enviroment the proces lives in
-     * @param processInput An inputstream from which the commands to the proces
-     * can be read. Will only be read once, so you cannot make something
-     * interactive.
-     * @param startingDir The starting dir for the commands
-     */
-            @Deprecated
-    public ProcessRunner(List<String> commands, Map<String,String> enviroment,
-                        InputStream processInput, File startingDir) {
-        this();
-        setCommand(commands);
-        setEnviroment(enviroment);
-        setInputStream(processInput);
-        setStartingDir(startingDir);
-    }
-
-
     public void setEnviroment(Map<String,String> enviroment){
         if (enviroment != null){
             Map<String,String> env = pb.environment();
@@ -179,25 +120,51 @@ public class ProcessRunner implements Runnable{
         this.processInput = processInput;
     }
 
+    /**
+     * The directory to be used as starting dir. If not set, uses the dir of the
+     * current process.
+     * @param startingDir the starting dir.
+     */
     public void setStartingDir(File startingDir){
         pb.directory(startingDir);
     }
+
 
     public void setCommand(List<String> commands){
         pb.command(commands);
     }
 
+    /**
+     * Set the timeout. Default to Long.MAX_VALUE in millisecs
+     * @param timeout the new timeout in millisecs
+     */
     public void setTimeout(long timeout){
         this.timeout = timeout;
     }
 
+    /**
+     * Decide if the outputstreams should be collected. Default true, ie, collect
+     * the output.
+     * @param collect should we collect the output
+     */
     public void setCollection(boolean collect){
         this.collect = collect;
     }
 
+    /**
+     * How many bytes should we collect from the ErrorStream. Will block when
+     * limit is reached. Default 31000
+     * @param maxError number of bytes to max collect.
+     */
     public void setErrorCollectionByteSize(int maxError){
         this.maxError = maxError;
     }
+
+    /**
+     * How many bytes should we collect from the OutputStream. Will block when
+     * limit is reached. Default 31000;
+     * @param maxOutput number of bytes to max collect.
+     */
 
     public void setOutputCollectionByteSize(int maxOutput){
         this.maxOutput = maxOutput;
@@ -205,9 +172,8 @@ public class ProcessRunner implements Runnable{
 
     /**
      * The OutputStream will either be the OutputStream directly from the
-     * execution of the native commands with the method {@link #executeNoCollect}
-     * or a cache with the output of the execution of the native commands by
-     * {@link#execute}.
+     * execution of the native commands or a cache with the output of the
+     * execution of the native commands
      * @return the output of the native commands.
      */
     public InputStream getProcessOutput() {
@@ -216,19 +182,29 @@ public class ProcessRunner implements Runnable{
 
     /**
      * The OutputStream will either be the error-OutputStream directly from the
-     * execution of the native commands with the method {@link #executeNoCollect}
-     * or a cache with the error-output of the execution of the native commands
-     * by {@link#execute}.
+     * execution of the native commands  or a cache with the error-output of
+     * the execution of the native commands
      * @return the error-output of the native commands.
      */
     public InputStream getProcessError() {
         return processError;
     }
 
+    /**
+     * Get the return code of the process. If the process timed out and was
+     * killed, the return code will be -1. But this is not exclusive to this
+     * scenario, other programs can also use this return code.
+     * @return the return code
+     */
     public int getReturnCode(){
         return return_code;
     }
 
+    /**
+     * Tells whether the process has timedout. Only valid after the process has
+     * been run, of course.
+     * @return has the process timed out.
+     */
     public boolean isTimedOut() {
         return timedOut;
     }
@@ -285,16 +261,10 @@ public class ProcessRunner implements Runnable{
     }
 
 
-
-
-
-
-
-
-
-
-
-
+    /**
+     * Run the method, feeding it input, and killing it if the timeout is exceeded.
+     * Blocking.
+     */
     public void run() {
 
 
@@ -427,9 +397,9 @@ public class ProcessRunner implements Runnable{
                         pIn.close();
                     }
                 } catch (IOException e) {
-                  /*  // This seems ugly
-                    throw new RuntimeException("Couldn't write input to " +
-                            "process.", e);*/
+                    /*  // This seems ugly
+           throw new RuntimeException("Couldn't write input to " +
+                   "process.", e);*/
                 }
             }
         };
@@ -460,7 +430,7 @@ public class ProcessRunner implements Runnable{
      *                   from the error-output of the native commands.
      * @throws Exception if execution of the native commands failed.
      */
-        @Deprecated
+    @Deprecated
     public synchronized int execute(int maxOutput,
                                     int maxError) throws Exception {
         setErrorCollectionByteSize(maxError);
@@ -477,7 +447,7 @@ public class ProcessRunner implements Runnable{
      * @return the exit value from the native commands.
      * @throws Exception if execution of the native commands failed.
      */
-        @Deprecated
+    @Deprecated
     public synchronized int executeNoCollect() throws Exception {
         setCollection(false);
         run();
@@ -528,5 +498,79 @@ public class ProcessRunner implements Runnable{
         setInputStream(processInput);
         setStartingDir(startingDir);
     }
+
+    @Deprecated
+    public ProcessRunner(List<String> commands, Map<String,String> enviroment) {
+        this();
+        setCommand(commands);
+        setEnviroment(enviroment);
+    }
+
+    @Deprecated
+    public ProcessRunner(List<String> commands, InputStream processInput ){
+        this();
+        setCommand(commands);
+        setInputStream(processInput);
+    }
+
+    @Deprecated
+    public ProcessRunner(List<String> commands, File startingDir){
+        this();
+        setCommand(commands);
+        setStartingDir(startingDir);
+    }
+
+    @Deprecated
+    public ProcessRunner(List<String> commands, Map<String,String> enviroment,
+                         InputStream processInput){
+        this();
+        setCommand(commands);
+        setEnviroment(enviroment);
+        setInputStream(processInput);
+    }
+
+    @Deprecated
+    public ProcessRunner(List<String> commands, InputStream processInput,
+                         File startingDir){
+        this();
+        setCommand(commands);
+        setInputStream(processInput);
+        setStartingDir(startingDir);
+    }
+
+    /**
+     * Run these commands in this directory, with this enviroment.
+     * @param commands The commands to run
+     * @param enviroment The enviroment the proces lives in
+     * @param startingDir The starting dir for the commands
+     */
+    @Deprecated
+    public ProcessRunner(List<String> commands, Map<String,String> enviroment,
+                         File startingDir) {
+        this();
+        setCommand(commands);
+        setEnviroment(enviroment);
+        setStartingDir(startingDir);
+    }
+
+    /**
+     * Run these commands in this directory, with this enviroment.
+     * @param commands The commands to run
+     * @param enviroment The enviroment the proces lives in
+     * @param processInput An inputstream from which the commands to the proces
+     * can be read. Will only be read once, so you cannot make something
+     * interactive.
+     * @param startingDir The starting dir for the commands
+     */
+    @Deprecated
+    public ProcessRunner(List<String> commands, Map<String,String> enviroment,
+                         InputStream processInput, File startingDir) {
+        this();
+        setCommand(commands);
+        setEnviroment(enviroment);
+        setInputStream(processInput);
+        setStartingDir(startingDir);
+    }
+
 
 }
