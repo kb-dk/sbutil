@@ -479,8 +479,9 @@ public class ProcessRunner implements Runnable{
      */
         @Deprecated
     public synchronized int executeNoCollect() throws Exception {
+        setCollection(false);
         run();
-        return return_code;
+        return getReturnCode();
     }
 
 
