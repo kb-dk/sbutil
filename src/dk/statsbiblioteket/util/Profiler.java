@@ -42,8 +42,6 @@ public class Profiler {
 // with a number larger than 1. This can be done by storing the current
 // count along with the timestamps in the queue.
 
-// TODO: Use something lighter than Calendar
-
 // TODO: Generic implementation of a ringbuffer and use that instead of the internal
 
     private long startTime = 0;
@@ -154,6 +152,7 @@ public class Profiler {
      * @return the total number of beats
      */
     private synchronized long beat(long increase) {
+        unpause();
         beats += increase;
         if (bpsSpan > 0) {
             queueEnd = ++queueEnd % bpsSpan;                                 // Move the end
