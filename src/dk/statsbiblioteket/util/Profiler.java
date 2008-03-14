@@ -40,13 +40,13 @@ import java.io.StringWriter;
 public class Profiler {
 // TODO: Make the useCurrentSpeed handle situations where beat was called
 // with a number larger than 1. This can be done by storing the current
-// count along with the timespamps in the queue.
+// count along with the timestamps in the queue.
 
 // TODO: Use something lighter than Calendar
 
 // TODO: Generic implementation of a ringbuffer and use that instead of the internal
 
-    private Calendar startTime = null;
+    private long startTime = 0;
     private long beats = 0;
     private long expectedTotal = 0;
     private int bpsSpan = 10;
@@ -55,6 +55,9 @@ public class Profiler {
     private long[] queue = new long[10];
     private int queueStart = -1;
     private int queueEnd = -1;
+
+    private boolean paused = false;
+    private long pauseTime = 0; // The timestamp for pausing
 
     /**
      * Create an ProgressFeedback and set the internal timestamp to now.
@@ -120,16 +123,18 @@ public class Profiler {
         queue = new long[bpsSpan];
         queueStart = -1;
         queueEnd = -1;
+        paused = false;
     }
 
     /**
      * Reset the ProgressFeedback, setting the internal timestamp to now, clearing the beats and the queue.
      */
     public synchronized void reset() {
-        startTime = Calendar.getInstance();
+        startTime = System.currentTimeMillis();
         beats = 0;
         queueStart = -1;
         queueEnd = -1;
+        paused = false;
     }
 
 
@@ -225,8 +230,8 @@ public class Profiler {
      * @return the number of milliseconds this ProgressFeedback has been running
      */
     public long getSpendMilliseconds() {
-        return Calendar.getInstance().getTimeInMillis()
-               - startTime.getTimeInMillis();
+        return paused ? pauseTime - startTime :
+               System.currentTimeMillis() - startTime;
     }
 
     /**
@@ -349,5 +354,33 @@ public class Profiler {
         }
         return String.format("%1$tF %1$tT", eta);
     }
-}
 
+    /**
+     * Pause the Profiler. Call {@link #unpause} in order to continue.
+     * Calling {@link #beat} will automatically unpause.
+     * </p><p>
+     * Note: The larger the {@link #bpsSpan}, the longer it takes to unpause.
+     */
+    public synchronized void pause() {
+        if (paused) {
+            return;
+        }
+        pauseTime = System.currentTimeMillis();
+        paused = true;
+    }
+
+    public synchronized void unpause() {
+        if (!paused) {
+            return;
+        }
+        long inactiveTime = System.currentTimeMillis() - pauseTime;
+        if (inactiveTime > 0) {
+            for (int i = 0 ; i < queue.length ; i++) {
+                queue[i] += inactiveTime;
+            }
+            startTime += inactiveTime;
+        }
+        paused = false;
+    }
+
+}
