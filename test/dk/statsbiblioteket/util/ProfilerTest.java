@@ -41,8 +41,31 @@ public class ProfilerTest extends TestCase {
 
     }
 
-    public void testBla () throws Exception {
-        
+    public void testPausing () throws Exception {
+        Profiler profiler = new Profiler();
+        profiler.setExpectedTotal(10);
+        Thread.sleep(200);
+        profiler.beat();
+        Thread.sleep(50);
+        profiler.beat();
+        profiler.pause();
+        long spend = profiler.getSpendMilliseconds();
+        assertTrue("The spend time should be around 250ms",
+                   spend >= 250 && spend < 400); // A bit of a hack
+        double bps = profiler.getBps();
+        Thread.sleep(200);
+        assertEquals("After sleping, the spend time should be the same as "
+                     + "before", spend, profiler.getSpendMilliseconds());
+        assertEquals("After sleping, the bps should be the same as before",
+                     bps, profiler.getBps());
+        profiler.unpause();
+        double spendUnpaused = profiler.getSpendMilliseconds();
+        assertTrue("After unpausing, spend time should be nearly unchanged",
+                   Math.abs(spend - spendUnpaused) < 50);
+        Thread.sleep(50);
+        assertTrue("After sleeping after unpaused, spend time should increase",
+                   Math.abs(spendUnpaused - profiler.getSpendMilliseconds())
+                   >= 50);
     }
 
 }
