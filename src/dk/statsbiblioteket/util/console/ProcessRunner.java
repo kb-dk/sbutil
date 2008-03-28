@@ -28,8 +28,20 @@ package dk.statsbiblioteket.util.console;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -83,10 +95,20 @@ public class ProcessRunner implements Runnable{
     private int return_code;
     private boolean timedOut;
 
+    /**
+     * Create a new ProcessRunner. Cannot run, until you specify something with
+     * the assessor methods.
+     */
     public ProcessRunner(){
         pb = new ProcessBuilder();
     }
 
+    /**
+     * Create a new ProcessRunner with just this command, with no arguments.
+     * Spaces are not allowed in the
+     * string
+     * @param command the command to run
+     */
     public ProcessRunner(String command) {
         this();
         List<String> l = new ArrayList<String>();
@@ -94,6 +116,12 @@ public class ProcessRunner implements Runnable{
         setCommand(l);
     }
 
+    /**
+     * Create a new ProcessRunner with the given command. Each element in the
+     * list should be a command or argument. If the element should not be parsed
+     * enclose it in \"'s.
+     * @param commands the command to run
+     */
     public ProcessRunner(List<String> commands) {
         this();
         setCommand(commands);
@@ -116,6 +144,13 @@ public class ProcessRunner implements Runnable{
             env.putAll(enviroment);
         }
     }
+
+    /**
+     * Set the inputstream, from which the process should read. To be
+     * used if you need to give commands to the process, after it has
+     * begun.
+     * @param processInput to read from.
+     */
     public void setInputStream(InputStream processInput){
         this.processInput = processInput;
     }
@@ -130,6 +165,10 @@ public class ProcessRunner implements Runnable{
     }
 
 
+    /**
+     * Set the command for this ProcessRunner
+     * @param commands the new command.
+     */
     public void setCommand(List<String> commands){
         pb.command(commands);
     }
@@ -242,6 +281,11 @@ public class ProcessRunner implements Runnable{
         }
     }
 
+    /**
+     * Utility Method for reading a stream into a string, for returning
+     * @param stream the string to read
+     * @return A string with the contents of the stream.
+     */
     private String getStringContent(InputStream stream) {
         if (stream == null) {
             return null;
@@ -266,8 +310,6 @@ public class ProcessRunner implements Runnable{
      * Blocking.
      */
     public void run() {
-
-
         try {
             Process p = pb.start();
 
@@ -285,9 +327,7 @@ public class ProcessRunner implements Runnable{
                 processOutput = p.getInputStream();
                 processError = p.getErrorStream();
                 return_code = execute(p);
-
             }
-
         } catch (IOException e) {
             throw new RuntimeException("An io error occurred when running the command",e);
         }
@@ -397,9 +437,9 @@ public class ProcessRunner implements Runnable{
                         pIn.close();
                     }
                 } catch (IOException e) {
-                    /*  // This seems ugly
-           throw new RuntimeException("Couldn't write input to " +
-                   "process.", e);*/
+                    // This seems ugly
+                    throw new RuntimeException("Couldn't write input to " +
+                            "process.", e);
                 }
             }
         };
