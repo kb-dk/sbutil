@@ -33,6 +33,7 @@ import java.util.Arrays;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 
+@SuppressWarnings({"DuplicateStringLiteralInspection"})
 @QAInfo(state=QAInfo.State.QA_NEEDED,
         level=QAInfo.Level.NORMAL,
         author="mke, te")
@@ -141,6 +142,18 @@ public class FilesTest extends TestCase {
         String loadedString = Files.loadString(testFile);
         assertEquals("The string should be the same before and after storage",
                      testString, loadedString);
+    }
+
+    public void testSaveStringMultiple() throws Exception {
+        File tempFile = File.createTempFile("foo", "bar");
+        int ITERATIONS = 5000;
+        for (int i = 0 ; i < ITERATIONS ; i++) {
+            Files.saveString("Zoo" + i, tempFile);
+            assertEquals("The string should be the same before and after "
+                         + "storage #" + i,
+                         "Zoo" + i, Files.loadString(tempFile));
+        }
+        tempFile.delete();
     }
 
     public void testBaseNameOfDir () {

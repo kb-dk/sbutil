@@ -29,7 +29,9 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 
 /**
  * Utility methods for handling streams
@@ -107,5 +109,25 @@ public class Streams {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(1000);
         pipeStream(in, bytes);
         return bytes.toString("utf-8");
+    }
+
+
+    /**
+     * @return the next long in the stream if present. If EOF was reached
+     *         during read, an exception is thrown. The long must be stored
+     *         in big-endian format.
+     * @throws IOException  if a fatal error occured during read.
+     * @throws EOFException if EOF was reached during read.
+     */
+    public static long readLong(InputStream in) throws IOException {
+        ByteBuffer bb = ByteBuffer.allocate(8);
+        for (int i = 0 ; i < 8 ; i++) {
+            int value = in.read();
+            if (value == -1) { // -1 is defined as EOF in InputStream
+                throw new EOFException("Attempting to read past EOF");
+            }
+            bb.put((byte)value);
+        }
+        return bb.getLong(0);
     }
 }

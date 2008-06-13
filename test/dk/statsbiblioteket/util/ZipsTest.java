@@ -120,7 +120,9 @@ public class ZipsTest extends TestCase {
 
         File ownerOnly = new File(zipFolder, "ownerOnly");
         ownerOnly.createNewFile();
+        ownerOnly.setReadable(false, false);
         ownerOnly.setReadable(true, true);
+        ownerOnly.setWritable(false, false);
         ownerOnly.setWritable(true, true);
 //        ownerOnly.setExecutable(true, true);
 
