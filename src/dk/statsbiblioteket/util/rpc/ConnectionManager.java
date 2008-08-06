@@ -124,6 +124,7 @@ public class ConnectionManager<E> {
         }
 
         public synchronized void stop () {
+            log.debug("Stopped"); 
             mayRun = false;
             this.notify();
             if (thread != null) {
@@ -146,6 +147,11 @@ public class ConnectionManager<E> {
 
                 long now = System.currentTimeMillis();
 
+                /* Scan the connections for all with refCount zero that are
+                 * also timed out and purge them */
+                log.trace ("Doing connection scan of "
+                           + owner.getConnections().size()
+                           + " connections");
                 for (ConnectionContext<? extends T> ctx : owner.getConnections()) {
                     if (now - ctx.getLastUse() > owner.getLingerTime()*1000 &&
                         ctx.getRefCount() == 0) {
@@ -153,6 +159,9 @@ public class ConnectionManager<E> {
                         owner.purgeConnection(ctx.getConnectionId());
                     }
                 }
+                log.trace ("Connection scan complete. "
+                           + owner.getConnections().size()
+                           + " connections remaining in cache");
 
             }
 
