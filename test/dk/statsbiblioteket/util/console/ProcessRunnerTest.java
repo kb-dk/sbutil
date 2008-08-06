@@ -83,6 +83,24 @@ public class ProcessRunnerTest extends TestCase {
                      1, runner.getReturnCode());
     }
 
+    public void testVarArgs () throws Exception {
+        ProcessRunner runner = new ProcessRunner ("sleep", "1");
+        runner.run ();
+        assertEquals("The execution of \"sleep 1\" should work fine",
+                     0, runner.getReturnCode());
+        
+        runner = new ProcessRunner ("true");
+        runner.run ();
+        assertEquals("The execution of \"true\" should work fine",
+                     0, runner.getReturnCode());
+
+        runner = new ProcessRunner ("echo", "-e", "do\n", "the\n", "mash\n", "potato\n");
+        runner.run ();
+        assertEquals("The execution of \"echo -e do the mash potato\" "
+                     + "should work fine",
+                     0, runner.getReturnCode());
+    }
+
     public void testTimeout() throws Exception {
 
         ProcessRunner runner = new ProcessRunner(Arrays.asList("sleep","2"));

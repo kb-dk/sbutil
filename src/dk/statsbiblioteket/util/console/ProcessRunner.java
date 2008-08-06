@@ -42,6 +42,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 
 /**
@@ -127,7 +128,16 @@ public class ProcessRunner implements Runnable{
         setCommand(commands);
     }
 
-
+    /**
+     * Create a new ProcessRunner with the given command and arguments.
+     * The first arguments is the command to execute and the remaining
+     * are any arguments to pass.
+     * @param commands The command and arguments
+     */
+    public ProcessRunner(String... commands) {
+        this(Arrays.asList(commands));
+    }
+    
     /**
      * Sets the enviroment that the process should run in. For the the equivalent
      * to the command
@@ -274,7 +284,7 @@ public class ProcessRunner implements Runnable{
         long endTime = System.currentTimeMillis() + THREADTIMEOUT;
         while (System.currentTimeMillis() < endTime && threads.size() > 0) {
             try {
-                wait(POLLING_INTERVAL);
+                Thread.sleep(POLLING_INTERVAL);
             } catch (InterruptedException e) {
                 // Ignore, as we are just waiting
             }
