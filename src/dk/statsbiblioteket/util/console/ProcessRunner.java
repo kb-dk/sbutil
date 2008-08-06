@@ -1,28 +1,8 @@
-/* $Id: NativeRunner.java 32 2008-01-16 16:08:49Z abr $
- * $Revision: 32 $
- * $Date: 2008-01-16 16:08:49 +0000 (Wed, 16 Jan 2008) $
- * $Author: abr $
- *
- * The Summa project.
- * Copyright (C) 2005-2007  The State and University Library
- *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- */
 /*
- * The State and University Library of Denmark
- * CVS:  $Id: NativeRunner.java 32 2008-01-16 16:08:49Z abr $
+ * ProcessRunner.
+ * Copyright (C) 2005-2008  The State and University Library
+ * Added to the SBUtils Project by the State and University Library
+ * Author Asger Blekinge-Rasmussen
  */
 package dk.statsbiblioteket.util.console;
 
@@ -38,11 +18,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Arrays;
 
 
 /**
@@ -137,7 +117,7 @@ public class ProcessRunner implements Runnable{
     public ProcessRunner(String... commands) {
         this(Arrays.asList(commands));
     }
-    
+
     /**
      * Sets the enviroment that the process should run in. For the the equivalent
      * to the command
@@ -202,7 +182,7 @@ public class ProcessRunner implements Runnable{
 
     /**
      * How many bytes should we collect from the ErrorStream. Will block when
-     * limit is reached. Default 31000
+     * limit is reached. Default 31000. If set to negative values, will collect until out of memory.
      * @param maxError number of bytes to max collect.
      */
     public void setErrorCollectionByteSize(int maxError){
@@ -211,7 +191,7 @@ public class ProcessRunner implements Runnable{
 
     /**
      * How many bytes should we collect from the OutputStream. Will block when
-     * limit is reached. Default 31000;
+     * limit is reached. Default 31000; If set to negative values, will collect until out of memory.
      * @param maxOutput number of bytes to max collect.
      */
 
@@ -343,7 +323,7 @@ public class ProcessRunner implements Runnable{
         }
     }
 
-    private synchronized int execute(Process p){
+    private  int execute(Process p){
         long startTime = System.currentTimeMillis();
         feedProcess(p, processInput);
         int return_value;
@@ -363,10 +343,11 @@ public class ProcessRunner implements Runnable{
                 p.destroy();
                 return_value = -1;
                 timedOut = true;
+                break;
             }
             //else sleep again
             try {
-                wait (POLLING_INTERVAL);
+                Thread.sleep(POLLING_INTERVAL);
             } catch (InterruptedException e) {
                 //just go on.
             }
@@ -381,9 +362,14 @@ public class ProcessRunner implements Runnable{
 
     private ByteArrayOutputStream collectProcessOutput(
             final InputStream inputStream, final int maxCollect) {
-        final ByteArrayOutputStream stream =
-                new ByteArrayOutputStream(Math.min(MAXINITIALBUFFER,
-                        maxCollect));
+        final ByteArrayOutputStream stream;
+        if (maxCollect < 0){
+            stream = new ByteArrayOutputStream();
+        } else {
+            stream = new ByteArrayOutputStream(Math.min(MAXINITIALBUFFER,
+                                                        maxCollect));
+        }
+
         Thread t = new Thread() {
             public void run() {
                 try {
@@ -396,7 +382,7 @@ public class ProcessRunner implements Runnable{
                         int counter = 0;
                         while ((c = reader.read()) != -1) {
                             counter++;
-                            if (counter < maxCollect) {
+                            if (maxCollect < 0 || counter < maxCollect) {
                                 writer.write(c);
                             }
                         }
@@ -411,7 +397,7 @@ public class ProcessRunner implements Runnable{
                 } catch (IOException e) {
                     // This seems ugly
                     throw new RuntimeException("Couldn't read output from " +
-                            "process.", e);
+                                               "process.", e);
                 }
                 threads.remove(this);
             }
@@ -449,7 +435,7 @@ public class ProcessRunner implements Runnable{
                 } catch (IOException e) {
                     // This seems ugly
                     throw new RuntimeException("Couldn't write input to " +
-                            "process.", e);
+                                               "process.", e);
                 }
             }
         };
@@ -464,163 +450,6 @@ public class ProcessRunner implements Runnable{
         t.start();
 
     }
-
-
-
-
-    /**
-     * Execute the native commands, while blocking. Standard and error output
-     * will be collected
-     * and can be retrieved later by {@link #getProcessOutput} and
-     * {@link #getProcessError}.
-     * @return the exit value from the native commands.
-     * @param maxOutput  the maximum number of bytes that should be collected
-     *                   from the output of the native commands.
-     * @param maxError   the maximum number of bytes that should be collected
-     *                   from the error-output of the native commands.
-     * @throws Exception if execution of the native commands failed.
-     */
-    @Deprecated
-    public synchronized int execute(int maxOutput,
-                                    int maxError) throws Exception {
-        setErrorCollectionByteSize(maxError);
-        setOutputCollectionByteSize(maxOutput);
-        run();
-        return return_code;
-    }
-
-    /**
-     * Execute the native commands. Standard and error output will not be
-     * collected. It is the responsibility of the caller to empty these
-     * OutputStreams, which can be accessed by {@link #getProcessOutput} and
-     * {@link #getProcessError}.
-     * @return the exit value from the native commands.
-     * @throws Exception if execution of the native commands failed.
-     */
-    @Deprecated
-    public synchronized int executeNoCollect() throws Exception {
-        setCollection(false);
-        run();
-        return getReturnCode();
-    }
-
-
-    /**
-     * Execute the native commands while blocking. Standard and error output will not be
-     * collected. It is the responsibility of the caller to empty these
-     * OutputStreams, which can be accessed by {@link #getProcessOutput} and
-     * {@link #getProcessError}.<br>
-     * Deprecated. Use {@link #setTimeout} and {@link #executeNoCollect()} instead.
-     * @param maxRuntime the maximum number of milliseconds that the native
-     *                   commands is allowed to run.
-     * @return the exit value from the native commands.
-     * @throws Exception if execution of the native commands failed or
-     *                   timed out.
-     */
-    @Deprecated
-    public synchronized int executeNoCollect(final long maxRuntime)
-            throws Exception {
-        setTimeout(maxRuntime);
-        setCollection(false);
-        run();
-        return getReturnCode();
-    }
-
-
-
-
-    /**
-     * Set the parameters of a NativeRunner. Deprecated, use the acesser methods
-     * instead.
-     * @param commands The commands to run
-     * @param enviroment The enviroment the proces lives in
-     * @param processInput An inputstream from which the commands to the proces
-     * can be read. Will only be read once, so you cannot make something
-     * interactive.
-     * @param startingDir The starting dir for the commands
-     */
-    @Deprecated
-    public void setParameters(List<String> commands,
-                              Map<String,String> enviroment,
-                              InputStream processInput, File startingDir) {
-        setCommand(commands);
-        setEnviroment(enviroment);
-        setInputStream(processInput);
-        setStartingDir(startingDir);
-    }
-
-    @Deprecated
-    public ProcessRunner(List<String> commands, Map<String,String> enviroment) {
-        this();
-        setCommand(commands);
-        setEnviroment(enviroment);
-    }
-
-    @Deprecated
-    public ProcessRunner(List<String> commands, InputStream processInput ){
-        this();
-        setCommand(commands);
-        setInputStream(processInput);
-    }
-
-    @Deprecated
-    public ProcessRunner(List<String> commands, File startingDir){
-        this();
-        setCommand(commands);
-        setStartingDir(startingDir);
-    }
-
-    @Deprecated
-    public ProcessRunner(List<String> commands, Map<String,String> enviroment,
-                         InputStream processInput){
-        this();
-        setCommand(commands);
-        setEnviroment(enviroment);
-        setInputStream(processInput);
-    }
-
-    @Deprecated
-    public ProcessRunner(List<String> commands, InputStream processInput,
-                         File startingDir){
-        this();
-        setCommand(commands);
-        setInputStream(processInput);
-        setStartingDir(startingDir);
-    }
-
-    /**
-     * Run these commands in this directory, with this enviroment.
-     * @param commands The commands to run
-     * @param enviroment The enviroment the proces lives in
-     * @param startingDir The starting dir for the commands
-     */
-    @Deprecated
-    public ProcessRunner(List<String> commands, Map<String,String> enviroment,
-                         File startingDir) {
-        this();
-        setCommand(commands);
-        setEnviroment(enviroment);
-        setStartingDir(startingDir);
-    }
-
-    /**
-     * Run these commands in this directory, with this enviroment.
-     * @param commands The commands to run
-     * @param enviroment The enviroment the proces lives in
-     * @param processInput An inputstream from which the commands to the proces
-     * can be read. Will only be read once, so you cannot make something
-     * interactive.
-     * @param startingDir The starting dir for the commands
-     */
-    @Deprecated
-    public ProcessRunner(List<String> commands, Map<String,String> enviroment,
-                         InputStream processInput, File startingDir) {
-        this();
-        setCommand(commands);
-        setEnviroment(enviroment);
-        setInputStream(processInput);
-        setStartingDir(startingDir);
-    }
-
-
 }
+
+

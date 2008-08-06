@@ -72,9 +72,9 @@
     <target name="depends">
         <echo message="Checking Java compiler version is ${sbutil.compiler.version}"/>
         <condition property="hasJava">
-            <equals arg1="${sbutil.compiler.version}" arg2="${ant.java.version}"/>
+            <equals arg1="${sbutil.compiler.version}" arg2="${java.specification.version}"/>
         </condition>
-        <fail message="Currently Summa only compiles with Java ${sbutil.compiler.version}. Found Java ${ant.java.version}"
+        <fail message="Currently Summa only compiles with Java ${sbutil.compiler.version}. Found Java ${java.specification.version}"
               unless="hasJava"/>
         
         <echo message="Checking Ant version is atleast ${sbutil.ant.version}"/>

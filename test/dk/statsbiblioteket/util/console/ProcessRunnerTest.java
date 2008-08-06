@@ -27,7 +27,11 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -84,17 +88,17 @@ public class ProcessRunnerTest extends TestCase {
     }
 
     public void testVarArgs () throws Exception {
-        ProcessRunner runner = new ProcessRunner ("sleep", "1");
+        ProcessRunner runner = new ProcessRunner("sleep", "1");
         runner.run ();
         assertEquals("The execution of \"sleep 1\" should work fine",
                      0, runner.getReturnCode());
         
-        runner = new ProcessRunner ("true");
+        runner = new ProcessRunner("true");
         runner.run ();
         assertEquals("The execution of \"true\" should work fine",
                      0, runner.getReturnCode());
 
-        runner = new ProcessRunner ("echo", "-e", "do\n", "the\n", "mash\n", "potato\n");
+        runner = new ProcessRunner("echo", "-e", "do\n", "the\n", "mash\n", "potato\n");
         runner.run ();
         assertEquals("The execution of \"echo -e do the mash potato\" "
                      + "should work fine",
