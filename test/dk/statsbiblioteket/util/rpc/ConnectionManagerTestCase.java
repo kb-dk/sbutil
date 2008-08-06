@@ -81,7 +81,9 @@ public class ConnectionManagerTestCase extends TestCase {
         // Wait until connection is reaped. Connection should now be dropped
         // from the cache
         Thread.sleep ((cm.getLingerTime() + 1)*1000);
-        assertEquals(0, cm.getConnections().size());
+        assertEquals("All connections should be purged. "
+                     + "Expecting connection count of 1",
+                     0, cm.getConnections().size());
         assertEquals(0, ctx2.getRefCount());
     }
 
