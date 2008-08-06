@@ -29,17 +29,24 @@ public class ConnectionContext<E> {
     }
 
     /**
-     * Package private method to increase the reference count by one.
+     * Grab a reference to a ConnectionContext. Contexts obtained via
+     * {@link ConnectionManager#get} are already referenced. You should only
+     * use this method if you obtain a {@code ConnectionContext} by other
+     * means.
+     *
+     * @return the referenced context
      */
-    synchronized void ref () {
+    public synchronized ConnectionContext<E> ref () {
         refCount++;
         lastUse = System.currentTimeMillis();
+        return this;
     }
 
     /**
-     * Package private method to decrease the reference count by one.
+     * Release a reference to a {@code ConnectionContext}. This is equivalent
+     * to calling {@link ConnectionManager#release}.
      */
-    synchronized void unref () {
+    public synchronized void unref () {
         refCount--;
         lastUse = System.currentTimeMillis();
     }
