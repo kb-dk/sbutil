@@ -134,10 +134,16 @@ public class ConnectionManager<E> {
 
         public synchronized void runInThread () {
             thread = new Thread(this, this.getClass().getSimpleName());
+            log.trace ("Starting connection manager thread");
             thread.start();
         }
 
+        public synchronized boolean isRunning() {
+            return thread != null;
+        }
+
         public void run() {
+            log.trace ("Starting with linger time: " + owner.getLingerTime());
             while (mayRun) {
                 try {
                     Thread.sleep (owner.getLingerTime()*1000);
@@ -164,7 +170,7 @@ public class ConnectionManager<E> {
                            + " connections remaining in cache");
 
             }
-
+            log.debug ("Thread closed");
         }
     }
 
@@ -187,7 +193,10 @@ public class ConnectionManager<E> {
         setLingerTime(10);
 
         connectionMonitor = new ConnectionMonitor<E>(this);
-        connectionMonitor.runInThread();
+
+        /* Don't start the connection monitor until the first connection is
+         * made. Otherwise the monitor thread might get lingerTime wrong
+         * if someone else changes it before spawning a connection */
 
     }
 
@@ -260,6 +269,11 @@ public class ConnectionManager<E> {
     public synchronized ConnectionContext<E> get (String connectionId) {
         if (isClosed) {
             throw new IllegalStateException("Manager is closed");
+        }
+
+        if (!connectionMonitor.isRunning()) {
+            log.trace ("First connection request. Starting connection monitor");
+            connectionMonitor.runInThread();
         }
 
         if (connectionId == null) {
