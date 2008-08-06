@@ -27,6 +27,7 @@ import dk.statsbiblioteket.util.Zips;
 import junit.framework.TestCase;
 
 import java.io.*;
+import java.util.Arrays;
 
 /**
  * Test dk.statsbiblioteket.util.Zips
@@ -188,5 +189,44 @@ public class ZipsTest extends TestCase {
     
     public void testUnzipFile () throws Exception {
         // FIXME: Implement me
+    }
+
+    public void testGzipBuffer () throws Exception {
+        byte[] buf = "hola mondo!".getBytes();
+        byte[] zipBuf, unzipBuf;
+
+        zipBuf = Zips.gzipBuffer(buf);
+        unzipBuf = Zips.gunzipBuffer(zipBuf);
+
+        assertTrue(Arrays.equals(unzipBuf, buf));
+        assertFalse(Arrays.equals(zipBuf,buf));
+    }
+
+    public void testZeroLengthGzipBuffer () throws Exception {
+        byte[] buf = "".getBytes();
+        byte[] zipBuf, unzipBuf;
+
+        zipBuf = Zips.gzipBuffer(buf);
+        unzipBuf = Zips.gunzipBuffer(zipBuf);
+
+        assertTrue(Arrays.equals(unzipBuf, buf));
+        assertFalse(Arrays.equals(zipBuf,buf));
+    }
+
+    public void testNullGzipBuffer () throws Exception {
+
+        try {
+            Zips.gzipBuffer(null);
+            fail ("Should throw NPE");
+        } catch (NullPointerException e) {
+            // Expected
+        }
+
+        try {
+            Zips.gunzipBuffer(null);
+            fail ("Should throw NPE");
+        } catch (NullPointerException e) {
+            // Expected
+        }
     }
 }

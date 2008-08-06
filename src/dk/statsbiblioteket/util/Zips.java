@@ -28,6 +28,8 @@ import java.io.*;
 import java.util.zip.ZipOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Utility class to help zipping entire folders and store the zip
@@ -157,6 +159,49 @@ public class Zips {
             }
         }
 
+    }
+
+    /**
+     * GZip the contents of a byte array and return a new byte array containing
+     * the compressed data.
+     * @param data the data to compress
+     * @return the gzip compressed data
+     */
+    public static byte[] gunzipBuffer (byte[] data) {
+        try {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(data));
+            byte[] buf = new byte[2048];
+            while (true) {
+                int size = in.read(buf);
+                if (size <= 0)
+                    break;
+                out.write(buf, 0, size);
+            }
+            out.close();
+            return out.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException ("IOException while gzipping buffer."
+                                        + " This should never happen", e);
+        }
+    }
+
+    /**
+     * Unzip a gzip compressed byte array of data.
+     * @param data the compressed data to gunzip
+     * @return the uncompressed data
+     */
+    public static byte[] gzipBuffer (byte[] data) {
+        try {
+            ByteArrayOutputStream buf = new ByteArrayOutputStream();
+            GZIPOutputStream zip = new GZIPOutputStream(buf);
+            zip.write(data);
+            zip.close();
+            return buf.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException ("IOException while gunzipping buffer."
+                                        + " This should never happen", e);
+        }
     }
 
 }
