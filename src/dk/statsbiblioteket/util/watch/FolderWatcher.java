@@ -96,6 +96,7 @@ public class FolderWatcher extends Observable<FolderListener> implements
         this.grace = grace;
         oldContent = getContent();
         Thread thread = new Thread(this);
+        thread.setDaemon (true); // Allow the JVm to exit
         thread.start();
     }
 

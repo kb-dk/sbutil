@@ -1,5 +1,7 @@
 package dk.statsbiblioteket.util.rpc;
 
+import java.net.SocketException;
+
 /**
  * A thread safe reference counted object wrapping a connection of type
  * {@code E}.

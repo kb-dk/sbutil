@@ -402,6 +402,7 @@ public class ProcessRunner implements Runnable{
                 threads.remove(this);
             }
         };
+        t.setDaemon (true); // Allow the JVM to exit even if t is alive
         threads.add(t);
         t.start();
         return stream;
@@ -446,6 +447,7 @@ public class ProcessRunner implements Runnable{
                         //Might not be the prettiest solution...
                     }
                 };
+        t.setDaemon(true); // Allow the JVM to exit even if t lives
         t.setUncaughtExceptionHandler(u);
         t.start();
 

@@ -2,6 +2,7 @@ package dk.statsbiblioteket.util.rpc;
 
 import java.util.HashMap;
 import java.util.Collection;
+import java.net.SocketException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -129,11 +130,22 @@ public class ConnectionManager<E> {
             this.notify();
             if (thread != null) {
                 thread.interrupt();
+
+                /* Wait for monitor thread to die */
+                try {
+                    log.trace ("Joining monitor thread");
+                    thread.join();
+                    log.trace ("Monitor thread join complete");
+                } catch (InterruptedException e) {
+                    log.warn ("Interrupted while waiting for monitor thread", e);
+                }
             }
+
         }
 
         public synchronized void runInThread () {
             thread = new Thread(this, this.getClass().getSimpleName());
+            thread.setDaemon(true);
             log.trace ("Starting connection manager thread");
             thread.start();
         }
@@ -170,7 +182,7 @@ public class ConnectionManager<E> {
                            + " connections remaining in cache");
 
             }
-            log.debug ("Thread closed");
+            log.debug ("Thread terminated");
         }
     }
 
@@ -351,6 +363,34 @@ public class ConnectionManager<E> {
         log.debug ("Error reported on '" + ctx.getConnectionId() + "'. Removing connection"
                   + ". Error was: " + msg);
         connections.remove(ctx.getConnectionId());
+    }
+
+    /**
+     * Convenience method to check if a {@link Throwable}, or its immediate
+     * cause, is of a type that is associated with network errors.
+     * If it is {@code ctx} will be marked
+     * as errorneous by a call to {@link #reportError}.
+     * <p></p>
+     * A common pattern would be:<br/>
+     * <pre>
+     * if (checkError(ctx, t)) {
+     *     ctx = connManager.get (connId);
+     * }
+     * </pre>
+     *
+     * @param ctx the connection context in question
+     * @param t the throwable which type to check
+     * @return {@code true} if {@code ctx} has been marked as broken in which
+     *         case the consumer should retrieve a new connection by calling
+     *         {@link #get}.
+     */
+    public boolean checkError (ConnectionContext ctx, Throwable t) {
+        if (t instanceof SocketException ||
+            t.getCause() instanceof SocketException) {
+            reportError (ctx, t);
+            return true;
+        }
+        return false;
     }
 
     /**
