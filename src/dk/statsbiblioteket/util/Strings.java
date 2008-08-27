@@ -86,4 +86,28 @@ public class Strings {
 
         return result == null ? "" : result;
     }
+
+    /**
+     * See {@link Strings#join(Collection, String)}.
+     */
+    public static String join (Object[] a, String delimiter) {
+        if (a == null) {
+            throw new NullPointerException("Collection argument is null");
+        } else if (delimiter == null) {
+            throw new NullPointerException("Delimiter argument is null");
+        }
+
+        String result = null;
+
+        for (Object o : a) {
+            if (result == null) {
+                result = (o == null ? "" : o.toString());
+            } else {
+                result += delimiter + (o == null ? "" : o.toString());
+            }
+
+        }
+
+        return result == null ? "" : result;
+    }
 }
