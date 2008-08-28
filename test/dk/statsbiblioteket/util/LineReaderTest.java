@@ -580,6 +580,29 @@ public class LineReaderTest extends TestCase {
 
     }
 
+    public void testWritereadAlternate() throws Exception {
+        File temp = new File("test/data/temp.tmp");
+        temp.deleteOnExit();
+        temp.createNewFile();
+        LineReader lr = new LineReader(temp, "rw");
+        byte[] b1 = new byte[]{1, 2};
+        byte[] b2 = new byte[]{3, 4};
+        lr.write(b1);
+        lr.seek(0);
+        lr.readFully(b1);
+        lr.seek(lr.length());
+        lr.write(b2);
+        lr.close();
+
+        LineReader lread = new LineReader(temp, "r");
+        byte[] buf = new byte[4];
+        lread.readFully(buf);
+        for (int i = 0 ; i < buf.length ; i++) {
+            assertEquals("The byte at position " + i + " should be as expected",
+                         i+1, buf[i]);
+        }
+    }
+
     public File createTempFile() throws IOException {
         File temp = File.createTempFile("filereader", ".tmp");
         temp.deleteOnExit();
