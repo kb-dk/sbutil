@@ -44,10 +44,10 @@ public class FilesTest extends TestCase {
     File tmpDir; // tmp dir for the sbutil installation
     String outputFile; // test output zip file
 
-    File sub1 = new File(tmpDir, "sub1");
-    File sub2 = new File(sub1, "sub2");
-    File subFile1 = new File(sub2, "foo.bar");
-    File subFile2 = new File(sub2, "baz.bar");
+    File sub1;
+    File sub2;
+    File subFile1;
+    File subFile2;
 
     public void setUp () throws Exception {
         inputDir = System.getProperty ("user.dir") + File.separator + "classes";
@@ -59,6 +59,11 @@ public class FilesTest extends TestCase {
             Files.delete(tmpDir);
         }
         tmpDir.mkdirs();
+
+        sub1 = new File(tmpDir, "sub1");
+        sub2 = new File(sub1, "sub2");
+        subFile1 = new File(sub2, "foo.bar");
+        subFile2 = new File(sub2, "baz.bar");
 
         // Make test targets
         sub1.mkdirs();
@@ -178,6 +183,11 @@ public class FilesTest extends TestCase {
                    shouldExist.exists());
     }
 
+    public void testNarko () throws Exception {
+        Files.move (new File ("/home/mikkel/summa-control/tmp/test-client-1.bundle"),
+                    new File ("/tmp/summatest/test-client-1.bundle"));
+    }
+
     public void testMoveToFolderFail() throws Exception {
         File destination = new File(tmpDir, "destination");
         destination.mkdirs();
@@ -185,7 +195,7 @@ public class FilesTest extends TestCase {
         new File(destination, "sub1/sub2/foo.bar").mkdirs();
 
         try {
-            Files.move(sub1, destination, true);
+            Files.move(sub1, destination, false);
             fail("Moving '" + sub1 + "' should fail");
         } catch (IOException e) {
             // Expected
@@ -204,18 +214,6 @@ public class FilesTest extends TestCase {
         assertTrue("The folder '" + shouldExist.getAbsoluteFile()
                    + "' should be created",
                    shouldExist.exists());
-    }
-
-    public void testMoveFolderToFile() throws Exception {
-        File destination = new File(tmpDir, "destination");
-        destination.createNewFile();
-
-        try {
-            Files.move(sub1, destination, true);
-            fail("Moving a folder to a file should fail");
-        } catch (IOException e) {
-            // Expected
-        }
     }
 
     public void testMoveFileToFile() throws Exception {
@@ -244,7 +242,7 @@ public class FilesTest extends TestCase {
             Files.move(subFile1, destination, false);
             fail("The moving of '" + subFile1 + "' to '" + destination
                  + "' should fail");
-        } catch (IOException e) {
+        } catch (FileAlreadyExistsException e) {
             // Expected
         }
         assertTrue("The source '" + subFile1 + "' should still exist",

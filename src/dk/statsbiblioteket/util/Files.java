@@ -42,6 +42,42 @@ public class Files {
     // TODO: Add method for recursively copying directories (and just plain file copying)
 
     /**
+     * Enumeration of the two different types of file objects; directories
+     * and regular files.
+     */
+    public enum Type {
+        /**
+         * A file representing a directory
+         */
+        directory,
+
+        /**
+         * A file representing a regular file
+         */
+        file
+    }
+
+    /**
+     * Enumeration of the standard file permission flags
+     */
+    public enum Permission {
+        /**
+         * The file is readable
+         */
+        readable,
+
+        /**
+         * The file is writable
+         */
+        writable,
+
+        /**
+         * The file may be run as an executable
+         */
+        executable
+    }
+
+    /**
      * Delete the file or directory given by <code>path</code> (recursively if
      * <code>path</code> is a directory).
      * @param path a {@link File} representing the file or directory to be
@@ -101,6 +137,121 @@ public class Files {
                               overwrite);
             }
         }
+    }
+
+    /**
+     * Move a file with the same semantics as the standard Unix {@code move}
+     * command.
+     * <p></p>
+     * In contrast to the standard Java {@link File#renameTo} this method
+     * does extensive sanity checking and throws appropriate exceptions
+     * if something is wrong.
+     * <p></p>
+     * This method will cause quite a bit of {@code stat} dancing on the
+     * file system, so don't use this method in performance critical regions.
+     * <p></p>
+     * If {@code dest} is a directory {@code source} will be moved there keeping
+     * its base name.
+     * If {@code dest} does not exist {@code source} will be renamed to
+     * {@code dest}.
+     *
+     * @param source a writable file or directory
+     * @param dest either an existing writable directory, or non-existing file
+     *             with existing parent directory
+     * @param overwrite if true and {@code dest} exists and is a regular
+     *                  file it will be deleted before moving {@code source}
+     *                  here
+     * @throws FileNotFoundException if either {@code source} or the parent
+     *                               directory of {@code dest} does not exist
+     * @throws FileAlreadyExistsException if {@code dest} exists and is a
+     *                                    regular file. If {@code overwrite}
+     *                                    is {@code true} this exception will
+     *                                    never be thrown
+     * @throws FilePermissionException if {@code source} or {@code dest} is not
+     *                                 writable
+     * @throws InvalidFileTypeException if the parent of {@code dest} is a
+     *                                  regular file
+     * @throws IOException if there is an unknown error during the move
+     *                     operation
+     */
+    public static void move (File source, File dest, boolean overwrite)
+                                                            throws IOException {
+        if (source == null)
+            throw new NullPointerException("Move source location is null");
+        if (dest == null)
+            throw new NullPointerException("Move destination is null");
+
+        /* source checks */
+        if (!source.exists())
+            throw new FileNotFoundException(source.toString());
+        if (!source.canWrite())
+            throw new FilePermissionException(source, Files.Permission.writable);
+
+        /* dest checks */
+        File destParent = dest.getParentFile();
+        if (dest.exists() && dest.isFile() && !overwrite)
+            throw new FileAlreadyExistsException(dest);
+        if (!destParent.exists())
+            throw new FileNotFoundException("Parent directory of " + dest + " "
+                                            + "does not exist");
+        if (destParent.isFile())
+            throw new InvalidFileTypeException(destParent, Files.Type.file);
+        if (dest.isFile() && !destParent.canWrite())
+            throw new FilePermissionException(destParent,
+                                              Files.Permission.writable);
+
+        /* If dest is a dir, move the file into it, keeping the base name */
+        if (dest.isDirectory()) {
+            if (!dest.canWrite())
+                throw new FilePermissionException(dest,
+                                                  Files.Permission.writable);
+            dest = new File (dest, Files.baseName(source));
+        }
+
+        if (dest.exists()) {
+            if (!overwrite) {
+                throw new FileAlreadyExistsException(dest);
+            }
+            log.trace("Overwriting " + dest);
+            Files.delete(dest);
+        }
+
+        log.trace ("Set to move " + source + " to " + dest);
+
+
+        // On some platform File.renameTo fails on the first runs. See
+        // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6213298
+        boolean result = false;
+        for (int i = 0; i < 10; i++) {
+            result = source.renameTo(dest);
+            if (result) {
+                break;
+            }
+            System.gc();
+            try {
+                Thread.sleep (50);
+            } catch (InterruptedException e) {
+                // Abort the move operation
+                break;
+            }
+            log.trace ("Retrying move (" + i  + ")");
+        }
+
+        if (!result) {
+            log.debug("Atomic move failed. Falling back to copy/delete");
+            copy(source, dest, overwrite);
+            delete(source);
+        }
+
+        log.debug ("Moved " + source + " to " + dest);
+    }
+
+    /**
+     * As {@link #move(File, File, boolean)}, with {@code overwrite} set to
+     * {@code false}.
+     */
+    public static void move (File source, File dest) throws IOException {
+        move (source, dest, false);
     }
 
     /*
@@ -221,11 +372,11 @@ public class Files {
      * @throws FileAlreadyExistsException if {@code overwrite=false} and the
      *                  method is about to overwrite an existing file.
      */
-    public static void move(File source, File destination, boolean overwrite)
+    /*public static void move(File source, File destination, boolean overwrite)
                                                             throws IOException {
         copy(source, destination, overwrite);
         delete(source);
-    }
+    }*/
 
     /**
       * @see #delete(java.io.File)
@@ -307,6 +458,7 @@ public class Files {
      * Return the base name of a file.
      * @param file the file to extract the base name for
      * @return file's basename
+     * @deprecated use {@link File#getName)} instead.
      */
     public static String baseName (File file) {
         return baseName(file.toString());
@@ -320,7 +472,7 @@ public class Files {
      * </code>
      * @param filename the filename to extract the base name for.
      * @return file's basename.
-     * @deprecated use {@link #baseName(java.io.File)} instead.
+     * @deprecated use {@link File#getName)} instead.
      */
     public static String baseName (String filename) {
         return filename.substring(filename.lastIndexOf(File.separator) + 1);
