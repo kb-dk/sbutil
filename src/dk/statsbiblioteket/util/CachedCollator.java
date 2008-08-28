@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.Comparator;
 import java.text.Collator;
 import java.text.CollationKey;
 import java.io.StringWriter;
@@ -210,6 +211,9 @@ public class CachedCollator extends Collator {
             }
         }
         return source.length()- target.length();
+    }
+    public int compare(Object source, Object target) {
+        return compare((String)source, (String)target);
     }
 
     public CollationKey getCollationKey(String source) {

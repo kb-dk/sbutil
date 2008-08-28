@@ -473,7 +473,7 @@ public class LineReader implements DataInput, DataOutput {
     }
 
     public byte readByte() throws IOException {
-        log.trace("readByte entered");
+        //log.trace("readByte entered");
         checkInputFile();
         if (eof()) {
             throw new EOFException("EOF reached in readByte for file '" + file
@@ -507,7 +507,7 @@ public class LineReader implements DataInput, DataOutput {
      */
     // TODO: Extend this to handle different line breaks
     public String readLine() throws IOException {
-        log.trace("readLine entered");
+//        log.trace("readLine entered");
         lineBuffer.reset();
         if (eof()) {
             throw new EOFException("EOF reached before any characters could be "

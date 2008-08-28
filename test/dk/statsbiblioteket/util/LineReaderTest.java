@@ -27,6 +27,7 @@ import java.io.RandomAccessFile;
 import java.io.DataOutput;
 import java.io.DataInput;
 import java.io.EOFException;
+import java.io.IOException;
 import java.util.Random;
 
 import junit.framework.Test;
@@ -366,9 +367,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWritePermission() throws Exception {
-        File temp = new File("test/data/temp.tmp");
-        temp.deleteOnExit();
-        temp.createNewFile();
+        File temp = createTempFile();
         LineReader lr = new LineReader(temp, "r");
         try {
             lr.write("Hello");
@@ -430,9 +429,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testReadTypes() throws Exception {
-        File temp = new File("test/data/temp.tmp");
-        temp.deleteOnExit();
-        temp.createNewFile();
+        File temp = createTempFile();
         RandomAccessFile raf = new RandomAccessFile(temp, "rw");
         writeSample(raf);
         raf.close();
@@ -520,9 +517,7 @@ public class LineReaderTest extends TestCase {
         Profiler profiler = new Profiler();
         for (int size: sizes) {
             System.out.print("Creating test-file of size " + size + "...");
-            File temp = new File("test/data/temp.tmp");
-            temp.delete();
-            temp.createNewFile();
+            File temp = createTempFile();
             LineReader lr = new LineReader(temp, "rw");
             byte[] bytes = new byte[size];
             random.nextBytes(bytes);
@@ -537,10 +532,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testBufferOverflow() throws Exception {
-        File temp = new File("test/data/temp.tmp");
-        temp.deleteOnExit();
-        temp.createNewFile();
-        LineReader lr = new LineReader(temp, "rw");
+        LineReader lr = getLR();
         for (int i = 0 ; i < LineReader.BUFFER_SIZE + 2 ; i++) {
             lr.writeByte(87);
         }
@@ -549,9 +541,7 @@ public class LineReaderTest extends TestCase {
 
     public void testWriteLarge() throws Exception {
         int size = LineReader.BUFFER_SIZE + 10;
-        File temp = new File("test/data/temp.tmp");
-        temp.deleteOnExit();
-        temp.createNewFile();
+        File temp = createTempFile();
         LineReader lr = new LineReader(temp, "rw");
         lr.write(new byte[size]);
         lr.close();
@@ -561,13 +551,42 @@ public class LineReaderTest extends TestCase {
 
     public void testWriteSmall() throws Exception {
         int size = LineReader.BUFFER_SIZE - 10;
-        File temp = new File("test/data/temp.tmp");
-        temp.deleteOnExit();
-        temp.createNewFile();
+        File temp = createTempFile();
         LineReader lr = new LineReader(temp, "rw");
         lr.write(new byte[size]);
         lr.close();
         assertEquals("The generated file should be of the right size",
                      size, temp.length());
+    }
+
+    public void testWrite2Bytes() throws Exception {
+        File temp = new File("test/data/temp.tmp");
+        temp.deleteOnExit();
+        temp.createNewFile();
+        LineReader lr = new LineReader(temp, "rw");
+        byte[] b1 = new byte[]{1, 2};
+        byte[] b2 = new byte[]{3, 4};
+        lr.write(b1);
+        lr.write(b2);
+        lr.close();
+
+        LineReader lread = new LineReader(temp, "r");
+        byte[] buf = new byte[4];
+        lread.readFully(buf);
+        for (int i = 0 ; i < buf.length ; i++) {
+            assertEquals("The byte at position " + i + " should be as expected",
+                         i+1, buf[i]);
+        }
+
+    }
+
+    public File createTempFile() throws IOException {
+        File temp = File.createTempFile("filereader", ".tmp");
+        temp.deleteOnExit();
+        return temp;
+    }
+
+    public LineReader getLR() throws IOException {
+        return new LineReader(createTempFile(), "rw");
     }
 }
