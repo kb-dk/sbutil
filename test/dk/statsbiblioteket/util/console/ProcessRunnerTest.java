@@ -167,6 +167,19 @@ public class ProcessRunnerTest extends TestCase {
                      "flim\n", runner.getProcessOutputAsString());
 
     }
+
+    public void testArgsWithSpaces () throws Exception {
+        String dir = "/ /tmp";
+        ProcessRunner runner = new ProcessRunner ("ls", dir);
+        runner.run();
+
+        System.out.println ("STDOUT:" + runner.getProcessOutputAsString());
+        System.out.println ("STDERR:" + runner.getProcessErrorAsString());
+
+        assertTrue("Listing the non-existing directory '" + dir + "' "
+                   + "should fail", runner.getReturnCode() != 0);
+    }
+
     public static Test suite() {
         return new TestSuite(ProcessRunnerTest.class);
     }
