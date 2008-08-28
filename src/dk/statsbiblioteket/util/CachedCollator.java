@@ -160,6 +160,9 @@ public class CachedCollator extends Collator {
         // Sort the characters
         List<String> sorted = new ArrayList<String>(unique);
         Collections.sort(sorted, subCollator);
+        if (log.isTraceEnabled()) {
+            log.trace("mostCommon sorted: '" + Logs.expand(sorted, 5000) + "'");
+        }
 
         // Split in low and high value characters.
         cachedPositions = new int[highest+1];

@@ -25,8 +25,6 @@ package dk.statsbiblioteket.util;
 import java.util.Locale;
 import java.util.Random;
 import java.util.Arrays;
-import java.util.List;
-import java.util.ArrayList;
 import java.text.Collator;
 import java.text.CollationKey;
 import java.io.StringWriter;
@@ -43,6 +41,7 @@ import junit.framework.TestCase;
  * @since <pre>10/26/2007</pre>
  * @version 1.0
  */
+@SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class CachedCollatorTest extends TestCase {
     public CachedCollatorTest(String name) {
         super(name);
@@ -317,5 +316,18 @@ public class CachedCollatorTest extends TestCase {
         CachedCollator collator = new CachedCollator(new Locale("da"));
         assertEquals("The chars should be loaded from the file system",
                      common, collator.getCachedChars());
+    }
+
+    Collator dkCollator = new CachedCollator(new Locale("da"), dk);
+    public void testDKCollator() throws Exception {
+        assertTrue("i and a should be sorted correctly with natural",
+                     "Drillenisse".compareTo("Drabant") > 0);
+        assertTrue("i and a should be sorted correctly with collator",
+                     dkCollator.compare("Drillenisse", "Drabant") > 0);
+
+        assertTrue("i and ø should be sorted correctly with natural",
+                     "Drøbel".compareTo("Drillenisse") > 0);
+        assertTrue("i and ø should be sorted correctly with collator",
+                     dkCollator.compare("Drøbel", "Drillenisse") > 0);
     }
 }

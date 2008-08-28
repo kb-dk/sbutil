@@ -24,7 +24,7 @@
 
 
     <logger name="dk.statsbiblioteket.util">
-        <level value="INFO" />
+        <level value="trace" />
         <appender-ref ref="CONSOLE" />
     </logger>
 
