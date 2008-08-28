@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Test suite for the {@link Strings} class.
@@ -61,7 +62,7 @@ public class StringsTest extends TestCase {
         }
 
         try {
-            Strings.join (null, "");
+            Strings.join ((Collection)null, "");
             fail ("A null collection should cause a NPE");
         } catch (NullPointerException e) {
             // expected
