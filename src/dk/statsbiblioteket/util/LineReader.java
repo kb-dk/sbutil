@@ -65,7 +65,8 @@ public class LineReader implements DataInput, DataOutput {
 
     protected static final int BUFFER_SIZE = 8192; // TODO: Performance-tweak this
 
-    private FileInputStream input;
+    private RandomAccessFile input;
+//    private FileInputStream input;
     /**
      * The channel that controls reads.
      */
@@ -76,7 +77,8 @@ public class LineReader implements DataInput, DataOutput {
      */
     private boolean inOpen = false;
 
-    private FileOutputStream output;
+    private RandomAccessFile output;
+//    private FileOutputStream output;
     /**
      * The channel that controls writes.
      */
@@ -159,7 +161,7 @@ public class LineReader implements DataInput, DataOutput {
         if (mode == null) {
             log.debug("Mode == null, defaulting to read-only");
         } else if (mode.equals("r")) {
-            // We always read
+            writable = false; // Just to make sure
         } else if (mode.equals("rw")) {
             writable = true;
             // TODO: Check what the difference is between rws and rwd
@@ -174,8 +176,8 @@ public class LineReader implements DataInput, DataOutput {
                                                + "illegal. Legal values are "
                                                + "'r', 'rw', 'rws' and 'rwd");
         }
-        if (!writable && !file.canWrite()) {
-            throw new IOException("Cannot write to the file '" + file + "'");
+        if (writable && !file.canWrite()) {
+            throw new IOException("The file '" + file + "' is read-only");
         }
         this.file = file;
         setBufferSize(BUFFER_SIZE);
@@ -220,16 +222,16 @@ public class LineReader implements DataInput, DataOutput {
      * @throws IOException if the position is not within the range of the file.
      */
     public void seek(long position) throws IOException {
+        //log.trace("seek(" + position + ") called");
         if (position > length()) {
             //noinspection DuplicateStringLiteralInspection
             throw new EOFException("Cannot set position " + position
                                   + " as the file size is only "
                                   + length() + " bytes");
-        } else {
-            if (position < 0) {
-                throw new IllegalArgumentException("The position cannot "
-                                                   + "be negative");
-            }
+        }
+        if (position < 0) {
+            throw new IllegalArgumentException("The position cannot "
+                                               + "be negative");
         }
         if (bufferStart != -1) {
             if (position < bufferStart ||
@@ -282,7 +284,8 @@ public class LineReader implements DataInput, DataOutput {
             return;
         }
         log.trace("Opening input channel for '" + file + "'");
-        input = new FileInputStream(file);
+//        input = new FileInputStream(file);
+        input = new RandomAccessFile(file, "r");
         channelIn = input.getChannel();
         seek(position);
         inOpen = true;
@@ -294,15 +297,15 @@ public class LineReader implements DataInput, DataOutput {
      */
     private void checkOutputFile() throws IOException {
         if (!writable) {
-            throw new IllegalStateException("The file '" + file
-                                            + "' has been opened in read-only "
-                                            + "mode");
+            throw new IllegalStateException(String.format(
+                    "The file '%s' has been opened in read-only mode", file));
         }
         if (outOpen) {
             return;
         }
         log.trace("Opening output channel for '" + file + "'");
-        output = new FileOutputStream(file);
+        output = new RandomAccessFile(file, "rw");
+//        output = new FileOutputStream(file, true);
         channelOut = output.getChannel();
         outOpen = true;
     }
@@ -354,10 +357,15 @@ public class LineReader implements DataInput, DataOutput {
                           + "bufferStart == -1");
             }
             checkInputFile();
+            log.trace("checkBuffer: Seeking to position " + position);
+            buffer.limit(buffer.capacity()); // Fill the buffer, please
             channelIn.position(position);
             buffer.clear();
-            channelIn.read(buffer, position);
-            buffer.position(0);
+            int readBytes = channelIn.read(buffer, position);
+            log.trace("checkBuffer: mapped " + readBytes + " bytes to buffer");
+//            buffer.flip();
+//            buffer.limit(buffer.capacity());
+            buffer.position(0); // Redundant?
             bufferStart = position;
         }
     }
@@ -387,6 +395,15 @@ public class LineReader implements DataInput, DataOutput {
                                        + "should be >= 0";
             log.trace("Storing the buffer to disk");
             checkOutputFile();
+//            System.out.println(maxBufferPos + " " + bufferStart);
+            if (log.isTraceEnabled()) {
+                //noinspection DuplicateStringLiteralInspection
+                log.trace("flush: bufferStart=" + bufferStart
+                          + ", maxBufferPos=" + maxBufferPos
+                          + ", buffer.limit=" + buffer.limit()
+                          + ", position=" + position);
+            }
+            buffer.position(maxBufferPos); // Limit instead?
             buffer.flip();
             channelOut.position(bufferStart);
             channelOut.write(buffer);
@@ -476,8 +493,9 @@ public class LineReader implements DataInput, DataOutput {
         //log.trace("readByte entered");
         checkInputFile();
         if (eof()) {
-            throw new EOFException("EOF reached in readByte for file '" + file
-                                   + "' at position " + position);
+            throw new EOFException(String.format(
+                    "EOF reached in readByte for file '%s' at position %d",
+                    file, position));
         }
         checkBuffer();
         byte b = buffer.get();
@@ -486,8 +504,10 @@ public class LineReader implements DataInput, DataOutput {
             invalidateBuffer();
         }
         if (eof()) {
-            log.trace("EOF reached in readByte for file \"" + file
-                      + "\" at position " + position);
+            if (log.isTraceEnabled()) {
+                log.trace("EOF observed in readByte for file \"" + file
+                          + "\" at position " + position);
+            }
             closeNoReset();
         }
         return b;
@@ -630,13 +650,22 @@ public class LineReader implements DataInput, DataOutput {
                                                + buf.length + " offset="
                                                + offset + " length=" + length);
         }
-        log.trace("Writing " + (length - offset) + " bytes at position "
+        log.trace("write: Writing " + (length - offset) + " bytes at position "
                   + position);
         checkInputFile();
         int left = length;
         while(left > 0) {
             checkBuffer();
             int writeLength = Math.min(left, bufferSize - buffer.position());
+            if (log.isTraceEnabled()) {
+                log.trace("write: buf.length=" + buf.length
+                          + ", offset=" + offset
+                          + ", length=" + length
+                          + ", writeLength=" + writeLength
+                          + ", bufferStart=" + bufferStart 
+                          + ", buffer.position()=" + buffer.position()
+                          + ", position=" + position);
+            }
             try {
                 buffer.put(buf, offset, writeLength);
             } catch (IndexOutOfBoundsException e) {
@@ -654,7 +683,8 @@ public class LineReader implements DataInput, DataOutput {
             flushIfNeeded();
         }
         if (log.isTraceEnabled()) {
-            log.trace("Wrote " + length + " bytes to file '" + file + "'");
+            log.trace("write: Wrote " + length + " bytes to file '" + file
+                      + "'");
         }
     }
 

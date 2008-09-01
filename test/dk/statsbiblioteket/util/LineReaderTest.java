@@ -28,12 +28,16 @@ import java.io.DataOutput;
 import java.io.DataInput;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.util.Random;
+import java.nio.channels.FileChannel;
+import java.nio.ByteBuffer;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.framework.TestCase;
-import dk.statsbiblioteket.util.Profiler;
+import org.apache.log4j.Logger;
 
 /**
  * LineReader Tester.
@@ -44,6 +48,8 @@ import dk.statsbiblioteket.util.Profiler;
  */
 @SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class LineReaderTest extends TestCase {
+    private static Logger log = Logger.getLogger(LineReaderTest.class);
+
     private static final int LINES = 376;
     File logfile = new File("test/data",
                             "website-performance-info.log.2007-04-01");
@@ -58,6 +64,77 @@ public class LineReaderTest extends TestCase {
 
     public void tearDown() throws Exception {
         super.tearDown();
+    }
+
+    public void testNIO() throws Exception {
+        byte[] INITIAL = new byte[]{1, 2, 3, 4};
+        byte[] EXTRA = new byte[]{5, 6, 7, 8};
+        byte[] FULL = new byte[]{1, 2, 3, 4, 5, 6, 7, 8};
+        byte[] FIFTH = new byte[]{87};
+        byte[] FULL_WITH_FIFTH = new byte[]{1, 2, 3, 4, 87, 6, 7, 8};
+
+        // Create temp-file with content
+        File temp = createTempFile();
+        FileOutputStream fileOut = new FileOutputStream(temp, true);
+        fileOut.write(INITIAL);
+        fileOut.close();
+
+        checkContent("The plain test-file should be correct",
+                     temp, INITIAL);
+        {
+            // Read the 4 bytes
+            RandomAccessFile input = new RandomAccessFile(temp, "r");
+            FileChannel channelIn = input.getChannel();
+            ByteBuffer buffer = ByteBuffer.allocate(4096);
+            channelIn.position(0);
+            assertEquals("Buffer read should read full length",
+                         INITIAL.length, channelIn.read(buffer));
+            buffer.position(0);
+
+            checkContent("Using buffer should produce the right bytes",
+                         INITIAL, buffer);
+            channelIn.close();
+            input.close();
+        }
+        {
+            // Fill new buffer
+            ByteBuffer outBuffer = ByteBuffer.allocate(4096);
+            outBuffer.put(EXTRA);
+            outBuffer.flip();
+            assertEquals("The limit of the outBuffer should be correct",
+                         EXTRA.length, outBuffer.limit());
+
+            // Append new buffer to end
+            RandomAccessFile output = new RandomAccessFile(temp, "rw");
+            FileChannel channelOut = output.getChannel();
+            channelOut.position(INITIAL.length);
+            assertEquals("All bytes should be written",
+                         EXTRA.length, channelOut.write(outBuffer));
+            channelOut.close();
+            output.close();
+            checkContent("The resulting file should have the full output",
+                         temp, FULL);
+        }
+
+        {
+            // Fill single byte buffer
+            ByteBuffer outBuffer2 = ByteBuffer.allocate(4096);
+            outBuffer2.put(FIFTH);
+            outBuffer2.flip();
+            assertEquals("The limit of the second outBuffer should be correct",
+                         FIFTH.length, outBuffer2.limit());
+
+            // Insert byte in the middle
+            RandomAccessFile output2 = new RandomAccessFile(temp, "rw");
+            FileChannel channelOut2 = output2.getChannel();
+            channelOut2.position(4);
+            assertEquals("The FIFTH should be written",
+                         FIFTH.length, channelOut2.write(outBuffer2));
+            channelOut2.close();
+            output2.close();
+            checkContent("The resulting file with fifth should be complete",
+                         temp, FULL_WITH_FIFTH);
+        }
     }
 
     public void testBitFiddling() throws Exception {
@@ -580,7 +657,7 @@ public class LineReaderTest extends TestCase {
 
     }
 
-    public void testWritereadAlternate() throws Exception {
+    public void testWriteCloseReadWrite() throws Exception {
         File temp = new File("test/data/temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
@@ -588,19 +665,134 @@ public class LineReaderTest extends TestCase {
         byte[] b1 = new byte[]{1, 2};
         byte[] b2 = new byte[]{3, 4};
         lr.write(b1);
+        lr.close();
+
+        checkContent("Simple write of 2 bytes should work",
+                     temp, b1);
+
+        lr = new LineReader(temp, "rw");
         lr.seek(0);
         lr.readFully(b1);
+        assertEquals("The first byte should be correct", 1, b1[0]);
+        assertEquals("The second byte should be correct", 2, b1[1]);
+        lr.close();
+
+        checkContent("Open-read should not change anything",
+                     temp, b1);
+
+        lr = new LineReader(temp, "rw");
         lr.seek(lr.length());
         lr.write(b2);
         lr.close();
 
+        checkContent("The final file should be as expected",
+                     temp, new byte[]{1, 2, 3 ,4});
+    }
+
+    public void testWriteCloseNewWrite() throws Exception {
+        File temp = new File("test/data/temp.tmp");
+        temp.deleteOnExit();
+        temp.createNewFile();
+        LineReader lr = new LineReader(temp, "rw");
+        byte[] b1 = new byte[]{1, 2};
+        byte[] b2 = new byte[]{3, 4};
+        lr.write(b1);
+        lr.close();
+
+        checkContent("Simple write of 2 bytes should work",
+                     temp, b1);
+        checkContent("Checking bytes should not disturb anything",
+                     temp, b1);
+
+        lr = new LineReader(temp, "rw");
+        log.debug("The file length is " + lr.length());
+        lr.seek(lr.length());
+        lr.write(b2);
+        lr.close();
+
+        checkContent("The final file should be as expected",
+                     temp, new byte[]{1, 2, 3 ,4});
+    }
+
+    public void testWriteSeekWrite() throws Exception {
+        File temp = new File("test/data/temp.tmp");
+        temp.deleteOnExit();
+        temp.createNewFile();
+        LineReader lr = new LineReader(temp, "rw");
+        byte[] b1 = new byte[]{1, 2};
+        byte[] b2 = new byte[]{3, 4};
+        lr.write(b1);
+        
+        lr.seek(lr.length());
+        lr.write(b2);
+        lr.close();
+
+        checkContent("The final file should be as expected",
+                     temp, new byte[]{1, 2, 3 ,4});
+    }
+
+    private void checkContent(String message, File temp, byte[] expected)
+            throws IOException {
         LineReader lread = new LineReader(temp, "r");
-        byte[] buf = new byte[4];
+        checkContent(message, expected, lread);
+        lread.close();
+    }
+
+    private void checkContent(String message, byte[] expected,
+                              LineReader lread) throws IOException {
+        byte[] buf = new byte[expected.length];
         lread.readFully(buf);
+        log.debug("Buffer: " + Logs.expand(buf, 100, 10));
         for (int i = 0 ; i < buf.length ; i++) {
-            assertEquals("The byte at position " + i + " should be as expected",
-                         i+1, buf[i]);
+            assertEquals(message + ": The byte at position " + i
+                         + " should be as expected",
+                         expected[i], buf[i]);
         }
+    }
+
+    private void checkContent(String message, byte[] expected,
+                              ByteBuffer buffer) throws IOException {
+        byte[] actual = new byte[expected.length];
+        buffer.get(actual);
+        for (int i = 0 ; i < expected.length ; i++) {
+            assertEquals(message + ": The byte at position " + i
+                         + " should be as expected",
+                         expected[i], actual[i]);
+        }
+    }
+
+    public void testWritereadAlternate() throws Exception {
+        File temp = createTempFile();
+        LineReader lr = new LineReader(temp, "rw");
+        byte[] b1 = new byte[]{1, 2};
+        byte[] b2 = new byte[]{3, 4};
+        assertEquals("The position should be at the beginning from start",
+                     0, lr.getPosition());
+        log.debug("Writing 2 bytes");
+        lr.write(b1);
+        assertEquals("The length of the file should updated after write",
+                     2, lr.length());
+        log.debug("Seeking 0");
+        lr.seek(0);
+        assertEquals("The position should be at the beginning after seek",
+                     0, lr.getPosition());
+        log.debug("Reading 2 bytes");
+        lr.readFully(b1);
+        assertEquals("The position should be at the end",
+                     2, lr.getPosition());
+        assertEquals("The first byte should be correct", 1, b1[0]);
+        assertEquals("The second byte should be correct", 2, b1[1]);
+        assertEquals("The length of the file should unchanged after read",
+                     2, lr.length());
+        log.debug("Seeking to length " + lr.length());
+        lr.seek(lr.length());
+        log.debug("Writing 2 bytes more");
+        lr.write(b2);
+        log.debug("Closing");
+        lr.close();
+
+        checkContent("Final content should be correct",
+                     temp, new byte[]{1, 2, 3, 4});
     }
 
     public File createTempFile() throws IOException {
