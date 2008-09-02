@@ -181,12 +181,7 @@ public class FilesTest extends TestCase {
         assertTrue("The folder '" + shouldExist.getAbsoluteFile()
                    + "' should be created",
                    shouldExist.exists());
-    }
-
-    public void testNarko () throws Exception {
-        Files.move (new File ("/home/mikkel/summa-control/tmp/test-client-1.bundle"),
-                    new File ("/tmp/summatest/test-client-1.bundle"));
-    }
+    }    
 
     public void testMoveToFolderFail() throws Exception {
         File destination = new File(tmpDir, "destination");
