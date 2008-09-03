@@ -628,7 +628,12 @@ public class XProperties extends Properties implements Converter {
                    && new File(resourceURL.getPath()).exists()) {
             f = new File(resourceURL.getPath());
         } else {
-            f = new File(defaultPath, resourceName);
+            // TODO: Does not handle "C:\whatever
+            if (resourceName.startsWith(File.separator)) {
+                f = new File(resourceName);
+            } else {
+                f = new File(defaultPath, resourceName);
+            }
         }
         FileOutputStream filestream = new FileOutputStream(f);
         store(filestream, null);
