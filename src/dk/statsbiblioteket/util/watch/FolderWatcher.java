@@ -48,10 +48,10 @@ import dk.statsbiblioteket.util.LineReader;
         author="te")
 public class FolderWatcher extends Observable<FolderListener> implements
                                                               Runnable {
-    private static Logger log = Logger.getLogger(FolderWatcher.class);
+    protected static Logger log = Logger.getLogger(FolderWatcher.class);
 
-    private File watchedFolder;
-    private List<File> oldContent;
+    protected File watchedFolder;
+    protected List<File> oldContent;
     private int pollInterval;
     private boolean watch = true;
 
@@ -176,7 +176,7 @@ public class FolderWatcher extends Observable<FolderListener> implements
         long currentSize = addSizes(added);
         while (lastSize != currentSize) {
             try {
-                wait(grace);
+                Thread.sleep(grace);
             } catch (InterruptedException e) {
                 log.warn("Sleeping grace " + grace + "ms was interrupted", e);
             }
