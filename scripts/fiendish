@@ -1,0 +1,34 @@
+#!/bin/bash
+
+#
+# fiendish
+# Author: Mikkel Kamstrup Erlandsen, 2008-10-23
+# Copyright State and University Library of Denmark, 2008
+# 
+# Distributed with the package `sbutil' hosted on:
+#    https://gforge.statsbiblioteket.dk/projects/sbutil/
+# 
+# Daemonize the executable given as the first argument.
+# Any extra arguments will be passed on to the daemonized
+# executable.
+#
+# You should not background your shell command with `&'
+# when using `fiendish'.
+#
+
+if [ "$1" == "" ]; then
+	echo "USAGE:"
+	echo "  $0 <executable> [args]"
+fi
+
+LOGFILE="$1-log.txt"
+
+nohup "$@" 2>&1 >> "$LOGFILE" &
+
+echo "Daemonized $1 directing output to $LOGFILE"
+
+exec 1>&-
+exec 2>&-
+exec 3>&-
+
+exit 0
