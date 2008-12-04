@@ -6,4 +6,9 @@
 #
 #
 
-ssh -f hadoop@pc286.sb 'source $HOME/.bashrc ; source $HOME/.bash_profile ;' "$@"
+if [ "$3" != "" ]; then
+	echo 'Error: All commands supplied to "sshbg" must be enclosed in a single double quoted string'
+	exit 1
+fi
+
+ssh -f $1 'source $HOME/.bashrc ; source $HOME/.bash_profile ;' "$2"
