@@ -1,0 +1,9 @@
+#
+# Helper command to execute a remote command in the background
+# with a properly set up shell environment.
+#
+# The problem is that 'ssh -f' does not set up the user's shell env.
+#
+#
+
+ssh -f hadoop@pc286.sb 'source $HOME/.bashrc ; source $HOME/.bash_profile ;' "$@"
