@@ -226,39 +226,23 @@ public class SignallingReader extends FilterReader {
     }
 
     public int read (char[] chars) throws IOException {
-        if (hasScanBuffer()) {
-            return readScanBuffer(chars, 0, chars.length);
+        if (chars.length == 0) {
+            return 0;
         }
 
-        if (hasOverride()) {
-            return readOverride(chars, 0, chars.length);
+        int readVal = read();
+        int cursor = 0;
+        while (readVal != -1 && cursor < chars.length) {            
+            chars[cursor] = (char)readVal;
+            cursor++;
+            readVal = read();
+        }        
+
+        if (readVal == -1 && cursor == 0) {
+            return -1;
         }
 
-        int numRead =  in.read(chars);
-        for (int i = 0; i < numRead; i++) {
-            int nextOffset = i + 1;
-            signal.init(chars[i]);
-            emit(chars, nextOffset);
-
-            if (signal.isCaught()) {
-                resetScanBuffer();
-                if (hasOverride()) {
-                    // Read override data into chars from the offset we are at
-                    return i + readOverride(chars, i, chars.length-i);
-                }
-                break;
-            }
-        }
-
-        if (hasScanBuffer()) {
-            return readScanBuffer(chars, 0, chars.length);
-        }
-
-        if (hasOverride()) {
-            return readOverride(chars, 0, chars.length);
-        }
-
-        return numRead;
+        return cursor;
     }
 
     public int read (char[] chars, int offset, int len) throws IOException {

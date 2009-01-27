@@ -97,7 +97,7 @@ public class TokenReplaceReaderTest extends TestCase {
     }
 
     public void testReplaceSubStringReadSingle() throws Exception {
-        tokenMap.put(testString1.substring(1), testReplace1);
+        tokenMap.put("est", testReplace1);
         r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
 
         int v;
@@ -105,11 +105,11 @@ public class TokenReplaceReaderTest extends TestCase {
             buf.append((char)v);
         }
 
-        assertEquals(testString1.substring(0,1)+testReplace1, buf.toString());
+        assertEquals("t"+testReplace1, buf.toString());
     }
 
     public void testReplaceSubStringReadArray() throws Exception {
-        tokenMap.put(testString1.substring(1), testReplace1);
+        tokenMap.put("est", testReplace1);
         r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
 
         char[] v = new char[1024];
@@ -118,7 +118,32 @@ public class TokenReplaceReaderTest extends TestCase {
             buf.append(v, 0, len);
         }
 
-        assertEquals(testString1.substring(0,1)+testReplace1, buf.toString());
+        assertEquals("t"+testReplace1, buf.toString());
+    }
+
+    public void testReplaceSingleCharReadSingle() throws Exception {
+        tokenMap.put("e", testReplace1);
+        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+
+        int v;
+        while ((v = r.read()) != -1) {
+            buf.append((char)v);
+        }
+
+        assertEquals("t"+testReplace1+"st", buf.toString());
+    }
+
+    public void testReplaceSingleCharReadArray() throws Exception {
+        tokenMap.put("e", testReplace1);
+        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+
+        char[] v = new char[1024];
+        int len;
+        while ((len = r.read(v)) != -1) {
+            buf.append(v, 0, len);
+        }
+
+        assertEquals("t"+testReplace1+"st", buf.toString());
     }
 
 }

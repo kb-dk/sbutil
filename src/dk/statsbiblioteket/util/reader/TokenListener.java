@@ -15,7 +15,7 @@ public class TokenListener implements ReadSignalListener {
 
     public void onReadSignal (SignallingReader sender, ReadSignal signal) {
 
-        if (matchIndex >= token.length) {
+        if (matchIndex >= token.length || hasMatch()) {
             matchIndex = -1;
         }
 
