@@ -9,6 +9,14 @@ import java.util.Map;
  */
 public class TokenReplaceReader extends SignallingReader {
 
+    /**
+     * Create a new TokenReplaceReader that replaces all keys from
+     * {@code tokenMap} with their corresponding value as it reads character
+     * data from {@code reader}.
+     * @param reader the reader to read character data from
+     * @param tokenMap a map of key/value strings that will be used for
+     *                 keyword substitution
+     */
     public TokenReplaceReader (Reader reader, Map<String,String> tokenMap) {
         super(reader);
 
