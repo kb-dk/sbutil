@@ -146,4 +146,60 @@ public class TokenReplaceReaderTest extends TestCase {
         assertEquals("t"+testReplace1+"st", buf.toString());
     }
 
+    public void testReplaceTwoSubStringsReadSingle() throws Exception {
+        tokenMap.put("e", testReplace1);
+        tokenMap.put("t", testReplace1);
+        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+
+        int v;
+        while ((v = r.read()) != -1) {
+            buf.append((char)v);
+        }
+
+        assertEquals("foofoosfoo", buf.toString());
+    }
+
+    public void testReplaceTwoSubStringsReadArray() throws Exception {
+        tokenMap.put("e", testReplace1);
+        tokenMap.put("t", testReplace1);
+        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+
+        char[] v = new char[1024];
+        int len;
+        while ((len = r.read(v)) != -1) {
+            buf.append(v, 0, len);
+        }
+
+        assertEquals("foofoosfoo", buf.toString());
+    }
+
+    public void testReplaceThreeSubStringsReadSingle() throws Exception {
+        tokenMap.put("Y", "ERROR");
+        tokenMap.put("til", "Hello");
+        tokenMap.put("sb", "World");
+        r = new TokenReplaceReader(new StringReader("sbutil"), tokenMap);
+
+        int v;
+        while ((v = r.read()) != -1) {
+            buf.append((char)v);
+        }
+
+        assertEquals("WorlduHello", buf.toString());
+    }
+
+    public void testReplaceThreeSubStringsReadArray() throws Exception {
+        tokenMap.put("Y", "ERROR");
+        tokenMap.put("til", "Hello");
+        tokenMap.put("sb", "World");
+        r = new TokenReplaceReader(new StringReader("sbutil"), tokenMap);
+
+        char[] v = new char[1024];
+        int len;
+        while ((len = r.read(v)) != -1) {
+            buf.append(v, 0, len);
+        }
+
+        assertEquals("WorlduHello", buf.toString());
+    }
+
 }
