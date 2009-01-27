@@ -1,7 +1,13 @@
 package dk.statsbiblioteket.util.reader;
 
 /**
+ * Signal emitted by a {@link SignallingReader} and received by
+ * {@link ReadSignalListener}s added to the reader via
+ * {@link SignallingReader#addListener}.
+ * <p/>
  *
+ *
+ * @seealso SignallingReader, ReadSignalListener
  */
 public class ReadSignal {
 
@@ -55,34 +61,65 @@ public class ReadSignal {
         return state;
     }
 
+    /**
+     * Sets the state of this signal to {@code newState}
+     * @param newState the state to set
+     */
     public void setState(State newState) {
         state = newState;
     }
 
+    /**
+     * Sets the state of this signal to {@link State#DEFAULT}
+     */
     public void markDefault() {
         state = State.DEFAULT;
     }
 
+    /**
+     * Sets the state of this signal to {@link State#CAUGHT}
+     */
     public void markCaught() {
         state = State.CAUGHT;
     }
 
+    /**
+     * Sets the state of this signal to {@link State#SCAN}
+     */
     public void markScan () {
         setState(State.SCAN);
     }
 
+    /**
+     * Sets the state of this signal to {@link State#MODIFIED}
+     */
     public void markModified() {
         state = State.MODIFIED;
     }
 
+    /**
+     * Returns the character that was read by the {@link SignallingReader} for
+     * this signal
+     * @return the character read by the reader emitting the signal
+     */
     public char getReadData() {
         return readData;
     }
 
+    /**
+     * Returns {@code true} if the state of this signal is {@link State#CAUGHT}
+     * @return if if the state of this signal is {@link State#CAUGHT},
+     *         {@code false} otherwise
+     */
     public boolean isCaught () {
         return state == State.CAUGHT;
     }
 
+    /**
+     * Returns {@code true} if the state of this signal is {@link State#SCAN}
+     * @return if if the state of this signal is {@link State#SCAN},
+     *         {@code false} otherwise
+     */
     public boolean isScan () {
         return state == State.SCAN;
     }
