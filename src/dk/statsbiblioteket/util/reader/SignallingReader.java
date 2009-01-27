@@ -41,7 +41,14 @@ public class SignallingReader extends FilterReader {
         return overrideCursor < signal.getOverrideBuffer().length();
     }
 
-    private ReadSignal.State emit () throws IOException {
+    private void emit() throws IOException {
+        emit(null, 0);
+    }
+
+    private ReadSignal.State emit (char[] extraReadData, int offset)
+                                                            throws IOException {
+
+        // Collect signal state from all listeners
         for (ReadSignalListener l : listeners) {
 
             l.onReadSignal(this,signal);
@@ -58,6 +65,7 @@ public class SignallingReader extends FilterReader {
             }
         }
 
+        // All listeners has been checked. Now act on the final signal state
         switch (signal.getState()) {
             case CAUGHT:
                 throw new RuntimeException("Internal error in SignallingReader:"
@@ -65,9 +73,10 @@ public class SignallingReader extends FilterReader {
                                            + "not reach this point");
             case SCAN:
                 // Scan the next char while the listeners tells us to
-                while (signal.getState() == ReadSignal.State.SCAN) {
-                    scan();
+                while (signal.isScan()) {
+                    offset = scan(extraReadData, offset);
                 }
+                break;
             case UNSET:
                 throw new RuntimeException("Internal error in SignallingReader:"
                                            + " Signal marked as UNSET should "
@@ -79,18 +88,27 @@ public class SignallingReader extends FilterReader {
         return signal.getState();
     }
 
-    private void scan() throws IOException {
-        int readVal =  in.read();
-        signal.init(readVal);
-        emit();
+    private int scan(char[] extraReadData, int offset) throws IOException {
+        int readVal;
 
-        // FIXME: Do we need EOF handling if readVal == -1?
+        // First read data from the extraReadData, then resort to the stream
+        if (extraReadData != null && offset < extraReadData.length) {
+            readVal = (int)extraReadData[offset];
+        } else {
+            readVal =  in.read();
+        }
+
+        if (readVal == -1) {
+            signal.markDefault();
+            return 0;
+        }
+
+        signal.init(readVal);
+        emit(extraReadData, ++offset);
 
         scanBuffer.append((char)readVal);
-    }
 
-    public int read (CharBuffer charBuffer) throws IOException {
-        return in.read(charBuffer);
+        return offset;
     }
 
     private int readOverride () {
@@ -117,15 +135,20 @@ public class SignallingReader extends FilterReader {
         overrideCursor += overrideLen;
 
         if (!hasOverride()) {
-            scanCursor = 0;
-            scanBuffer.setLength(0);
+            overrideCursor = 0;
+            overrides.setLength(0);
         }
 
         if (overrideLen < len) {
             // We didn't have enough data in the overrides. Read the remaining
             // len-overrideLen characters and fill them into chars
-            return overrideLen + read(chars,
-                                      offset + overrideLen, len - overrideLen);
+            int nextLen = read(chars, offset + overrideLen, len - overrideLen);
+            if (nextLen != -1) {
+                return overrideLen + nextLen;
+            } else {
+                return overrideLen;
+            }
+
         } else {
             // We had more than len characters left in the overrideBuffer
             return overrideLen; // In this case len == overrideLen
@@ -159,7 +182,12 @@ public class SignallingReader extends FilterReader {
         if (scanLen < len) {
             // We didn't have enough data in the scanBuffer. Read the remaining
             // len-scanLen characters and fill them into chars
-            return scanLen + read(chars, offset + scanLen, len - scanLen);
+            int nextLen = read(chars, offset + scanLen, len - scanLen);
+            if (nextLen != -1) {
+                return scanLen + nextLen;
+            } else {
+                return scanLen;
+            } 
         } else {
             // We had more than len characters left in the scanBuffer
             return scanLen; // In this case len == scanLen
@@ -176,8 +204,15 @@ public class SignallingReader extends FilterReader {
         }
 
         int readVal =  in.read();
-        signal.init(readVal);
-        emit();
+
+        if (readVal != -1) {
+            signal.init(readVal);
+            emit();
+        }
+
+        if (signal.isCaught()) {
+            resetScanBuffer();
+        }
 
         if (hasScanBuffer()) {
             return readScanBuffer();
@@ -200,8 +235,20 @@ public class SignallingReader extends FilterReader {
         }
 
         int numRead =  in.read(chars);
-        signal.init(chars, 0, numRead);
-        emit();
+        for (int i = 0; i < numRead; i++) {
+            int nextOffset = i + 1;
+            signal.init(chars[i]);
+            emit(chars, nextOffset);
+
+            if (signal.isCaught()) {
+                resetScanBuffer();
+                if (hasOverride()) {
+                    // Read override data into chars from the offset we are at
+                    return i + readOverride(chars, i, chars.length-i);
+                }
+                break;
+            }
+        }
 
         if (hasScanBuffer()) {
             return readScanBuffer(chars, 0, chars.length);
@@ -224,8 +271,20 @@ public class SignallingReader extends FilterReader {
         }
 
         int numRead =  in.read(chars, offset, len);
-        signal.init(chars, offset, numRead);
-        emit();
+        for (int i = offset; i < offset + numRead; i++) {
+            int nextOffset = i + 1;
+            signal.init(chars[i]);
+            emit(chars, nextOffset);
+
+            if (signal.isCaught()) {
+                resetScanBuffer();
+                break;
+            }
+        }
+
+        if (signal.isCaught()) {
+            resetScanBuffer();
+        }
 
         if (hasScanBuffer()) {
             return readScanBuffer(chars, offset, len);
@@ -236,6 +295,15 @@ public class SignallingReader extends FilterReader {
         }
 
         return numRead;
+    }
+
+    public int read (CharBuffer charBuffer) throws IOException {
+        throw new UnsupportedOperationException();
+    }
+
+    private void resetScanBuffer () {
+        scanBuffer.setLength(0);
+        scanCursor = 0;
     }
 
     public long skip (long l) throws IOException {
