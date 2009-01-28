@@ -71,6 +71,6 @@ public class CircularCharBufferTest extends TestCase {
         assertEquals("Peek(1) should work ", 'b', b.peek(1));
         b.get();
         b.put('d');
-        assertEquals("Peek(3) should work ", 'd', b.peek(2));
+        assertEquals("Peek(2) should work ", 'd', b.peek(2));
     }
 }

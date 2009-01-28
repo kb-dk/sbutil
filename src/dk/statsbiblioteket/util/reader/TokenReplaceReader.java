@@ -20,11 +20,14 @@ public class TokenReplaceReader extends SignallingReader {
     public TokenReplaceReader (Reader reader, Map<String,String> tokenMap) {
         super(reader);
 
-        for (Map.Entry<String,String> entry : tokenMap.entrySet()) {
+        /*for (Map.Entry<String,String> entry : tokenMap.entrySet()) {
             TokenReplacer replacer = new TokenReplacer(
                                                 entry.getKey().toCharArray(),
                                                 entry.getValue().toCharArray());
             addListener(replacer);
-        }
+        }*/
+
+        Replacer replacer = new Replacer(tokenMap);
+        addListener(replacer);
     }
 }
