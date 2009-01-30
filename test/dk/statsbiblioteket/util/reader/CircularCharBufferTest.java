@@ -73,4 +73,16 @@ public class CircularCharBufferTest extends TestCase {
         b.put('d');
         assertEquals("Peek(2) should work ", 'd', b.peek(2));
     }
+
+    public void testGetArray() {
+        CircularCharBuffer b = new CircularCharBuffer(3, 3);
+        b.put("abc");
+        b.get();
+        b.put('d');
+        char[] buf = new char[4];
+        assertEquals("The number of copied chars should match",
+                     3, b.get(buf, 0, 4));
+        assertEquals("The extracted chars should be correct",
+                     "bcd", new String(buf, 0, 3));
+    }
 }

@@ -49,28 +49,9 @@ public class ReplaceReader extends Reader {
         return -1;
     }
 
-    /**
-     * Expects that {@link #ensureBuffers(int)} has been called.
-     * @return the next char or -1 if EOF.
-     * @throws IOException if the source had an I/O error.
-     */
-    private int unsafe_read() throws IOException {
-        if (destinationBuffer.size() > 0) {
-            return destinationBuffer.get();
-        }
-        return -1;
-    }
-
     public int read(char cbuf[], int off, int len) throws IOException {
         ensureBuffers(len); // Dangerous as we risk large buffer
-        for (int i = 0 ; i < len ; i++) {
-            int next = unsafe_read();
-            if (next == -1) {
-                return i == 0 ? -1 : i;
-            }
-            cbuf[off + i] = (char)next;
-        }
-        return len;
+        return destinationBuffer.get(cbuf, off, len);
     }
 
     /**

@@ -2,6 +2,8 @@ package dk.statsbiblioteket.util.reader;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 
+import java.io.IOException;
+
 /**
  * A circular buffer of the atomic type char. Allows for dynamic resizing.
  * </p><p>
@@ -37,9 +39,10 @@ public class CircularCharBuffer {
             extendCapacity();
         }
         array[next++] = c;
-        if (next == array.length) {
+        next %= array.length;
+/*        if (next == array.length) {
             next = 0;
-        }
+        }*/
     }
 
     /**
@@ -53,6 +56,17 @@ public class CircularCharBuffer {
         for (char c: chars) {
             put(c);
         }
+    }
+
+    /**
+     * Converts the given String to chars and adds them to the buffer, expanding
+     * if necessary.
+     * @param s the String to add.
+     * @throws ArrayIndexOutOfBoundsException if the buffer needs to be
+     *         expanded, but has reached the maximum size.
+     */
+    public void put(String s) {
+        put(s.toCharArray());
     }
 
     /**
@@ -70,6 +84,50 @@ public class CircularCharBuffer {
         }
         return result;
     }
+
+    /**
+     * An equivalent to {@link java.io.Reader#read(char[], int, int)}.
+     * Moves buffered chars to cbuf.
+     * @param cbuf the buffer to move into.
+     * @param off  the offset in the buffer to move into.
+     * @param len  the maximum number of chars to move.
+     * @return the number of moved chars or -1 if no chars were buffered.
+     */
+    public int get(char cbuf[], int off, int len) {
+        if (size() == 0) {
+            return -1;
+        }
+        if (first < next) {
+            int moved = Math.min(len, next - first);
+            System.arraycopy(array, first, cbuf, off, moved);
+            first += moved;
+            return moved;
+        }
+        int moved = Math.min(len, array.length - first);
+        System.arraycopy(array, first, cbuf, off, moved);
+        first += moved;
+        if (first == array.length) {
+            first = 0;
+        }
+        if (moved == len || size() == 0) {
+            return moved;
+        }
+        int movedExtra = Math.min(len - moved, next - first);
+        System.arraycopy(array, first, cbuf, off + moved, movedExtra);
+        first += movedExtra;
+        return moved + movedExtra;
+
+
+
+/**        for (int i = 0 ; i < len ; i++) {
+            cbuf[off + i] = get();
+            if (size() == 0) {
+                return i + 1;
+            }
+        }
+        return len;*/
+    }
+
 
     /**
      *

@@ -51,7 +51,8 @@ public class ReplacePerformanceTest extends TestCase {
         }
     }
 
-    public void testRange() throws IOException {
+    public void testRange() throws Exception {
+        Thread.sleep(10000);
         int GETS = 1000000;
         int RUNS = 2;
         int REPLACEMENT_TO_MAXLENGTH = 5;
@@ -121,7 +122,7 @@ public class ReplacePerformanceTest extends TestCase {
                  + profiler.getSpendTime() + " with "
                  + replacer.getReplacementCount() +
                  " replacements from a pool of " + replacements.size()
-                 + " from TokenReplacer");
+                 + " from ReplaceReader");
 
         source = getRandomReader(replacements, 2, 0.01, reads);
         TokenReplaceReader tokenReplacer =
