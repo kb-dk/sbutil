@@ -42,7 +42,19 @@ public class ReplaceReader extends Reader {
     }
 
     public int read() throws IOException {
-        ensureBuffers();
+        ensureBuffers(1);
+        if (destinationBuffer.size() > 0) {
+            return destinationBuffer.get();
+        }
+        return -1;
+    }
+
+    /**
+     * Expects that {@link #ensureBuffers(int)} has been called.
+     * @return the next char or -1 if EOF.
+     * @throws IOException if the source had an I/O error.
+     */
+    private int unsafe_read() throws IOException {
         if (destinationBuffer.size() > 0) {
             return destinationBuffer.get();
         }
@@ -50,8 +62,9 @@ public class ReplaceReader extends Reader {
     }
 
     public int read(char cbuf[], int off, int len) throws IOException {
+        ensureBuffers(len); // Dangerous as we risk large buffer
         for (int i = 0 ; i < len ; i++) {
-            int next = read();
+            int next = unsafe_read();
             if (next == -1) {
                 return i == 0 ? -1 : i;
             }
@@ -60,8 +73,15 @@ public class ReplaceReader extends Reader {
         return len;
     }
 
-    private void ensureBuffers() throws IOException {
-        while (destinationBuffer.size() == 0) {
+    /**
+     * Ensures that the destination buffer contains minSize characters or that
+     * the source has reached EOF and that all characters from source has been
+     * processed.
+     * @param minSize the minimum size wanted in destination.
+     * @throws IOException if an I/Oerror happened in source.
+     */
+    private void ensureBuffers(int minSize) throws IOException {
+        while (destinationBuffer.size() < minSize) {
             int next = 0;
             while (!eof
                    && (next = source.read()) != -1

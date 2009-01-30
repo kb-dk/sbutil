@@ -53,7 +53,7 @@ public class ReplacePerformanceTest extends TestCase {
 
     public void testRange() throws IOException {
         int GETS = 1000000;
-        int RUNS = 1;
+        int RUNS = 2;
         int REPLACEMENT_TO_MAXLENGTH = 5;
 
         int[] REPLACEMENT_COUNTS = {10, 100, 1000, 10000};
@@ -126,10 +126,11 @@ public class ReplacePerformanceTest extends TestCase {
         source = getRandomReader(replacements, 2, 0.01, reads);
         TokenReplaceReader tokenReplacer =
                 new TokenReplaceReader(source, replacements);
+
         profiler.reset();
         emptyReader(tokenReplacer);
-        log.info(reads + " reads in "
-                 + profiler.getSpendTime() + " from TokenReplaceReader ");
+        log.info(reads + " reads in " + profiler.getSpendTime()
+                 + " from TokenReplaceReader ");
     }
 
     private void emptyReader(Reader reader) throws IOException {
