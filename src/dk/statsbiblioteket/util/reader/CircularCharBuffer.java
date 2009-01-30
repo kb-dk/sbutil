@@ -20,7 +20,10 @@ public class CircularCharBuffer {
 
     public CircularCharBuffer(int initialSize, int maxSize) {
         array = new char[initialSize];
-        this.max = maxSize + 1; // To make room for the first != next invariant
+        this.max = maxSize;
+        if (max != Integer.MAX_VALUE) {
+            this.max++; // To make room for the first != next invariant
+        }
     }
 
     /**
@@ -81,7 +84,7 @@ public class CircularCharBuffer {
                     "Requesting a peek(" + ahead + ") when the size is only "
                     + size());
         }
-        return array[first + ahead % array.length];
+        return array[(first + ahead) % array.length];
     }
 
     /**
@@ -110,6 +113,7 @@ public class CircularCharBuffer {
             throw new ArrayIndexOutOfBoundsException(
                     "The buffer if full and cannot be expanded further");
         }
+
         int newSize = Math.min(max, Math.max(array.length + 1,
                                              array.length * GROWTH_FACTOR));
         char[] newArray = new char[newSize];
