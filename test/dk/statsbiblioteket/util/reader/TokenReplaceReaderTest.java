@@ -3,6 +3,7 @@ package dk.statsbiblioteket.util.reader;
 import junit.framework.TestCase;
 
 import java.io.StringReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -202,4 +203,18 @@ public class TokenReplaceReaderTest extends TestCase {
         assertEquals("WorlduHello", buf.toString());
     }
 
+    public void testNoReplacementsPartlyMatch() throws IOException {
+        tokenMap.put("pombo", "a");
+        r = new TokenReplaceReader(new StringReader(
+                "aaapaaa"), tokenMap);
+
+        char[] v = new char[1024];
+        int len;
+        while ((len = r.read(v)) != -1) {
+            buf.append(v, 0, len);
+        }
+
+        assertEquals("aaapaaa", buf.toString());
+
+    }
 }
