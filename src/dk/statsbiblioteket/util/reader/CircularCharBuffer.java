@@ -157,10 +157,7 @@ public class CircularCharBuffer {
      * @return the number of characters in the buffer.
      */
     public int size() {
-        if (first == next) {
-            return 0;
-        }
-        if (first < next) {
+        if (first <= next) {
             return next - first;
         }
         return array.length - first + next;

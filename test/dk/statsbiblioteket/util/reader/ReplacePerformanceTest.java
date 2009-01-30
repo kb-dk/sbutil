@@ -52,7 +52,6 @@ public class ReplacePerformanceTest extends TestCase {
     }
 
     public void testRange() throws Exception {
-        Thread.sleep(10000);
         int GETS = 1000000;
         int RUNS = 2;
         int REPLACEMENT_TO_MAXLENGTH = 5;
