@@ -23,6 +23,7 @@ public class ReplaceReader extends Reader {
     private Node tree = new Node();
     private int minBufferSize = 10;
     private boolean eof = false;
+    private long replacementsFromCurrentSource = 0;
 
     /**
      * @param source a Reader providing the characters.
@@ -82,11 +83,34 @@ public class ReplaceReader extends Reader {
                 sourceBuffer.get();
             }
             destinationBuffer.put(replacement.to);
+            replacementsFromCurrentSource++;
+            // Don't return as replacement might be of length 0
         }
+    }
+
+    /**
+     * Assigns a reader as source, clearing all buffers in the process.
+     * It is highly recommended to use setSource to avoid re-creating the
+     * while ReplaceReader.
+     * @param source the source for the ReplaceReader.
+     */
+    public synchronized void setSource(Reader source) {
+        this.source = source;
+        sourceBuffer.clear();
+        destinationBuffer.clear();
+        replacementsFromCurrentSource = 0;
     }
 
     public void close() throws IOException {
         source.close();
+    }
+
+    /**
+     * @return the number of replacements that has been performed on the
+     *         current source.
+     */
+    public long getReplacementCount() {
+        return replacementsFromCurrentSource;
     }
 
     private static class Node {
