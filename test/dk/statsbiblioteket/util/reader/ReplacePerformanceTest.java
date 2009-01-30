@@ -1,6 +1,6 @@
 /**
  * Created: te 30-01-2009 20:09:34
- * CVS:     $Id:$
+ * CVS:     $Id$
  */
 package dk.statsbiblioteket.util.reader;
 
@@ -42,13 +42,64 @@ public class ReplacePerformanceTest extends TestCase {
 
 
     public void testSmall() throws IOException {
-        int GETS = 1000000;
+        int GETS = 100000;
         int RUNS = 5;
         Map<String, String> replacements = getSmallReplacements();
 
         for (int i = 0 ; i < RUNS ; i++) {
             genericSpeedTest(GETS, replacements);
         }
+    }
+
+    public void testRange() throws IOException {
+        int GETS = 1000000;
+        int RUNS = 1;
+        int REPLACEMENT_TO_MAXLENGTH = 5;
+
+        int[] REPLACEMENT_COUNTS = {10, 100, 1000, 10000};
+        int[] REPLACEMENT_FROM_MAXLENGTHS = {1, 5, 10};
+        for (int rCount: REPLACEMENT_COUNTS) {
+            for (int rMaxLength: REPLACEMENT_FROM_MAXLENGTHS) {
+                log.info("Replacement count: " + rCount
+                         + ", replacement-from max length: " + rMaxLength);
+                System.gc();
+                Map<String, String> replacements = getRangeReplacements(
+                        rCount, rMaxLength, REPLACEMENT_TO_MAXLENGTH);
+                for (int i = 0 ; i < RUNS ; i++) {
+                    genericSpeedTest(GETS, replacements);
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Constructs a pseudo-random replacement map.
+     * @param rCount         the number of replacements.
+     * @param rFromMaxLength the maximum length of the from parts.
+     * @param rToMaxLength   the maximum length of the to parts.
+     * @return a map with replacements.
+     */
+    private Map<String, String> getRangeReplacements(int rCount,
+                                                     int rFromMaxLength,
+                                                     int rToMaxLength) {
+        Random random = new Random(88);
+        Map<String, String> replacements =
+                new LinkedHashMap<String, String>(rCount);
+        for (int i = 0 ; i < rCount ; i++) {
+            replacements.put(randomWord(random, 1, rFromMaxLength),
+                             randomWord(random, 0, rToMaxLength));
+        }
+        return replacements;
+    }
+
+    private String randomWord(Random random, int minLength, int maxLength) {
+        int length = random.nextInt(maxLength + 1 - minLength) + minLength;
+        StringWriter sw = new StringWriter(length);
+        for (int i = 0 ; i < length ; i++) {
+            sw.append(DEFAULT_VALIDS[random.nextInt(DEFAULT_VALIDS.length)]);
+        }
+        return sw.toString();
     }
 
     /**
@@ -61,28 +112,34 @@ public class ReplacePerformanceTest extends TestCase {
      */
     private void genericSpeedTest(int reads, Map<String, String> replacements)
             throws IOException {
-        Reader source = getRandomReader(replacements, 2, 0.01);
+        Reader source = getRandomReader(replacements, 2, 0.01, reads);
         ReplaceReader replacer = new ReplaceReader(source, replacements);
 
         Profiler profiler = new Profiler();
-        for (int i = 0 ; i < reads; i++) {
-            replacer.read(); // Better to pipe?
-        }
-        log.info("Made " + reads + " reads with "
+        emptyReader(replacer);
+        log.info(reads + " reads in "
+                 + profiler.getSpendTime() + " with "
                  + replacer.getReplacementCount() +
                  " replacements from a pool of " + replacements.size()
-                 + " from ReplaceReader in "
-                 + profiler.getSpendTime());
+                 + " from TokenReplacer");
 
-        source = getRandomReader(replacements, 2, 0.01);
+        source = getRandomReader(replacements, 2, 0.01, reads);
         TokenReplaceReader tokenReplacer =
                 new TokenReplaceReader(source, replacements);
         profiler.reset();
-        for (int i = 0 ; i < reads; i++) {
-            tokenReplacer.read(); // Better to pipe?
+        emptyReader(tokenReplacer);
+        log.info(reads + " reads in "
+                 + profiler.getSpendTime() + " from TokenReplaceReader ");
+    }
+
+    private void emptyReader(Reader reader) throws IOException {
+        char[] dummy = new char[1024];
+        char[] v = new char[1024];
+        int len;
+        //noinspection UnusedAssignment
+        while ((len = reader.read(v)) != -1) {
+            System.arraycopy(v, 0, dummy, 0, len);
         }
-        log.info("Made " + reads + " reads from TokenReplaceReader in "
-                 + profiler.getSpendTime());
     }
 
     public void testEquality() throws Exception {
@@ -91,12 +148,12 @@ public class ReplacePerformanceTest extends TestCase {
 
     private void testEquality(int reads, Map<String, String> replacements)
                                                             throws IOException {
-        Reader source = getRandomReader(replacements, 2, 0.01);
+        Reader source = getRandomReader(replacements, 2, 0.01, reads);
         Reader replacer = new ReplaceReader(source, replacements);
-        Reader tsource = getRandomReader(replacements, 2, 0.01);
+        Reader tsource = getRandomReader(replacements, 2, 0.01, reads);
         Reader treplacer = new TokenReplaceReader(tsource, replacements);
 
-        Reader directsource = getRandomReader(replacements, 2, 0.01);
+        Reader directsource = getRandomReader(replacements, 2, 0.01, reads);
         StringWriter sw = new StringWriter(50);
         for (int i = 0 ; i < 50 ; i++) {
             sw.append((char)directsource.read());
@@ -136,11 +193,12 @@ public class ReplacePerformanceTest extends TestCase {
      *                         removing the last character from it.
      * @param knownWordChance  the chance that a known word should be returned
      *                         instead of a random char.
+     * @param size
      * @return a RandomReader ready to be used af source for testing.
      */
     private Reader getRandomReader(Map<String, String> replacements,
                                    int shortenedSources,
-                                   double knownWordChance) {
+                                   double knownWordChance, int size) {
         Random random = new Random(87);
         List<String> known = new ArrayList<String>(replacements.size());
         List<String> largerThan1 = new ArrayList<String>(replacements.size());
@@ -163,7 +221,7 @@ public class ReplacePerformanceTest extends TestCase {
             candidates.add(s.toCharArray());
         }
         return new RandomReader(random, DEFAULT_VALIDS, candidates,
-                                knownWordChance);
+                                knownWordChance, size);
     }
 
     /**
@@ -174,6 +232,8 @@ public class ReplacePerformanceTest extends TestCase {
         private char[] validChars;
         private List<char[]> knownWords;
         private double knownWordChance = 0.0;
+        private int size;
+        private int readCount = 0;
 
         private CircularCharBuffer out;
 
@@ -181,17 +241,18 @@ public class ReplacePerformanceTest extends TestCase {
          *
          * @param random a properly seeded randomizer.
          * @param validChars a random char from this array is returned if
-         *                   a knownWord isn't returned.
+ *                   a knownWord isn't returned.
          * @param knownWords a known word is returned if knownWordChance is
-         *                   satisfied.
+*                   satisfied.
          * @param knownWordChance when a new char is requested, a random double
-         *                        from 0 to 1 is requested from the randomizer.
-         *                        If the double is below knownWordChance, a
-         *                        knownWord is returned.
+*                        from 0 to 1 is requested from the randomizer.
+*                        If the double is below knownWordChance, a
+         * @param size the virtual size of the content (the number of characters
+         *             generated).
          */
         public RandomReader(Random random, char[] validChars,
                             List<char[]> knownWords,
-                            double knownWordChance) {
+                            double knownWordChance, int size) {
             this.validChars = validChars;
             this.random = random;
             this.knownWords = knownWords;
@@ -201,12 +262,29 @@ public class ReplacePerformanceTest extends TestCase {
                 longest = Math.max(longest, ca.length);
             }
             out = new CircularCharBuffer(longest, Integer.MAX_VALUE);
+            this.size = size;
+        }
+
+        public int read() throws IOException {
+            if (readCount >= size) {
+                return -1;
+            }
+            ensureBuffer(1);
+            readCount++;
+            return out.get();
         }
 
         public int read(char cbuf[], int off, int len) throws IOException {
+            if (readCount >= size) {
+                return -1;
+            }
             ensureBuffer(len);
             for (int i = 0 ; i < len ; i++) {
                 cbuf[off + i] = out.get();
+                readCount++;
+                if (readCount >= size) {
+                    return i;
+                }
             }
             return len;
         }

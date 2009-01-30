@@ -53,7 +53,7 @@ public class ReplaceReader extends Reader {
         for (int i = 0 ; i < len ; i++) {
             int next = read();
             if (next == -1) {
-                return i;
+                return i == 0 ? -1 : i;
             }
             cbuf[off + i] = (char)next;
         }
