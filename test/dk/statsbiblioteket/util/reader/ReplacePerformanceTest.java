@@ -56,7 +56,7 @@ public class ReplacePerformanceTest extends TestCase {
         int RUNS = 2;
         int REPLACEMENT_TO_MAXLENGTH = 5;
 
-        int[] REPLACEMENT_COUNTS = {10, 100, 1000, 10000};
+        int[] REPLACEMENT_COUNTS = {10, 100, 1000, 10000, 1000, 100, 10};
         int[] REPLACEMENT_FROM_MAXLENGTHS = {1, 5, 10};
         for (int rCount: REPLACEMENT_COUNTS) {
             for (int rMaxLength: REPLACEMENT_FROM_MAXLENGTHS) {
@@ -112,7 +112,9 @@ public class ReplacePerformanceTest extends TestCase {
      */
     private void genericSpeedTest(int reads, Map<String, String> replacements)
             throws IOException {
-        Reader source = getRandomReader(replacements, 2, 0.01, reads);
+        Reader source = getRandomReader(replacements,
+                                        Math.max(2, replacements.size() / 4),
+                                        0.01, reads);
         ReplaceReader replacer = new ReplaceReader(source, replacements);
 
         Profiler profiler = new Profiler();
@@ -123,7 +125,9 @@ public class ReplacePerformanceTest extends TestCase {
                  " replacements from a pool of " + replacements.size()
                  + " from ReplaceReader");
 
-        source = getRandomReader(replacements, 2, 0.01, reads);
+        source = getRandomReader(replacements,
+                                 Math.max(2, replacements.size() / 4),
+                                 0.01, reads);
         TokenReplaceReader tokenReplacer =
                 new TokenReplaceReader(source, replacements);
 
