@@ -3,6 +3,7 @@ package dk.statsbiblioteket.util.reader;
 import junit.framework.TestCase;
 
 import java.io.StringReader;
+import java.io.Reader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,9 +16,9 @@ public class TokenReplaceReaderTest extends TestCase {
     static final String testString1 = "test";
     static final String testReplace1 = "foo";
 
-    TokenReplaceReader r;
-    Map<String,String> tokenMap;
-    StringBuffer buf;
+    protected Reader r;
+    protected Map<String,String> tokenMap;
+    protected StringBuffer buf;
 
     public void setUp() {
         buf = new StringBuffer();
@@ -25,8 +26,7 @@ public class TokenReplaceReaderTest extends TestCase {
     }
 
     public void testNoReplaceReadSingle() throws Exception {
-        r = new TokenReplaceReader(new StringReader(testString1),
-                                   new HashMap<String,String>());
+        r = getReader(testString1);
         int v;
         while ((v = r.read()) != -1) {
             buf.append((char)v);
@@ -36,7 +36,7 @@ public class TokenReplaceReaderTest extends TestCase {
     }
 
     public void testNoReplaceReadArray() throws Exception {
-        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+        r = getReader(testString1);
         char[] v = new char[1024];
 
         int len;
@@ -49,8 +49,8 @@ public class TokenReplaceReaderTest extends TestCase {
 
     public void testReplaceAllReadSingle() throws Exception {
         tokenMap.put(testString1, testReplace1);
-        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
-        
+        r = getReader(testString1);
+
         int v;
         while ((v = r.read()) != -1) {
             buf.append((char)v);
@@ -61,8 +61,8 @@ public class TokenReplaceReaderTest extends TestCase {
 
     public void testReplaceAllReadArray() throws Exception {
         tokenMap.put(testString1, testReplace1);
-        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
-        
+        r = getReader(testString1);
+
         char[] v = new char[1024];
         int len;
         while ((len = r.read(v)) != -1) {
@@ -74,7 +74,7 @@ public class TokenReplaceReaderTest extends TestCase {
 
     public void testReplaceAllMismatchReadSingle() throws Exception {
         tokenMap.put("NEVER_MATCH_ME", testReplace1);
-        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+        r = getReader(testString1);
 
         int v;
         while ((v = r.read()) != -1) {
@@ -86,7 +86,7 @@ public class TokenReplaceReaderTest extends TestCase {
 
     public void testReplaceAllMismatchReadArray() throws Exception {
         tokenMap.put("NEVER_MATCH_ME", testReplace1);
-        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+        r = getReader(testString1);
 
         char[] v = new char[1024];
         int len;
@@ -99,7 +99,7 @@ public class TokenReplaceReaderTest extends TestCase {
 
     public void testReplaceSubStringReadSingle() throws Exception {
         tokenMap.put("est", testReplace1);
-        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+        r = getReader(testString1);
 
         int v;
         while ((v = r.read()) != -1) {
@@ -111,7 +111,7 @@ public class TokenReplaceReaderTest extends TestCase {
 
     public void testReplaceSubStringReadArray() throws Exception {
         tokenMap.put("est", testReplace1);
-        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+        r = getReader(testString1);
 
         char[] v = new char[1024];
         int len;
@@ -124,7 +124,7 @@ public class TokenReplaceReaderTest extends TestCase {
 
     public void testReplaceSingleCharReadSingle() throws Exception {
         tokenMap.put("e", testReplace1);
-        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+        r = getReader(testString1);
 
         int v;
         while ((v = r.read()) != -1) {
@@ -136,7 +136,7 @@ public class TokenReplaceReaderTest extends TestCase {
 
     public void testReplaceSingleCharReadArray() throws Exception {
         tokenMap.put("e", testReplace1);
-        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+        r = getReader(testString1);
 
         char[] v = new char[1024];
         int len;
@@ -150,7 +150,7 @@ public class TokenReplaceReaderTest extends TestCase {
     public void testReplaceTwoSubStringsReadSingle() throws Exception {
         tokenMap.put("e", testReplace1);
         tokenMap.put("t", testReplace1);
-        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+        r = getReader(testString1);
 
         int v;
         while ((v = r.read()) != -1) {
@@ -163,7 +163,7 @@ public class TokenReplaceReaderTest extends TestCase {
     public void testReplaceTwoSubStringsReadArray() throws Exception {
         tokenMap.put("e", testReplace1);
         tokenMap.put("t", testReplace1);
-        r = new TokenReplaceReader(new StringReader(testString1), tokenMap);
+        r = getReader(testString1);
 
         char[] v = new char[1024];
         int len;
@@ -178,7 +178,7 @@ public class TokenReplaceReaderTest extends TestCase {
         tokenMap.put("Y", "ERROR");
         tokenMap.put("til", "Hello");
         tokenMap.put("sb", "World");
-        r = new TokenReplaceReader(new StringReader("sbutil"), tokenMap);
+        r = getReader("sbutil");
 
         int v;
         while ((v = r.read()) != -1) {
@@ -192,7 +192,7 @@ public class TokenReplaceReaderTest extends TestCase {
         tokenMap.put("Y", "ERROR");
         tokenMap.put("til", "Hello");
         tokenMap.put("sb", "World");
-        r = new TokenReplaceReader(new StringReader("sbutil"), tokenMap);
+        r = getReader("sbutil");
 
         char[] v = new char[1024];
         int len;
@@ -216,5 +216,52 @@ public class TokenReplaceReaderTest extends TestCase {
 
         assertEquals("aaapaaa", buf.toString());
 
+    }
+
+    public void testTrickString1SingleChar() throws Exception {
+        tokenMap.put("aa", "p");
+        r = getReader("aaab");
+
+        assertEquals("pab", readFullySingleChar(r));
+    }
+
+    public void testTrickString2SingleChar() throws Exception {
+        tokenMap.put("aaaa", "p");
+        r = getReader("aaab");
+
+        assertEquals("aaab", readFullySingleChar(r));
+    }
+
+    public void testTrickString3SingleChar() throws Exception {
+        tokenMap.put("aab", "q");
+        r = getReader("aaab");
+
+        assertEquals("aq", readFullySingleChar(r));
+    }
+
+    static String readFullySingleChar(Reader r) throws IOException {
+        StringBuffer buf = new StringBuffer();
+        int v;
+        while ((v = r.read()) != -1) {
+            buf.append((char)v);
+        }
+
+        return buf.toString();
+    }
+
+    static String readFullyBigARray(Reader r) throws IOException {
+        StringBuffer buf = new StringBuffer();
+        char[] v = new char[1024];
+        int len;
+        while ((len = r.read(v)) != -1) {
+            buf.append(v, 0, len);
+        }
+
+        return buf.toString();
+    }
+
+    public Reader getReader(String in)
+                                                            throws IOException {
+        return new ReplaceReader(new StringReader(in), tokenMap);
     }
 }
