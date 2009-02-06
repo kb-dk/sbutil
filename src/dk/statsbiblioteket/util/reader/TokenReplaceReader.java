@@ -27,7 +27,7 @@ public class TokenReplaceReader extends SignallingReader {
             addListener(replacer);
         }*/
 
-        Replacer replacer = new Replacer(tokenMap);
+        ReplacerListener replacer = new ReplacerListener(tokenMap);
         addListener(replacer);
     }
 }

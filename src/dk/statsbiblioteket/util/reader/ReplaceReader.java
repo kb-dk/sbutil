@@ -41,6 +41,7 @@ public class ReplaceReader extends Reader {
                                                    Integer.MAX_VALUE);
     }
 
+    @Override
     public int read() throws IOException {
         ensureBuffers(1);
         if (destinationBuffer.size() > 0) {
@@ -49,6 +50,7 @@ public class ReplaceReader extends Reader {
         return -1;
     }
 
+    @Override
     public int read(char cbuf[], int off, int len) throws IOException {
         ensureBuffers(len); // Dangerous as we risk large buffer
         return destinationBuffer.get(cbuf, off, len);
@@ -102,6 +104,7 @@ public class ReplaceReader extends Reader {
         replacementsFromCurrentSource = 0;
     }
 
+    @Override
     public void close() throws IOException {
         source.close();
     }

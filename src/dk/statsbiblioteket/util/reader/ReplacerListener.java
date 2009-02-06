@@ -5,12 +5,12 @@ import java.util.Map;
 /**
  *
  */
-public class Replacer implements ReadSignalListener {
+public class ReplacerListener implements ReadSignalListener {
 
     private Node tree;
     private Node lastMatch;
 
-    public Replacer (Map<String,String> replacementRules) {
+    public ReplacerListener(Map<String,String> replacementRules) {
         tree = new Node();
         lastMatch = tree;
 
@@ -19,12 +19,12 @@ public class Replacer implements ReadSignalListener {
         }
     }
 
-    public Replacer addRule (String from, String to) {
+    public ReplacerListener addRule (String from, String to) {
         addRule(from.toCharArray(), to.toCharArray());
         return this;
     }
 
-    public Replacer addRule (char[] from, char[] to) {
+    public ReplacerListener addRule (char[] from, char[] to) {
         tree.addRule(from, to, 0);
         return this;
     }
