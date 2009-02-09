@@ -89,7 +89,8 @@ public class ReplaceReaderTest extends TestCase {
     private String getReplaced(Map<String, String> map, String source)
                                                             throws IOException {
         StringReader in = new StringReader(source);
-        ReplaceReader replacer = new ReplaceReader(in, map);
+        StringReplacer replacer = new StringReplacer(map);
+        replacer.setSource(in);
         StringWriter sw = new StringWriter(100);
         int c;
         while ((c = replacer.read()) != -1) {

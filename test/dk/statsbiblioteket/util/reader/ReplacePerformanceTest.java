@@ -115,7 +115,8 @@ public class ReplacePerformanceTest extends TestCase {
         Reader source = getRandomReader(replacements,
                                         Math.max(2, replacements.size() / 4),
                                         0.01, reads);
-        ReplaceReader replacer = new ReplaceReader(source, replacements);
+        StringReplacer replacer = new StringReplacer(replacements);
+        replacer.setSource(source);
 
         Profiler profiler = new Profiler();
         emptyReader(replacer);
@@ -123,7 +124,7 @@ public class ReplacePerformanceTest extends TestCase {
                  + profiler.getSpendTime() + " with "
                  + replacer.getReplacementCount() +
                  " replacements from a pool of " + replacements.size()
-                 + " from ReplaceReader");
+                 + " from StringReplacer");
 
         source = getRandomReader(replacements,
                                  Math.max(2, replacements.size() / 4),
@@ -154,7 +155,8 @@ public class ReplacePerformanceTest extends TestCase {
     private void testEquality(int reads, Map<String, String> replacements)
                                                             throws IOException {
         Reader source = getRandomReader(replacements, 2, 0.01, reads);
-        Reader replacer = new ReplaceReader(source, replacements);
+        ReplaceReader replacer = new StringReplacer(replacements);
+        replacer.setSource(source);
         Reader tsource = getRandomReader(replacements, 2, 0.01, reads);
         Reader treplacer = new TokenReplaceReader(tsource, replacements);
 

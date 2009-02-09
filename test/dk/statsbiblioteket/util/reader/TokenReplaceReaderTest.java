@@ -262,6 +262,8 @@ public class TokenReplaceReaderTest extends TestCase {
 
     public Reader getReader(String in)
                                                             throws IOException {
-        return new ReplaceReader(new StringReader(in), tokenMap);
+        ReplaceReader result = new StringReplacer(tokenMap);
+        result.setSource(new StringReader(in));
+        return result;
     }
 }

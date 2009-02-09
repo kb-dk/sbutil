@@ -1,7 +1,10 @@
-/* $Id:$
+/* $Id$
+ * $Revision$
+ * $Date$
+ * $Author$
  *
- * The Summa project.
- * Copyright (C) 2005-2008  The State and University Library
+ * The SB Util Library.
+ * Copyright (C) 2005-2007  The State and University Library of Denmark
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,24 +25,23 @@ package dk.statsbiblioteket.util.reader;
 import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.util.Map;
-import java.io.Reader;
 import java.io.IOException;
 
 /**
  * A highly speed-optimized single char to single char replacer.
  * The implementation maintains an array of all possible char values (65536)
  * mapped to their replacements, thereby making lookup of a single char O(1).
+ * </p><p>
+ * This implementation is semi-thread safe. All methods except
+ * {@link #setSource(java.io.Reader)} and {@link #setSource(CircularCharBuffer)}
+ * can be called safely from different threads. 
+ * @see {@link CharArrayReplacer}.
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
-public class CharReplacer implements TextTransformer {
-    private static final String NO_SOURCE =
-            "Neither reader nor charBuffer has been set as source";
-
+public class CharReplacer extends ReplaceReader {
     private char[] rules;
-    private Reader reader = null;
-    private CircularCharBuffer charBuffer = null;
 
     /**
      * A map with rules, consisting of target chars and replacement chars.
@@ -59,14 +61,13 @@ public class CharReplacer implements TextTransformer {
             char[] destination = entry.getKey().toCharArray();
             if (target.length != 1 || destination.length != 1) {
                 throw new IllegalArgumentException(String.format(
-                        "the rule '" + entry.getKey() + "' => "
+                        "The rule '" + entry.getKey() + "' => "
                         + entry.getValue() + "' was not single char to single"
                         + " char"));
             }
             this.rules[target[0]] = destination[0];
         }
     }
-
 
     /* TextTransformer interface implementations */
 
@@ -100,22 +101,12 @@ public class CharReplacer implements TextTransformer {
 
     /* Stream oriented implementations */
 
-    public void setSource(Reader reader) {
-        this.reader = reader;
-        charBuffer = null;
-    }
-
-    public void setSource(CircularCharBuffer charBuffer) {
-        this.charBuffer = charBuffer;
-        this.reader = null;
-    }
-
     public int read() throws IOException {
         try {
-            if (reader != null) {
-                return rules[reader.read()];
-            } else if (charBuffer != null) {
-                return rules[charBuffer.get()];
+            if (sourceReader != null) {
+                return rules[sourceReader.read()];
+            } else if (sourceBuffer != null) {
+                return rules[sourceBuffer.get()];
             }
             throw new IllegalStateException(NO_SOURCE);
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -124,46 +115,52 @@ public class CharReplacer implements TextTransformer {
     }
 
     public int read(CircularCharBuffer cbuf, int length) throws IOException {
-        int counter = 0;
+        int read = 0;
         try {
-            if (reader != null) {
-                while (counter < length) {
-                    cbuf.put(rules[reader.read()]);
-                    counter++;
+            if (sourceReader != null) {
+                while (read < length) {
+                    cbuf.put(rules[sourceReader.read()]);
+                    read++;
                 }
-            } else if (charBuffer != null) {
-                while (counter < length) {
-                    cbuf.put(rules[charBuffer.get()]);
-                    counter++;
+            } else if (sourceBuffer != null) {
+                while (read < length) {
+                    cbuf.put(rules[sourceBuffer.get()]);
+                    read++;
                 }
             } else {
                 throw new IllegalStateException(NO_SOURCE);
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            return counter == 0 ? -1 : counter;
+            if (length == 0) {
+                return 0;
+            }
+            return read == 0 ? -1 : read;
         }
-        return counter;
+        return read;
     }
 
     public int read(char[] cbuf, int off, int length) throws IOException {
         int read = 0;
         try {
-            if (reader != null) {
-                read = reader.read(cbuf, off, length);
+            if (sourceReader != null) {
+                read = sourceReader.read(cbuf, off, length);
                 transformToCharsInplace(cbuf, off, read);
-                return read;
             }
-            if (charBuffer != null) {
+            if (sourceBuffer != null) {
                 while (read < length) {
-                    cbuf[off + read] = rules[charBuffer.get()];
+                    cbuf[off + read] = rules[sourceBuffer.get()];
                     read++;
                 }
-                return read;
+            } else {
+                throw new IllegalStateException(NO_SOURCE);
             }
-            throw new IllegalStateException(NO_SOURCE);
         } catch (ArrayIndexOutOfBoundsException e) {
+            if (length == 0) {
+                return 0;
+            }
             return read == 0 ? -1 : read;
         }
+        return read;
     }
 
     /* Helpers */

@@ -1,8 +1,31 @@
+/* $Id$
+ * $Revision$
+ * $Date$
+ * $Author$
+ *
+ * The SB Util Library.
+ * Copyright (C) 2005-2007  The State and University Library of Denmark
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package dk.statsbiblioteket.util.reader;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.IOException;
+import java.io.StringWriter;
 
 /**
  * A circular buffer of the atomic type char. Allows for dynamic resizing.
@@ -94,6 +117,9 @@ public class CircularCharBuffer {
      * @return the number of moved chars or -1 if no chars were buffered.
      */
     public int get(char cbuf[], int off, int len) {
+        if (len == 0) {
+            return 0;
+        }
         if (size() == 0) {
             return -1;
         }
@@ -116,18 +142,56 @@ public class CircularCharBuffer {
         System.arraycopy(array, first, cbuf, off + moved, movedExtra);
         first += movedExtra;
         return moved + movedExtra;
-
-
-
-/**        for (int i = 0 ; i < len ; i++) {
-            cbuf[off + i] = get();
-            if (size() == 0) {
-                return i + 1;
-            }
-        }
-        return len;*/
     }
 
+    /**
+     * An equivalent to {@link java.io.Reader#read(char[], int, int)}.
+     * Moves buffered chars to other.
+     * @param other the buffer to move into.
+     * @param len   the maximum number of chars to move.
+     * @return the number of moved chars or -1 if no chars were buffered.
+     */
+    // TODO: Consider optimizing this with arraycopy
+    public int get(CircularCharBuffer other, int len) {
+        int counter = 0;
+        while (size() > 0 && counter < len) {
+            other.put(get());
+            counter++;
+        }
+        if (len == 0) {
+            return 0;
+        }
+        return counter == 0 ? -1 : counter;
+    }
+
+    /**
+     * Constructs a char array with the full content of the buffer and clears
+     * the buffer.
+     * @return a char array with the full content of the buffer.
+     */
+    public char[] getAll() {
+        int size = size();
+        char[] result = new char[size];
+        for (int i = 0 ; i < size ; i++) {
+            result[i] = get();
+        }
+        return result;
+    }
+
+    /**
+     * Constructs a String with the full content of the buffer and clears the
+     * buffer.
+     * @return a String with the full content of the buffer;
+     */
+    public String getString() {
+        int size = size();
+        StringWriter sw = new StringWriter(size);
+        for (int i = 0 ; i < size ; i++) {
+            sw.append(get());
+        }
+        return sw.toString();
+
+    }
 
     /**
      *

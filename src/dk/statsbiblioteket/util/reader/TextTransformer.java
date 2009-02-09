@@ -1,4 +1,4 @@
-/* $Id:$
+/* $Id$
  *
  * The Summa project.
  * Copyright (C) 2005-2008  The State and University Library
@@ -35,12 +35,8 @@ import java.io.Reader;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public interface TextTransformer {
-    /**
-     * Transforms a single char as defined by the rules.
-     * @param c the input char.
-     * @return the output char.
-     */
-    public char transform(char c);
+    public static final String NO_SOURCE =
+            "Neither sourceReader nor sourceBuffer has been set as source";
 
     /**
      * Performs transformations on the content of the String.
