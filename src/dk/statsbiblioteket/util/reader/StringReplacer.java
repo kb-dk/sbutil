@@ -41,7 +41,9 @@ import java.util.Map;
 public class StringReplacer extends ReplaceReader {
     private CircularCharBuffer readerBuffer;
     private CircularCharBuffer destinationBuffer;
-    private CircularCharBuffer tempBuffer =
+    private CircularCharBuffer tempInBuffer =
+            new CircularCharBuffer(10, Integer.MAX_VALUE);
+    private CircularCharBuffer tempOutBuffer =
             new CircularCharBuffer(10, Integer.MAX_VALUE);
     private Node tree = new Node();
     private int minBufferSize = 10;
@@ -62,31 +64,39 @@ public class StringReplacer extends ReplaceReader {
                                                    Integer.MAX_VALUE);
     }
 
-    private char[] EMPTY = new char[0];
+//    private char[] EMPTY = new char[0];
     public synchronized char[] transformToChars(char c) {
-        tempBuffer.clear();
-        tempBuffer.put(c);
-        return returnReplacement(tempBuffer);
+        tempInBuffer.clear();
+        tempInBuffer.put(c);
+        return returnReplacement(tempInBuffer);
     }
 
-    private char[] returnReplacement(CircularCharBuffer inputBuffer) {
-        Node replacement = tree.getReplacement(inputBuffer);
-        if (replacement == null) {
-            return EMPTY;
+    private char[] returnReplacement(CircularCharBuffer source) {
+        tempOutBuffer.clear();
+        while (source.size() > 0) {
+            Node replacement = tree.getReplacement(source, 0);
+            if (replacement == null) { // Copy a char, then repeat
+                tempOutBuffer.put(source.get());
+                continue;
+            }
+            for (int i = 0 ; i < replacement.from.length() ; i++) {
+                source.get(); // Flush the target
+            }
+            tempOutBuffer.put(replacement.to); // Add the replacement
         }
-        return replacement.to;
+        return tempOutBuffer.getAll();
     }
 
     public char[] transformToChars(char[] chars) {
-        tempBuffer.clear();
-        tempBuffer.put(chars);
-        return returnReplacement(tempBuffer);
+        tempInBuffer.clear();
+        tempInBuffer.put(chars);
+        return returnReplacement(tempInBuffer);
     }
 
     public String transform(String s) {
-        tempBuffer.clear();
-        tempBuffer.put(s.toCharArray());
-        return new String(returnReplacement(tempBuffer));
+        tempInBuffer.clear();
+        tempInBuffer.put(s.toCharArray());
+        return new String(returnReplacement(tempInBuffer));
     }
 
     public char[] transformToCharsAllowInplace(char[] chars) {
@@ -164,6 +174,7 @@ public class StringReplacer extends ReplaceReader {
         return readerBuffer;
     }
 
+    @Override
     public synchronized void setSource(Reader source) {
         super.setSource(source);
         readerBuffer.clear();
