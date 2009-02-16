@@ -24,19 +24,14 @@ package dk.statsbiblioteket.util;
 
 import junit.framework.TestCase;
 
-/**
- * Created by IntelliJ IDEA.
- * User: mikkel
- * Date: Mar 1, 2007
- * Time: 4:47:40 PM
- * To change this template use File | Settings | File Templates.
- */
 public class ProfilerTest extends TestCase {
 
+    @Override
     public void setUp () throws Exception {
 
     }
 
+    @Override
     public void tearDown () throws Exception {
 
     }
@@ -66,6 +61,16 @@ public class ProfilerTest extends TestCase {
         assertTrue("After sleeping after unpaused, spend time should increase",
                    Math.abs(spendUnpaused - profiler.getSpendMilliseconds())
                    >= 50);
+    }
+
+    public void testStatus() throws InterruptedException {
+        Profiler profiler = new Profiler();
+        profiler.setExpectedTotal(10);
+        Thread.sleep(200);
+        profiler.beat();
+        Thread.sleep(50);
+        profiler.beat();
+        System.out.println("getStatus(): " + profiler.getStatus(true));
     }
 
 }
