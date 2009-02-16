@@ -58,7 +58,7 @@ public class CharReplacer extends ReplaceReader {
         }
         for (Map.Entry<String, String> entry: rules.entrySet()) {
             char[] target = entry.getKey().toCharArray();
-            char[] destination = entry.getKey().toCharArray();
+            char[] destination = entry.getValue().toCharArray();
             if (target.length != 1 || destination.length != 1) {
                 throw new IllegalArgumentException(String.format(
                         "The rule '" + entry.getKey() + "' => "

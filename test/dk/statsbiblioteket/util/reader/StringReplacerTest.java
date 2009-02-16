@@ -13,8 +13,8 @@ import java.io.IOException;
 /**
  * ReplaceReader Tester.
  */
-public class ReplaceReaderTest extends TestCase {
-    public ReplaceReaderTest(String name) {
+public class StringReplacerTest extends TestCase {
+    public StringReplacerTest(String name) {
         super(name);
     }
 
@@ -27,7 +27,7 @@ public class ReplaceReaderTest extends TestCase {
     }
 
     public static Test suite() {
-        return new TestSuite(ReplaceReaderTest.class);
+        return new TestSuite(StringReplacerTest.class);
     }
 
     public void testSimpleReplacement() throws IOException {

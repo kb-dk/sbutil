@@ -46,6 +46,7 @@ public class CharArrayReplacer extends ReplaceReader {
     private char[][] rules;
 
     private ThreadLocal bufferPool = new ThreadLocal() {
+        @Override
         protected synchronized Object initialValue() {
             return new CircularCharBuffer(10, Integer.MAX_VALUE);
         }
@@ -73,7 +74,7 @@ public class CharArrayReplacer extends ReplaceReader {
         }
         for (Map.Entry<String, String> entry: rules.entrySet()) {
             char[] target = entry.getKey().toCharArray();
-            char[] destination = entry.getKey().toCharArray();
+            char[] destination = entry.getValue().toCharArray();
             if (target.length != 1) {
                 throw new IllegalArgumentException(String.format(
                         "The rule '" + entry.getKey() + "' => "

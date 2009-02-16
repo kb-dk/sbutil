@@ -80,20 +80,26 @@ public class ReplacePerformanceTest extends TestCase {
      * @param rToMaxLength   the maximum length of the to parts.
      * @return a map with replacements.
      */
-    private Map<String, String> getRangeReplacements(int rCount,
-                                                     int rFromMaxLength,
-                                                     int rToMaxLength) {
+    public static Map<String, String> getRangeReplacements(
+            int rCount, int rFromMaxLength, int rToMaxLength) {
+        return getRangeReplacements(rCount, 1, rFromMaxLength, 0, rToMaxLength);
+    }
+
+    public static Map<String, String> getRangeReplacements(
+            int rCount, int rFromMixLength, int rFromMaxLength,
+            int rToMinLengthm, int rToMaxLength) {
         Random random = new Random(88);
         Map<String, String> replacements =
                 new LinkedHashMap<String, String>(rCount);
         for (int i = 0 ; i < rCount ; i++) {
-            replacements.put(randomWord(random, 1, rFromMaxLength),
-                             randomWord(random, 0, rToMaxLength));
+            replacements.put(randomWord(random, rFromMixLength, rFromMaxLength),
+                             randomWord(random, rToMinLengthm, rToMaxLength));
         }
         return replacements;
     }
 
-    private String randomWord(Random random, int minLength, int maxLength) {
+    public static String randomWord(Random random, int minLength,
+                                     int maxLength) {
         int length = random.nextInt(maxLength + 1 - minLength) + minLength;
         StringWriter sw = new StringWriter(length);
         for (int i = 0 ; i < length ; i++) {
