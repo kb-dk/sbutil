@@ -42,7 +42,7 @@ public class ReplaceFactory {
      * @param rules what to replace in the form of target=>replacement pairs.
      * @return a replacer made from the rules.
      */
-    public ReplaceReader getReplacer(Map<String, String> rules) {
+    public static ReplaceReader getReplacer(Map<String, String> rules) {
         boolean allTargetsSingleChars = true;
         boolean allReplacementsSingleChars = true;
         for (Map.Entry<String, String> entry: rules.entrySet()) {
