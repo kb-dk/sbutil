@@ -26,11 +26,9 @@
  */
 package dk.statsbiblioteket.util;
 
-import java.io.FileInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.EOFException;
-import java.io.FileOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.RandomAccessFile;
 import java.io.DataInput;
@@ -155,6 +153,7 @@ public class LineReader implements DataInput, DataOutput {
      * @throws IOException if the file coult not be accessed.
      */
     public LineReader(File file, String mode) throws IOException {
+        log.debug("Opening '" + file + "' in mode '" + mode + "'");
         if (!file.canRead()) {
             throw new IOException("Cannot read the file '" + file + "'");
         }
@@ -646,9 +645,9 @@ public class LineReader implements DataInput, DataOutput {
 
     public void write(byte[] buf, int offset, int length) throws IOException {
         if (offset + length > buf.length) {
-            throw new IllegalArgumentException("Out of bounds: buf.length="
-                                               + buf.length + " offset="
-                                               + offset + " length=" + length);
+            throw new IllegalArgumentException(
+                    "Out of bounds: buf.length=" + buf.length + " offset="
+                    + offset + " length=" + length);
         }
         log.trace("write: Writing " + (length - offset) + " bytes at position "
                   + position);
@@ -669,10 +668,10 @@ public class LineReader implements DataInput, DataOutput {
             try {
                 buffer.put(buf, offset, writeLength);
             } catch (IndexOutOfBoundsException e) {
-                throw new IOException("Buffer break while writing "
-                                      + writeLength + " bytes from offset "
-                                      + offset + " in a buf with length "
-                                      + buf.length);
+                throw new IOException(
+                        "Buffer break while writing " + writeLength
+                        + " bytes from offset " + offset
+                        + " in a buf with length " + buf.length);
             }
             left -= writeLength;
             offset += writeLength;
@@ -757,8 +756,8 @@ public class LineReader implements DataInput, DataOutput {
     }
 
     public void writeUTF(String str) throws IOException {
-        throw new UnsupportedEncodingException("This is not supported as the "
-                                               + "necessary util is package "
-                                               + "private in DataOutputStream");
+        throw new UnsupportedEncodingException(
+                "This is not supported as the necessary util is package "
+                + "private in DataOutputStream");
     }
 }

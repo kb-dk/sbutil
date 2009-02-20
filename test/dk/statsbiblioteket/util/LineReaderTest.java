@@ -29,7 +29,6 @@ import java.io.DataInput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import java.util.Random;
 import java.nio.channels.FileChannel;
 import java.nio.ByteBuffer;
@@ -39,13 +38,6 @@ import junit.framework.TestSuite;
 import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
-/**
- * LineReader Tester.
- *
- * @author <Authors name>
- * @since <pre>06/15/2007</pre>
- * @version 1.0
- */
 @SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class LineReaderTest extends TestCase {
     private static Logger log = Logger.getLogger(LineReaderTest.class);
@@ -58,10 +50,12 @@ public class LineReaderTest extends TestCase {
         super(name);
     }
 
+    @Override
     public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
     }
@@ -759,6 +753,28 @@ public class LineReaderTest extends TestCase {
                          + " should be as expected",
                          expected[i], actual[i]);
         }
+    }
+
+    public void testClear() throws Exception {
+        File temp = createTempFile();
+        LineReader lr = new LineReader(temp, "rw");
+        lr.write("Hello World");
+        lr.flush();
+        assertEquals("The size of the file should be right",
+                     "Hello World".length(), temp.length());
+        lr.close();
+        temp.delete();
+        temp.createNewFile();
+        lr = new LineReader(temp, "rw");
+        assertEquals("The cleared file should have zero length",
+                     0, lr.length());
+        lr.write("Foo");
+        lr.close();
+        assertEquals("The new file should have the correct length",
+                     "Foo".length(), temp.length());
+        Thread.sleep(2000);
+        assertEquals("The new file should have the correct length after sleep",
+                     "Foo".length(), temp.length());
     }
 
     public void testWritereadAlternate() throws Exception {
