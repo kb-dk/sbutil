@@ -46,7 +46,7 @@ import dk.statsbiblioteket.util.qa.QAInfo;
  * A Java NIO based high-performance, large file-size enabled, random seek
  * capable line reader. Use only for good.
  * </p><p>
- * The reader assumes UTF-8 encoding when performing String-related operations.
+ * The reader assumes UTF-8 encoding w shen performing String-related operations.
  * It is substantially faster than {@link RandomAccessFile} (about a factor 5
  * for most operations). It can be used as a replacement for RandomAccessFile.
  * </p><p>
@@ -657,6 +657,7 @@ public class LineReader implements DataInput, DataOutput {
             checkBuffer();
             int writeLength = Math.min(left, bufferSize - buffer.position());
             if (log.isTraceEnabled()) {
+                //noinspection DuplicateStringLiteralInspection
                 log.trace("write: buf.length=" + buf.length
                           + ", offset=" + offset
                           + ", length=" + length

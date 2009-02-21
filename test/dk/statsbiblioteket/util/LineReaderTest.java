@@ -820,4 +820,109 @@ public class LineReaderTest extends TestCase {
     public LineReader getLR() throws IOException {
         return new LineReader(createTempFile(), "rw");
     }
+
+    public void testNoTruncatePlainWrite() throws Exception {
+        File file = createTempFile();
+        LineReader lr = new LineReader(file, "rw");
+        lr.write(new byte[LineReader.BUFFER_SIZE * 2]);
+        lr.close();
+        System.gc();
+        Thread.sleep(5000); // To ensure cleanup has been performed
+        assertEquals("A file of length " + LineReader.BUFFER_SIZE * 2
+                     + " should be created",
+                     LineReader.BUFFER_SIZE * 2, file.length());
+    }
+
+    public void testNoTruncateWriteRead() throws Exception {
+        File file = createTempFile();
+        LineReader lr = new LineReader(file, "rw");
+        lr.write(new byte[LineReader.BUFFER_SIZE * 2]);
+        lr.seek(0);
+        lr.read();
+        lr.close();
+        System.gc();
+        Thread.sleep(5000); // To ensure cleanup has been performed
+        assertEquals("A file of length " + LineReader.BUFFER_SIZE * 2
+                     + " should be created",
+                     LineReader.BUFFER_SIZE * 2, file.length());
+    }
+
+    public void testNoTruncateWriteWrite() throws Exception {
+        File file = createTempFile();
+        LineReader lr = new LineReader(file, "rw");
+        lr.write(new byte[LineReader.BUFFER_SIZE * 2]);
+        lr.seek(0);
+        lr.write(87);
+        lr.close();
+        System.gc();
+        Thread.sleep(5000); // To ensure cleanup has been performed
+        assertEquals("A file of length " + LineReader.BUFFER_SIZE * 2
+                     + " should be created",
+                     LineReader.BUFFER_SIZE * 2, file.length());
+    }
+
+    public void testNoTruncateMonkey() throws Exception {
+        File file = createTempFile();
+        LineReader lr = new LineReader(file, "rw");
+        lr.write(new byte[LineReader.BUFFER_SIZE]);
+        lr.seek(0);
+        lr.write(87);
+        lr.seek(LineReader.BUFFER_SIZE / 2);
+        lr.read();
+        lr.seek(lr.length());
+        lr.write(new byte[LineReader.BUFFER_SIZE]);
+        lr.seek(0);
+        lr.read();
+        lr.write(87);
+        lr.close();
+        System.gc();
+        Thread.sleep(5000); // To ensure cleanup has been performed
+        assertEquals("A file of length " + LineReader.BUFFER_SIZE * 2
+                     + " should be created",
+                     LineReader.BUFFER_SIZE * 2, file.length());
+
+        lr = new LineReader(file, "r");
+        lr.seek(0);
+        assertEquals("The int at position 1 should be correct",
+                     87, lr.readInt());
+        lr.close();
+    }
+    public void testAlternating() throws Exception {
+        File file = createTempFile();
+        LineReader lr = new LineReader(file, "rw");
+        lr.setBufferSize(10);
+        lr.write(new byte[LineReader.BUFFER_SIZE]);
+        lr.seek(0);
+        lr.writeInt(87);
+        lr.seek(0);
+        assertEquals("The int at position 1 should be correct",
+                     87, lr.readInt());
+
+        lr.seek(LineReader.BUFFER_SIZE / 2);
+        lr.read();
+        lr.seek(lr.length());
+        lr.write(new byte[LineReader.BUFFER_SIZE]);
+        lr.seek(0);
+        lr.read();
+        lr.writeInt(87);
+        lr.close();
+        assertEquals("A file of length " + LineReader.BUFFER_SIZE * 2
+                     + " should be created",
+                     LineReader.BUFFER_SIZE * 2, file.length());
+
+        lr = new LineReader(file, "rw");
+        lr.seek(lr.length());
+        lr.write(new byte[10]);
+        lr.write(new byte[9]);
+        lr.write(new byte[11]);
+        lr.close();
+
+        lr = new LineReader(file, "r");
+        lr.seek(1);
+        assertEquals("The int at position 1 should still be correct",
+                     87, lr.readInt());
+        assertEquals("The length should be correct",
+                     2 * LineReader.BUFFER_SIZE + 10 + 9 + 11, lr.length());
+        lr.close();
+    }
 }
