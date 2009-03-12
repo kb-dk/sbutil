@@ -29,16 +29,25 @@ import java.util.Map;
 /**
  * A factory for creating Text-oriented replacers. A replacer will be selected
  * and instantiated based on the given rules.
- * </p><p>
+ * <p/>
  * It is highly recommended to use this factory instead of directly creating
  * replacers, as it selects the optimal replacer based on the rules.
+ *
+ * @see CharArrayReplacer
+ * @see CharReplacer
+ * @see StringReplacer
+ * @see ReplaceReader
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class ReplaceFactory {
     /**
-     * Creates a replacer from the given rules.
+     * Creates a replacer from the given rules. The factory will detect
+     * the optimal strategy for character replacement based on {@code rules}
+     * and return a {@link CharArrayReplacer}, {@link CharReplacer}, or
+     * {@link StringReplacer} accordingly.
+     *
      * @param rules what to replace in the form of target=>replacement pairs.
      * @return a replacer made from the rules.
      */
