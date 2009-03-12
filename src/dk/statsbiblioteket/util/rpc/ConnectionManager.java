@@ -170,11 +170,20 @@ public class ConnectionManager<E> {
                 log.trace ("Doing connection scan of "
                            + owner.getConnections().size()
                            + " connections");
+                long timeout = owner.getLingerTime()*1000;
                 for (ConnectionContext<? extends T> ctx : owner.getConnections()) {
-                    if (now - ctx.getLastUse() > owner.getLingerTime()*1000 &&
+                    long inactiveTime = now - ctx.getLastUse();
+                    if (inactiveTime >  timeout &&
                         ctx.getRefCount() == 0) {
                         log.debug ("Connection " + ctx + " reached idle timeout.");
                         owner.purgeConnection(ctx.getConnectionId());
+                    } else {
+                        if (log.isTraceEnabled()) {
+                            log.trace ("Connection "
+                                       + ctx + " still active, timeout in "
+                                       + (timeout-inactiveTime) +"ms "
+                                       +"and refCount: " + ctx.getRefCount());
+                        }
                     }
                 }
                 log.trace ("Connection scan complete. "
@@ -264,8 +273,9 @@ public class ConnectionManager<E> {
             return;
         }
 
-        log.debug ("Purging service connection '" + connectionId + "'");
         connections.remove (connectionId);
+        log.debug ("Purged connection '" + connectionId + "', "
+                   + connections.size() + " cached");
     }
 
     /**

@@ -29,8 +29,11 @@ import java.io.StringWriter;
 
 
 /**
- * Statistics collector for batch-like jobs. Provides sliding window performance
- * statistics with average speed and ETA.
+ * The State and University Library of Denmark.
+ * User: te
+ * Date: Dec 8, 2005
+ * Time: 8:32:37 AM
+ * CVS:  $Id: Profiler.java,v 1.7 2007/12/04 13:22:01 mke Exp $
  */
 @QAInfo(state=QAInfo.State.QA_NEEDED,
         level=QAInfo.Level.NORMAL)
@@ -55,10 +58,34 @@ public class Profiler {
     private long pauseTime = 0; // The timestamp for pausing
 
     /**
-     * Create an ProgressFeedback and set the internal timestamp to now.
+     * Create a Profiler and set the internal timestamp to now.
+     * The Profiler will start measuring immediately.
      */
     public Profiler() {
         reset();
+    }
+
+    /**
+     * Create a Profiler and set the internal timestamp to now.
+     * The Profiler will start measuring immediately.
+     * @param expectedTotal the expected total, used for ETA-calculations.
+     */
+    public Profiler(int expectedTotal) {
+        reset();
+        setExpectedTotal(expectedTotal);
+    }
+
+    /**
+     * Create a Profiler and set the internal timestamp to now.
+     * The Profiler will start measuring immediately.
+     * @param expectedTotal the expected total, used for ETA-calculations.
+     * @param bpsSpan       the number of stored beat-timestamps. 
+     *                      See {@link #setBpsSpan(int)} for explanation.
+     */
+    public Profiler(int expectedTotal, int bpsSpan) {
+        reset();
+        setExpectedTotal(expectedTotal);
+        setBpsSpan(bpsSpan);
     }
 
     /** Mutators */
@@ -339,10 +366,8 @@ public class Profiler {
     }
 
     /**
-     * Request the ETA using getETA and format the result as
-     * YYYY-MM-DD HH:mm:SS.
-     * @param useCurrentSpeed use the bpsSpan for the estimate, thus basing it
-     *                        on current speed
+     * Request the ETA using getETA and format the result as YYYY-MM-DD HH:mm:SS.
+     * @param useCurrentSpeed use the bpsSpan for the estimate, thus basing it on current speed
      * @return the extimated time of arrival, "N/A" if it is incalculable
      */
     public String getETAAsString(boolean useCurrentSpeed){
@@ -351,23 +376,6 @@ public class Profiler {
             return "N/A";
         }
         return String.format("%1$tF %1$tT", eta);
-    }
-
-    /**
-     * Verbose status including average speed, total beats and ETA.
-     * @param useCurrentSpeed use the bpsSpan for the estimate, thus basing it
-     *                        on current speed
-     * @return a verbose status.
-     */
-    public String getStatus(boolean useCurrentSpeed) {
-        StringWriter sw = new StringWriter(500);
-        sw.append("Beats: ").append(Long.toString(getBeats()));
-        sw.append(", time: ").append(getSpendTime());
-        sw.append(", average: ").
-                append(Double.toString(getBps(useCurrentSpeed)));
-        sw.append(" beats/second, ETA: ").
-                append(getETAAsString(useCurrentSpeed));
-        return sw.toString();
     }
 
     /**

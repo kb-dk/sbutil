@@ -29,6 +29,7 @@ import java.io.DataInput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.util.Random;
 import java.nio.channels.FileChannel;
 import java.nio.ByteBuffer;
@@ -38,6 +39,13 @@ import junit.framework.TestSuite;
 import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
+/**
+ * LineReader Tester.
+ *
+ * @author <Authors name>
+ * @since <pre>06/15/2007</pre>
+ * @version 1.0
+ */
 @SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class LineReaderTest extends TestCase {
     private static Logger log = Logger.getLogger(LineReaderTest.class);
@@ -50,12 +58,10 @@ public class LineReaderTest extends TestCase {
         super(name);
     }
 
-    @Override
     public void setUp() throws Exception {
         super.setUp();
     }
 
-    @Override
     public void tearDown() throws Exception {
         super.tearDown();
     }
@@ -755,28 +761,6 @@ public class LineReaderTest extends TestCase {
         }
     }
 
-    public void testClear() throws Exception {
-        File temp = createTempFile();
-        LineReader lr = new LineReader(temp, "rw");
-        lr.write("Hello World");
-        lr.flush();
-        assertEquals("The size of the file should be right",
-                     "Hello World".length(), temp.length());
-        lr.close();
-        temp.delete();
-        temp.createNewFile();
-        lr = new LineReader(temp, "rw");
-        assertEquals("The cleared file should have zero length",
-                     0, lr.length());
-        lr.write("Foo");
-        lr.close();
-        assertEquals("The new file should have the correct length",
-                     "Foo".length(), temp.length());
-        Thread.sleep(2000);
-        assertEquals("The new file should have the correct length after sleep",
-                     "Foo".length(), temp.length());
-    }
-
     public void testWritereadAlternate() throws Exception {
         File temp = createTempFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -819,110 +803,5 @@ public class LineReaderTest extends TestCase {
 
     public LineReader getLR() throws IOException {
         return new LineReader(createTempFile(), "rw");
-    }
-
-    public void testNoTruncatePlainWrite() throws Exception {
-        File file = createTempFile();
-        LineReader lr = new LineReader(file, "rw");
-        lr.write(new byte[LineReader.BUFFER_SIZE * 2]);
-        lr.close();
-        System.gc();
-        Thread.sleep(5000); // To ensure cleanup has been performed
-        assertEquals("A file of length " + LineReader.BUFFER_SIZE * 2
-                     + " should be created",
-                     LineReader.BUFFER_SIZE * 2, file.length());
-    }
-
-    public void testNoTruncateWriteRead() throws Exception {
-        File file = createTempFile();
-        LineReader lr = new LineReader(file, "rw");
-        lr.write(new byte[LineReader.BUFFER_SIZE * 2]);
-        lr.seek(0);
-        lr.read();
-        lr.close();
-        System.gc();
-        Thread.sleep(5000); // To ensure cleanup has been performed
-        assertEquals("A file of length " + LineReader.BUFFER_SIZE * 2
-                     + " should be created",
-                     LineReader.BUFFER_SIZE * 2, file.length());
-    }
-
-    public void testNoTruncateWriteWrite() throws Exception {
-        File file = createTempFile();
-        LineReader lr = new LineReader(file, "rw");
-        lr.write(new byte[LineReader.BUFFER_SIZE * 2]);
-        lr.seek(0);
-        lr.write(87);
-        lr.close();
-        System.gc();
-        Thread.sleep(5000); // To ensure cleanup has been performed
-        assertEquals("A file of length " + LineReader.BUFFER_SIZE * 2
-                     + " should be created",
-                     LineReader.BUFFER_SIZE * 2, file.length());
-    }
-
-    public void testNoTruncateMonkey() throws Exception {
-        File file = createTempFile();
-        LineReader lr = new LineReader(file, "rw");
-        lr.write(new byte[LineReader.BUFFER_SIZE]);
-        lr.seek(0);
-        lr.write(87);
-        lr.seek(LineReader.BUFFER_SIZE / 2);
-        lr.read();
-        lr.seek(lr.length());
-        lr.write(new byte[LineReader.BUFFER_SIZE]);
-        lr.seek(0);
-        lr.read();
-        lr.write(87);
-        lr.close();
-        System.gc();
-        Thread.sleep(5000); // To ensure cleanup has been performed
-        assertEquals("A file of length " + LineReader.BUFFER_SIZE * 2
-                     + " should be created",
-                     LineReader.BUFFER_SIZE * 2, file.length());
-
-        lr = new LineReader(file, "r");
-        lr.seek(0);
-        assertEquals("The int at position 1 should be correct",
-                     87, lr.readInt());
-        lr.close();
-    }
-    public void testAlternating() throws Exception {
-        File file = createTempFile();
-        LineReader lr = new LineReader(file, "rw");
-        lr.setBufferSize(10);
-        lr.write(new byte[LineReader.BUFFER_SIZE]);
-        lr.seek(0);
-        lr.writeInt(87);
-        lr.seek(0);
-        assertEquals("The int at position 1 should be correct",
-                     87, lr.readInt());
-
-        lr.seek(LineReader.BUFFER_SIZE / 2);
-        lr.read();
-        lr.seek(lr.length());
-        lr.write(new byte[LineReader.BUFFER_SIZE]);
-        lr.seek(0);
-        lr.read();
-        lr.writeInt(87);
-        lr.close();
-        assertEquals("A file of length " + LineReader.BUFFER_SIZE * 2
-                     + " should be created",
-                     LineReader.BUFFER_SIZE * 2, file.length());
-
-        lr = new LineReader(file, "rw");
-        lr.seek(lr.length());
-        lr.write(new byte[10]);
-        lr.write(new byte[9]);
-        lr.write(new byte[11]);
-        lr.close();
-
-        lr = new LineReader(file, "r");
-        lr.seek(1);
-        assertEquals("The int at position 1 should still be correct",
-                     87, lr.readInt());
-        assertEquals("The length should be correct",
-                     2 * LineReader.BUFFER_SIZE + 10 + 9 + 11, lr.length());
-        lr.close();
     }
 }

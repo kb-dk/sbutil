@@ -1,19 +1,21 @@
 package dk.statsbiblioteket.util.rpc;
 
 import junit.framework.TestCase;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * "Abstract" test suite to help test {@link ConnectionManager} implementations.
  */
 public class ConnectionManagerTestCase extends TestCase {
 
+    static final Log log = LogFactory.getLog(ConnectionManagerTestCase.class);
+
     ConnectionManager<? extends TestIFace> cm;
     ConnectionFactory<? extends TestIFace> cf;
     String connId;
 
     public void tearDown () throws Exception {
-
-
         assertEquals("Connection leak detected", 0, getTotalRefCount(cm));
         cm.close();
     }
@@ -47,9 +49,9 @@ public class ConnectionManagerTestCase extends TestCase {
 
         // Wait until connection is reaped. Connection should now be dropped
         // from the cache
-        Thread.sleep ((cm.getLingerTime() + 1)*1000);
+        Thread.sleep ((cm.getLingerTime() * 3)*1000);
         assertEquals("All connections should be purged. "
-                     + "Expecting connection count of 1",
+                     + "Expecting connection count of 0",
                      0, cm.getConnections().size());
         assertEquals(0, ctx.getRefCount());
     }
@@ -64,13 +66,14 @@ public class ConnectionManagerTestCase extends TestCase {
         // Verify state if we allocate another connection handle
         ConnectionContext ctx2 = cm.get(connId);
         assertEquals(1, cm.getConnections().size());
-        assertEquals(ctx1, ctx2); // Contexts on same connection should be shared
+        assertSame(ctx1, ctx2); // Contexts on same connection should be shared
         assertEquals(2, ctx1.getRefCount());
         assertEquals(2, ctx2.getRefCount()); // Redundant since ctx1 == ctx2
 
         // Release first handle and check state
         cm.release (ctx1);
         assertEquals(1, cm.getConnections().size());
+        assertEquals(1, ctx1.getRefCount()); // ctx1 and ctx are the same, but we have paranoia
         assertEquals(1, ctx2.getRefCount());
 
         // Release second handle
@@ -80,9 +83,9 @@ public class ConnectionManagerTestCase extends TestCase {
 
         // Wait until connection is reaped. Connection should now be dropped
         // from the cache
-        Thread.sleep ((cm.getLingerTime() + 1)*1000);
+        Thread.sleep ((cm.getLingerTime() * 3)*1000);
         assertEquals("All connections should be purged. "
-                     + "Expecting connection count of 1",
+                     + "Expecting connection count of 0",
                      0, cm.getConnections().size());
         assertEquals(0, ctx2.getRefCount());
     }
