@@ -135,13 +135,13 @@ public class ReplacePerformanceTest extends TestCase {
         source = getRandomReader(replacements,
                                  Math.max(2, replacements.size() / 4),
                                  0.01, reads);
-        TokenReplaceReader tokenReplacer =
+        /*TokenReplaceReader tokenReplacer =
                 new TokenReplaceReader(source, replacements);
 
         profiler.reset();
         emptyReader(tokenReplacer);
         log.info(reads + " reads in " + profiler.getSpendTime()
-                 + " from TokenReplaceReader ");
+                 + " from TokenReplaceReader ");*/
     }
 
     private void emptyReader(Reader reader) throws IOException {
@@ -154,7 +154,7 @@ public class ReplacePerformanceTest extends TestCase {
         }
     }
 
-    public void testEquality() throws Exception {
+    /*public void testEquality() throws Exception {
         testEquality(10000, getSmallReplacements());
     }
 
@@ -164,7 +164,7 @@ public class ReplacePerformanceTest extends TestCase {
         ReplaceReader replacer = new StringReplacer(replacements);
         replacer.setSource(source);
         Reader tsource = getRandomReader(replacements, 2, 0.01, reads);
-        Reader treplacer = new TokenReplaceReader(tsource, replacements);
+        //Reader treplacer = new TokenReplaceReader(tsource, replacements);
 
         Reader directsource = getRandomReader(replacements, 2, 0.01, reads);
         StringWriter sw = new StringWriter(50);
@@ -177,7 +177,7 @@ public class ReplacePerformanceTest extends TestCase {
             assertEquals("The chars at position " + i + " should be the same",
                          (char)replacer.read(), (char)treplacer.read());
         }
-    }
+    }*/
 
     private Map<String, String> getSmallReplacements() {
         Map<String, String> replacements =
