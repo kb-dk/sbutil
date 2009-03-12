@@ -58,10 +58,34 @@ public class Profiler {
     private long pauseTime = 0; // The timestamp for pausing
 
     /**
-     * Create an ProgressFeedback and set the internal timestamp to now.
+     * Create a Profiler and set the internal timestamp to now.
+     * The Profiler will start measuring immediately.
      */
     public Profiler() {
         reset();
+    }
+
+    /**
+     * Create a Profiler and set the internal timestamp to now.
+     * The Profiler will start measuring immediately.
+     * @param expectedTotal the expected total, used for ETA-calculations.
+     */
+    public Profiler(int expectedTotal) {
+        reset();
+        setExpectedTotal(expectedTotal);
+    }
+
+    /**
+     * Create a Profiler and set the internal timestamp to now.
+     * The Profiler will start measuring immediately.
+     * @param expectedTotal the expected total, used for ETA-calculations.
+     * @param bpsSpan       the number of stored beat-timestamps. 
+     *                      See {@link #setBpsSpan(int)} for explanation.
+     */
+    public Profiler(int expectedTotal, int bpsSpan) {
+        reset();
+        setExpectedTotal(expectedTotal);
+        setBpsSpan(bpsSpan);
     }
 
     /** Mutators */
