@@ -27,6 +27,8 @@ import junit.framework.TestCase;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.io.Reader;
+import java.io.StringReader;
 
 /**
  * Test suite for the {@link Strings} class.
@@ -92,5 +94,17 @@ public class StringsTest extends TestCase {
         String s = Strings.join (l, " ABE ");
         assertEquals("foo ABE bar ABE baz", s);
     }
-    
+
+    public void testFlushSmall() throws Exception {
+        // We try tree times to check that we
+        // properly reset the thread local cache
+        Reader r = new StringReader("Foo");
+        assertEquals("Foo", Strings.flush(r));
+
+        r = new StringReader("Barbarina");
+        assertEquals("Barbarina", Strings.flush(r));
+
+        r = new StringReader("1");
+        assertEquals("1", Strings.flush(r));
+    }
 }

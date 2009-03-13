@@ -24,9 +24,9 @@ package dk.statsbiblioteket.util;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 
-import java.io.StringWriter;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Collection;
+import java.nio.CharBuffer;
 
 /**
  * Convenience methods for string manipulations.
@@ -34,6 +34,29 @@ import java.util.Collection;
 @QAInfo(state=QAInfo.State.QA_NEEDED,
         level=QAInfo.Level.NORMAL)
 public class Strings {
+
+    private static final ThreadLocal<StringBuilder> localBuilder =
+            new ThreadLocal<StringBuilder>() {
+                @Override
+                protected StringBuilder initialValue() {
+                    return new StringBuilder();
+                }
+
+                @Override
+                public StringBuilder get() {
+                    StringBuilder b = super.get();
+                    b.setLength(0);
+                    return b;
+                }
+            };
+
+    private static final ThreadLocal<char[]> localBuffer =
+            new ThreadLocal<char[]>() {
+                @Override
+                protected char[] initialValue() {
+                    return new char[1024];
+                }
+            };
 
     /**
      * Convenience method: Extract the stacktrace from an Exception and returns
@@ -109,5 +132,52 @@ public class Strings {
         }
 
         return result == null ? "" : result;
+    }
+
+    /**
+     * Read all character data from {@code r} and create a String based on
+     * that data.
+     * <p/>
+     * This method is optimized to only allocate the needed space for the final
+     * string and not any intermediate buffers.
+     *
+     * @param r the reader to flush
+     * @throws IOException if failing to read from {@code r}
+     * @return a string representation of character stream
+     */
+    public static String flush(Reader r) throws IOException {
+        int numRead;
+        char[] buf = localBuffer.get();
+        StringBuilder b = localBuilder.get();
+
+        while ((numRead = r.read(buf)) != -1) {
+            b.append(buf, 0, numRead);
+        }
+
+        r.close();
+        return b.toString();
+    }
+
+    /**
+     * Read all character data from {@code r} and create a String based on
+     * that data. The difference from this method to
+     * {@link #flush(java.io.Reader)} is that it can not throw an IOException.
+     * It is expected that the caller guarantees that the character stream is
+     * based on a local memory buffer.
+     * <p/>
+     * This method is optimized to only allocate the needed space for the final
+     * string and not any intermediate buffers.
+     *
+     * @param r the reader to flush
+     * @throws RuntimeException if failing to read from {@code r}
+     * @return a string representation of character stream
+     */
+    public static String flushLocal(Reader r) {
+        try {
+            return flush(r);
+        } catch (IOException e) {
+            throw new RuntimeException("Unexpected IOException when "
+                                       + "reading character stream", e);
+        }
     }
 }

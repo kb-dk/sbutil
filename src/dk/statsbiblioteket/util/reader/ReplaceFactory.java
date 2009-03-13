@@ -25,6 +25,7 @@ package dk.statsbiblioteket.util.reader;
 import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * A factory for creating Text-oriented replacers. A replacer will be selected
@@ -65,5 +66,29 @@ public class ReplaceFactory {
             return new CharArrayReplacer(rules);
         }
         return new StringReplacer(rules);
+    }
+
+    /**
+     * Dynamically build a rule map where {@code rules[i]} maps to
+     * {@code rules[++i]}. The rule map is then paseed to
+     * {@link #getReplacer(Map)}
+     *
+     * @param rules what to replace in the form of target=>replacement pairs.
+     * @return a replacer made from the rules
+     * @throws IllegalArgumentException if passed an uneven number of arguments
+     */
+    public static ReplaceReader getReplacer(String... rules) {
+        if (rules.length % 2 != 0) {
+            throw new IllegalArgumentException("Uneven number of arguments");
+        }
+
+        Map<String,String> ruleMap = new HashMap<String,String>(rules.length,
+                                                                1F);
+
+        for (int i = 0; i < rules.length - 1; i++) {
+            ruleMap.put(rules[i], rules[++i]);
+        }
+
+        return getReplacer(ruleMap);
     }
 }

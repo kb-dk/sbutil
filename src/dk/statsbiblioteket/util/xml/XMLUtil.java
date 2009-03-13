@@ -1,4 +1,4 @@
-/* $Id:$
+/* $Id$
  *
  * The Summa project.
  * Copyright (C) 2005-2008  The State and University Library
@@ -20,8 +20,13 @@
 package dk.statsbiblioteket.util.xml;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
+import dk.statsbiblioteket.util.reader.ReplaceReader;
+import dk.statsbiblioteket.util.reader.ReplaceFactory;
+import dk.statsbiblioteket.util.Strings;
 
 import javax.xml.stream.events.XMLEvent;
+import java.io.StringReader;
+import java.io.IOException;
 
 /**
  * Misc. helpers for XML handling.
@@ -30,18 +35,28 @@ import javax.xml.stream.events.XMLEvent;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class XMLUtil {
+
+    private static final ThreadLocal<ReplaceReader> localEncoder =
+            new ThreadLocal<ReplaceReader>() {
+                @Override
+                protected ReplaceReader initialValue() {
+                    return ReplaceFactory.getReplacer("&", "&amp;",
+                                                      "\"", "&quot;",
+                                                      "<", "&lt;",
+                                                      ">", "&gt;");
+                }
+    };    
+
     /**
-     * Performs a simple entity-encoding of input, maing it safe to include in
+     * Performs a simple entity-encoding of input, making it safe to include in
      * XML.
      * @param input the text to encode.
      * @return the text with &, ", < and > encoded.
      */
-    // TODO: Change this to use the high-performance replace-framework
     public static String encode(String input) {
-        input = input.replace("&", "&amp;");
-        input = input.replace("\"", "&quot;");
-        input = input.replace("<", "&lt;");
-        return input.replace(">", "&gt;");
+        ReplaceReader r = localEncoder.get();
+        r.setSource(new StringReader(input));
+        return Strings.flushLocal(r);
     }
 
     /**
