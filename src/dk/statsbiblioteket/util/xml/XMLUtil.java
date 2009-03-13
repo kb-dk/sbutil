@@ -60,8 +60,8 @@ public class XMLUtil {
     }
 
     /**
-     * Converts an XMLEvent-id to String. Used for primarily debugging and error
-     * messages.
+     * Converts an {@link XMLEvent}-id to String. Used for primarily
+     * debugging and error messages.
      * @param eventType the XMLEvent-id.
      * @return the event as human redable String.
      */
