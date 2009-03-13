@@ -1,4 +1,4 @@
-/* $Id:$
+/* $Id$
  *
  * The Summa project.
  * Copyright (C) 2005-2008  The State and University Library
@@ -49,7 +49,7 @@ public class XSLT {
      * @param xslt the location of the XSLT.
      * @throws javax.xml.transform.TransformerException thrown if for some
      *         reason a Transformer could not be instantiated.
-     *         This is normally due to problems with the xsltLocation.
+     *         This is normally due to problems with the {@code xslt} URL
      * @return a Transformer based on the given XSLT.
      * @see {@link #getLocalTransformer} for reusing Transformers.
      */
@@ -63,7 +63,7 @@ public class XSLT {
         Transformer transformer;
         try {
             if (xslt == null) {
-                throw new NullPointerException("xsltLocation is null");
+                throw new NullPointerException("xslt URL is null");
             }
             in = xslt.openStream();
             transformer = tfactory.newTransformer(

@@ -136,31 +136,48 @@ public class Strings {
 
     /**
      * Read all character data from {@code r} and create a String based on
-     * that data.
+     * that data. The reader is guaranteed to be closed when this method
+     * returns.
      * <p/>
      * This method is optimized to only allocate the needed space for the final
      * string and not any intermediate buffers.
      *
      * @param r the reader to flush
      * @throws IOException if failing to read from {@code r}
-     * @return a string representation of character stream
+     * @return a string representation of the character stream
      */
     public static String flush(Reader r) throws IOException {
         int numRead;
         char[] buf = localBuffer.get();
         StringBuilder b = localBuilder.get();
 
-        while ((numRead = r.read(buf)) != -1) {
-            b.append(buf, 0, numRead);
+        try{
+            while ((numRead = r.read(buf)) != -1) {
+                b.append(buf, 0, numRead);
+            }
+        } finally {
+            r.close();
         }
 
-        r.close();
         return b.toString();
     }
 
     /**
+     * As {@link #flush(java.io.Reader)}, but operate on a InputStream
+     * @param in the input stream to flush
+     * @throws IOException if failing to read from {@code in}
+     * @return a string representation of the input stream
+     */
+    public static String flush(InputStream in) throws IOException {
+        return flush(new InputStreamReader(in));
+    }
+
+    /**
      * Read all character data from {@code r} and create a String based on
-     * that data. The difference from this method to
+     * that data. The reader is guaranteed to be closed when this method
+     * returns.
+     * <p/>
+     * The difference from this method to
      * {@link #flush(java.io.Reader)} is that it can not throw an IOException.
      * It is expected that the caller guarantees that the character stream is
      * based on a local memory buffer.
@@ -170,7 +187,7 @@ public class Strings {
      *
      * @param r the reader to flush
      * @throws RuntimeException if failing to read from {@code r}
-     * @return a string representation of character stream
+     * @return a string representation of the character stream
      */
     public static String flushLocal(Reader r) {
         try {
@@ -179,5 +196,16 @@ public class Strings {
             throw new RuntimeException("Unexpected IOException when "
                                        + "reading character stream", e);
         }
+    }
+
+    /**
+     * As {@link #flushLocal(java.io.Reader)}, but operate on a InputStream
+     *
+     * @param in the input stream to flush
+     * @throws RuntimeException if failing to read from {@code in}
+     * @return a string representation of the input stream
+     */
+    public static String flushLocal(InputStream in) {
+        return flushLocal(new InputStreamReader(in));
     }
 }
