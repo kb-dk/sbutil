@@ -96,18 +96,19 @@ public class Strings {
             throw new NullPointerException("Delimiter argument is null");
         }
 
-        String result = null;
+        StringBuilder b = localBuilder.get();
 
         for (Object o : c) {
-            if (result == null) {
-                result = (o == null ? "" : o.toString());
+            if (b.length() == 0) {
+                b.append(o == null ? "" : o.toString());
             } else {
-                result += delimiter + (o == null ? "" : o.toString());
+                b.append (delimiter);
+                b.append(o == null ? "" : o.toString());
             }
 
         }
 
-        return result == null ? "" : result;
+        return b.toString();
     }
 
     /**
@@ -120,18 +121,19 @@ public class Strings {
             throw new NullPointerException("Delimiter argument is null");
         }
 
-        String result = null;
+        StringBuilder b = localBuilder.get();
 
         for (Object o : a) {
-            if (result == null) {
-                result = (o == null ? "" : o.toString());
+            if (b.length() == 0) {
+                b.append(o == null ? "" : o.toString());
             } else {
-                result += delimiter + (o == null ? "" : o.toString());
+                b.append (delimiter);
+                b.append(o == null ? "" : o.toString());
             }
 
         }
 
-        return result == null ? "" : result;
+        return b.toString();
     }
 
     /**

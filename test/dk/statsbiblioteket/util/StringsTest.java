@@ -27,6 +27,7 @@ import junit.framework.TestCase;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Arrays;
 import java.io.Reader;
 import java.io.StringReader;
 
@@ -53,6 +54,14 @@ public class StringsTest extends TestCase {
         assertTrue(!"".equals(trace));
     }
 
+    public void testJoinSimple() {
+        assertEquals("abe", Strings.join(Arrays.asList("abe"), "."));
+        assertEquals("abe.foo", Strings.join(Arrays.asList("abe", "foo"), "."));
+
+        assertEquals("abe", Strings.join(new String[]{"abe"}, "."));
+        assertEquals("abe.foo", Strings.join(new String[]{"abe", "foo"}, "."));
+    }
+
     public void testJoinNulls () throws Exception {
         List<Object> l = new ArrayList<Object>();
 
@@ -73,7 +82,7 @@ public class StringsTest extends TestCase {
         // Check that we do not fail if the list contains a null
         l.add ("foo");
         l.add (null);
-        l.add (new ArrayList());
+        l.add ("bar");
         System.out.println (Strings.join(l, ":"));
     }
 
