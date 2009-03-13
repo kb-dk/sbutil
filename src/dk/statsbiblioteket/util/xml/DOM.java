@@ -28,10 +28,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xml.sax.InputSource;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
+import javax.xml.xpath.*;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerException;
@@ -40,7 +37,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.dom.DOMSource;
-import java.text.ParseException;
+import javax.xml.namespace.QName;
 import java.io.StringWriter;
 import java.io.IOException;
 import java.io.StringReader;
@@ -51,7 +48,7 @@ import java.io.InputStream;
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
-        author = "te")
+        author = "te, mke")
 public class DOM {
     private static Log log = LogFactory.getLog(DOM.class);
 
@@ -59,100 +56,22 @@ public class DOM {
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
     /**
-     * Wrapper for {@link #getValue} that uses Floats.
-     * @param xPath       an XPath instance (a new instance can be created with
-     *                    XPathFactory.newInstance().newXPath()). The instance
-     *                    should be reused for speed, but is not thread-safe!
-     * @param node         the node with the wanted attribute.
-     * @param path         the path to extract.
-     * @param defaultValue the default value.
-     * @return             the value of the path, if existing, else
-     *                     defaultValue.
-     * @throws java.text.ParseException if there was an error parsing.
+     * Importatnt: All access to the xpathCompiler should be synchronized on it
+     * since it is not thread safe!
      */
-    public static Float getValue(
-            XPath xPath, Node node, String path, Float defaultValue)
-            throws ParseException {
-        String sVal = getValue(xPath, node, path, (String)null);
-        try {
-            return sVal == null ? defaultValue : Float.valueOf(sVal);
-        } catch (NumberFormatException e) {
-            log.warn("Expected a float for path '" + path
-                     + "' but got '" + sVal + "'");
-            return defaultValue;
-        }
-    }
+    private static final XPath xpathCompiler =
+                                          XPathFactory.newInstance().newXPath();
 
     /**
-     * Wrapper for {@link #getValue} that uses Booleans.
-     * @param xPath       an XPath instance (a new instance can be created with
-     *                    XPathFactory.newInstance().newXPath()). The instance
-     *                    should be reused for speed, but is not thread-safe!
-     * @param node         the node with the wanted attribute.
-     * @param path         the path to extract.
-     * @param defaultValue the default value.
-     * @return             the value of the path, if existing, else
-     *                     defaultValue.
-     * @throws ParseException if there was an error parsing.
+     * A thread local cache of the 5 most recently used XPath expressions
      */
-    public static Boolean getValue(
-            XPath xPath, Node node, String path, Boolean defaultValue)
-            throws ParseException {
-        return Boolean.valueOf(getValue(
-                xPath, node, path, Boolean.toString(defaultValue)));
-
-    }
-
-    /**
-     * Extract the given value from the node as a String. If the value cannot
-     * be extracted, defaultValue is returned.
-     * </p><p>
-     * Example: To get the value of the attribute "foo" in the node, specify
-     *          "@foo" as the path.
-     * </p><p>
-     * Note: This method does not handle namespaces explicitely.
-     * @param xPath       an XPath instance (a new instance can be created with
-     *                    XPathFactory.newInstance().newXPath()). The instance
-     *                    should be reused for speed, but is not thread-safe!
-     * @param node         the node with the wanted attribute.
-     * @param path         the path to extract.
-     * @param defaultValue the default value.
-     * @return             the value of the path, if existing, else
-     *                     defaultValue.
-     * @throws ParseException if there was an error parsing.
-     */
-    public static String getValue(
-            XPath xPath, Node node, String path, String defaultValue)
-            throws ParseException {
-        if (log.isTraceEnabled()) {
-            log.trace("getSingleValue: Extracting path '" + path + "'");
-        }
-        String nodeValue;
-        try {
-            if (!((Boolean) xPath.evaluate(path, node,
-                                           XPathConstants.BOOLEAN))) {
-                //noinspection DuplicateStringLiteralInspection
-                log.trace("No value defined for path '" + path
-                          + "'. Returning default value '"
-                          + defaultValue + "'");
-                return defaultValue;
+    private static ThreadLocal<LRUCache<String,XPathExpression>>
+        localXPathCache = new ThreadLocal<LRUCache<String,XPathExpression>>() {
+            @Override
+            protected LRUCache<String,XPathExpression> initialValue() {
+                return new LRUCache<String, XPathExpression>(10);
             }
-            nodeValue = xPath.evaluate(path, node);
-        } catch (XPathExpressionException e) {
-            throw (ParseException) new ParseException(String.format(
-                    "Invalid expression '%s'", path), -1).initCause(e);
-        }
-        if (nodeValue == null) {
-            //noinspection DuplicateStringLiteralInspection
-            log.trace("Got null value from expression '" + path
-                      + "'. Returning default value '" + defaultValue
-                      + "'");
-            return defaultValue;
-        }
-        log.trace("Got value '" + nodeValue + "' from expression '"
-                  + path + "'");
-        return nodeValue;
-    }
+        };
 
     /**
      * Extracts all textual and CDATA content from the given node and its
@@ -180,37 +99,48 @@ public class DOM {
     /**
      * Parses a XML document from a String to a DOM.
      * @param xmlString a String containing an XML document.
-     * @return The document in a DOM.
-     * @throws org.xml.sax.SAXException if there was problem parsing the
-     *         document.
-     * @throws java.io.IOException should not be thrown, indicates an error
-     *         reading from the String.
-     * @throws javax.xml.parsers.ParserConfigurationException should not happen,
-     *         no special argumetns are passed to the parser.
+     * @return The document in a DOM or {@code null} on errors.
      */
-    public static Document stringToDOM(String xmlString)
-            throws SAXException, IOException, ParserConfigurationException {
-        InputSource in = new InputSource();
-        in.setCharacterStream(new StringReader(xmlString));
-        return DocumentBuilderFactory.newInstance().newDocumentBuilder().
-                parse(in);
+    public static Document stringToDOM(String xmlString) {
+        try {
+            InputSource in = new InputSource();
+            in.setCharacterStream(new StringReader(xmlString));
+            return DocumentBuilderFactory.newInstance().newDocumentBuilder().
+                    parse(in);
+        } catch (IOException e) {
+            log.warn("I/O error when parsing XML :" + e.getMessage() + "\n"
+                     + xmlString, e);
+        } catch (SAXException e) {
+            log.warn("Parse error when parsing XML :" + e.getMessage() + "\n"
+                     + xmlString, e);
+        } catch (ParserConfigurationException e) {
+            log.warn("Parser configuration error when parsing XML :"
+                     + e.getMessage() + "\n"
+                     + xmlString, e);
+        }
+        return null;
     }
 
     /**
-     * Parses a XML document from a stream to a DOM.
+     * Parses a XML document from a stream to a DOM or return
+     * {@code null} on error.
+     *
      * @param xmlStream a stream containing an XML document.
      * @return The document in a DOM
-     * @throws org.xml.sax.SAXException if there was problem parsing the
-     *         document.
-     * @throws java.io.IOException should not be thrown, indicates an error
-     *         reading from the String.
-     * @throws javax.xml.parsers.ParserConfigurationException should not happen,
-     *         no special argumetns are passed to the parser.
      */
-    public static Document streamToDOM(InputStream xmlStream)
-            throws SAXException, IOException, ParserConfigurationException {
-        return DocumentBuilderFactory.newInstance().newDocumentBuilder().
-                parse(xmlStream);
+    public static Document streamToDOM(InputStream xmlStream) {
+        try {
+            return DocumentBuilderFactory.newInstance().newDocumentBuilder().
+                    parse(xmlStream);
+        } catch (IOException e) {
+            log.warn("I/O error when parsing stream :" + e.getMessage(), e);
+        } catch (SAXException e) {
+            log.warn("Parse error when parsing stream :" + e.getMessage(), e);
+        } catch (ParserConfigurationException e) {
+            log.warn("Parser configuration error when parsing XML stream: "
+                     + e.getMessage(), e);
+        }
+        return null;
     }
 
     /**
@@ -250,70 +180,191 @@ public class DOM {
         return sw.toString();
     }
 
-    private static ThreadLocal<XPath> localXPathCache =
-            createLocalXPathCache();
-    private static ThreadLocal<XPath> createLocalXPathCache() {
-        return new ThreadLocal<XPath>() {
-            @Override
-            protected XPath initialValue() {
-                return XPathFactory.newInstance().newXPath();
+    /**
+     * Extract a double precission floating point value from {@code node} or
+     * return {@code defaultValue} if it is not found
+     *
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the XPath to extract.
+     * @param defaultValue the default value.
+     * @return             the value of the path, if existing, else
+     *                     defaultValue
+     */
+    public static Double selectDouble(Node node,
+                                      String xpath, Double defaultValue) {
+        Double d = (Double)selectObject(node, xpath, XPathConstants.NUMBER);
+        if(d == null || d.equals(Double.NaN)) {
+            d = defaultValue;
+        }
+        return d;
+    }
+
+    /**
+     * Extract a double precission floating point value from {@code node} or
+     * return {@code null} if it is not found
+     *
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the XPath to extract.
+     * @return             the value of the path or {@code null}
+     */
+    public static Double selectDouble (Node node, String xpath) {
+        return selectDouble(node, xpath, null);
+    }
+
+    /**
+     * Extract a boolean value from {@code node} or return {@code defaultValue}
+     * if there is no boolean value at {@code xpath}
+
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the path to extract.
+     * @param defaultValue the default value.
+     * @return             the value of the path, if existing, else
+     *                     {@code defaultValue}
+     */
+    public static Boolean selectBoolean(Node node,
+                                        String xpath, Boolean defaultValue) {
+        if (defaultValue == null || Boolean.TRUE.equals(defaultValue)) {
+            // Using QName.BOOLEAN will always return false if it is not found
+            // therefore we must try and look it up as a string
+            String tmp = selectString(node, xpath, null);
+            if (tmp == null) {
+                return defaultValue;
             }
-        };
+            return Boolean.parseBoolean(tmp);
+        } else {
+            // The defaultValue is false so we can always just return what
+            // we get from the XPath expression
+            return (Boolean)selectObject(node, xpath, XPathConstants.BOOLEAN);
+        }
+    }
+
+    /**
+     * Extract a boolean value from {@code node} or return {@code false}
+     * if there is no boolean value at {@code xpath}
+     *
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the path to extract.
+     * @return             the value of the path, if existing, else
+     *                     {@code false}
+     */
+    public static Boolean selectBoolean(Node node, String xpath) {
+        return selectBoolean(node, xpath, false);
+    }
+
+    /**
+     * Extract the given value from the node as a String or if the value cannot
+     * be extracted, {@code defaultValue} is returned.
+     * <p/>
+     * Example: To get the value of the attribute "foo" in the node, specify
+     *          "@foo" as the path.
+     * <p/>
+     * Note: This method does not handle namespaces explicitely.
+     *
+     * @param node         the node with the wanted attribute
+     * @param xpath        the XPath to extract.
+     * @param defaultValue the default value
+     * @return             the value of the path, if existing, else
+     *                     {@code defaultValue}
+     */
+    public static String selectString(Node node,
+                                      String xpath, String defaultValue) {
+        if ("".equals(defaultValue)) {
+            // By default the XPath engine will return an empty string
+            // if it is unable to find the requested path
+            return (String)selectObject(node, xpath, XPathConstants.STRING);
+        }
+
+        Node n = selectNode(node, xpath);
+        if (n == null) {
+            return defaultValue;
+        }
+
+        // FIXME: Can we avoid running the xpath twice?
+        //        The local expression cache helps, but anyway...
+        return (String)selectObject(node, xpath, XPathConstants.STRING);
+    }
+
+    /**
+     * Extract the given value from the node as a String or if the value cannot
+     * be extracted, the empty string is returned
+     * <p/>
+     * Example: To get the value of the attribute "foo" in the node, specify
+     *          "@foo" as the path.
+     * <p/>
+     * Note: This method does not handle namespaces explicitely.
+     *
+     * @param node         the node with the wanted attribute
+     * @param xpath        the XPath to extract
+     * @return             the value of the path, if existing, else
+     *                     the empty string
+     */
+    public static String selectString(Node node, String xpath) {
+        return selectString(node, xpath, "");
     }
 
     /**
      * Select the Node list with the given XPath.
      * </p><p>
-     * Note: This is a convenience-method that logs exceptions instead of
+     * Note: This is a convenience method that logs exceptions instead of
      *       throwing them.
      * @param dom   the root document.
      * @param xpath the xpath for the Node list.
-     * @return the NodeList or null if unattainable.
+     * @return the NodeList requested or an empty NodeList if unattainable
      */
-    public static NodeList xpathSelectNodeList(Node dom, String xpath) {
-        NodeList retval = null;
+    public static NodeList selectNodeList(Node dom, String xpath) {
+        return (NodeList) selectObject(dom, xpath, XPathConstants.NODESET);
+    }
+
+    /**
+     * Select the Node with the given XPath.
+     * </p><p>
+     * Note: This is a convenience method that logs exceptions instead of
+     *       throwing them.
+     * @param dom   the root document.
+     * @param xpath the xpath for the node.
+     * @return the Node or null if unattainable.
+     */
+    public static Node selectNode(Node dom, String xpath) {
+        return (Node) selectObject(dom, xpath, XPathConstants.NODE);
+    }
+
+    private static Object selectObject(Node dom,
+                                       String xpath, QName returnType) {
+        Object retval = null;
 
         try {
-            XPath xp = localXPathCache.get();
-            retval = (NodeList) xp.evaluate(xpath, dom, XPathConstants.NODESET);
+            // Get the compiled xpath from the cache or compile and
+            // cache it if we don't have it
+            LRUCache<String,XPathExpression> cache = localXPathCache.get();
+            XPathExpression exp = cache.get(xpath);
+            if (exp == null) {
+                synchronized (xpathCompiler) {
+                    exp = xpathCompiler.compile(xpath);
+                }
+                cache.put(xpath, exp);
+            }
+
+            retval = exp.evaluate(dom, returnType);
         } catch (NullPointerException e) {
             //noinspection DuplicateStringLiteralInspection
             log.debug(String.format(
-                    "NullPointerException in xpathSelectNodeList for '%s'. "
-                     + "Returning null", xpath), e);
+                    "NullPointerException when extracting XPath '%s' on " +
+                    "element type %s. Returning null",
+                    xpath, returnType.getLocalPart()), e);
         } catch (XPathExpressionException e) {
             log.warn(String.format(
-                    "XPathExpressionException for '%s' in xpathSelectNodeList",
-                    e));
+                    "Error in XPath expression '%s' when selecting %s: %s",
+                    xpath, returnType.getLocalPart(), e.getMessage()), e);
         }
 
         return retval;
     }
 
     /**
-     * Select the Node with the given XPath.
-     * </p><p>
-     * Note: This is a convenience-method that logs exceptions instead of
-     *       throwing them.
-     * @param dom   the root document.
-     * @param xpath the xpath for the node.
-     * @return the Node or null if unattainable.
+     * Package private method to clear the cache of precompiled XPath
+     * expressions. Used mainly for debugging and unit tests
      */
-    public static Node xpathSelectSingleNode(Node dom, String xpath) {
-        Node retval = null;
-
-        try {
-            XPath xp = localXPathCache.get();
-            retval = (Node) xp.evaluate(xpath, dom, XPathConstants.NODE);
-        } catch (NullPointerException e) {
-            //noinspection DuplicateStringLiteralInspection
-            log.debug(String.format(
-                    "NullPointerException in xpathSelectSingleNode for '%s'. "
-                     + "Returning null", xpath), e);
-        } catch (XPathExpressionException e) {
-            log.warn(String.format("XPathExpressionException for '%s' in "
-                                   + "xpathSelectSingleNode", e));
-        }
-        return retval;
+    static void clearXPathCache() {
+        localXPathCache.get().clear();
     }
 }
