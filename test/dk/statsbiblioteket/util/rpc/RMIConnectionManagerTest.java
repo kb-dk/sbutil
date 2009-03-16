@@ -4,7 +4,7 @@ package dk.statsbiblioteket.util.rpc;
  * Created by IntelliJ IDEA. User: mikkel Date: Jan 17, 2008 Time: 10:15:48 AM
  * To change this template use File | Settings | File Templates.
  */
-public class RMIConnectionManagerTest extends ConnectionManagerTestCase {
+public class RMIConnectionManagerTest extends ConnectionManagerTestBase {
 
     TestRemoteIFaceImpl server;
 

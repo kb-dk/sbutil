@@ -5,7 +5,7 @@ import java.io.IOException;
 /**
  * Test case for a local direct method call conn manager.
  */
-public class StaticConnectionManagerTest extends ConnectionManagerTestCase {
+public class StaticConnectionManagerTest extends ConnectionManagerTestBase {
 
     public void setUp () {
         connId = "foo is bar";

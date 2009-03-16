@@ -17,9 +17,10 @@
        o CharArrayReplacer
        o StringReplacer
 
- * Add CircularCharBuffer
+ * Add CircularCharBuffer which is a memory efficient way of buffering
+   character data in a queue/reader like manner
 
- * Add TextTransformer interfcace (implemented by ReplaceReaders)
+ * Add TextTransformer interface (implemented by ReplaceReaders)
 
  * Add a StaticConnectionFactory for the rpc package. It is used to do
    "local rpc" ie. the connection factory simply returns a given Java object,
