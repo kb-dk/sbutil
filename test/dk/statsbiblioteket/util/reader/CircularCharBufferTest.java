@@ -5,6 +5,8 @@ import junit.framework.TestSuite;
 import junit.framework.TestCase;
 import dk.statsbiblioteket.util.qa.QAInfo;
 
+import java.util.NoSuchElementException;
+
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te, mke")
@@ -91,6 +93,16 @@ public class CircularCharBufferTest extends TestCase {
                      3, b.read(buf, 0, 4));
         assertEquals("The extracted chars should be correct",
                      "bcd", new String(buf, 0, 3));
+    }
+
+    public void testEmpty() {
+        CircularCharBuffer b = new CircularCharBuffer(3, 3);
+        try {
+            b.take();
+            fail("take() on empty buffer should fail");
+        } catch (NoSuchElementException e) {
+            // Expected
+        }
     }
 
     public void testAsCharSequence () {

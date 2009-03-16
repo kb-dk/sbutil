@@ -136,12 +136,15 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     }
 
     /**
+     * Retrieve the first element in the buffer and move the buffer head
+     * to the next character.
+     *
      * @return the next char in the buffer.
-     * @throws ArrayIndexOutOfBoundsException if the buffer is empty.
+     * @throws NoSuchElementException if the buffer is empty.
      */
     public char take() {
         if (first == next) {
-            throw new ArrayIndexOutOfBoundsException(
+            throw new NoSuchElementException(
                     "take() called on empty buffer");
         }
         char result = array[first++];
