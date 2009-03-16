@@ -40,6 +40,8 @@
       <entry name="?*.html" />
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
+      <entry name="?*.xslt" />
+      <entry name="?*.xml" />
     </wildcardResourcePatterns>
   </component>
   <component name="CppTools.Loader" reportImplicitCastToBool="false" version="1" />

@@ -139,6 +139,9 @@ public class XSLT {
      */
     public static Transformer getLocalTransformer(URL xslt, Map parameters)
                                                    throws TransformerException {
+        if (xslt == null) {
+            throw new NullPointerException("The xslt was null");
+        }
         Map<String, Transformer> map = localMapCache.get();
         Transformer transformer = map.get(xslt.toString());
         if (transformer == null) {
