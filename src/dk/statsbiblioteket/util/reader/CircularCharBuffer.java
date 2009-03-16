@@ -31,7 +31,9 @@ import java.util.Iterator;
 import java.util.Collection;
 
 /**
- * A circular buffer of the atomic type char. Allows for dynamic resizing.
+ * A memory efficient queue-like mechanism for buffering character data.
+ * It avoids memory reallocations by traversing its internal character buffer
+ * in a circular manner, hence the name of the class.
  * </p><p>
  * The buffer is not thread-safe, it is method-compatible with Reader.
  * </p><p>
@@ -55,6 +57,18 @@ public class CircularCharBuffer implements CharSequence, Queue<Character> {
     private int next = 0; // if first = next, the buffer is empty
     private char[] array;
 
+    /**
+     * Create a new buffer with an initial capacity of {@code initialSize}
+     * characters and a maximum allowed size of {@code maxSize} characters.
+     * <p/>
+     * The buffer will automatically grow beyond {@code initialSize} as data
+     * is added, but will raise an error if the allocation would go above
+     * {@code maxSize}. 
+     *
+     * @param initialSize number of characters for the initial allocation
+     * @param maxSize maximum number of characters that can be stored in this
+     *                buffer
+     */
     public CircularCharBuffer(int initialSize, int maxSize) {
         array = new char[initialSize];
         this.max = maxSize;
