@@ -30,7 +30,7 @@ import java.util.*;
 import java.nio.CharBuffer;
 
 /**
- * A memory efficient queue-like mechanism for buffering character data.
+ * A memory efficient Queue/Reader-like mechanism for buffering character data.
  * It avoids memory reallocations by traversing its internal character buffer
  * in a circular manner, hence the name of the class.
  * </p><p>
@@ -223,7 +223,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * the buffer.
      * @return a char array with the full content of the buffer.
      */
-    public char[] getAll() {
+    public char[] takeAll () {
         int size = size();
         char[] result = new char[size];
         for (int i = 0 ; i < size ; i++) {
@@ -237,7 +237,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * buffer.
      * @return a String with the full content of the buffer;
      */
-    public String flushString () {
+    public String takeString () {
         int size = size();
         StringWriter sw = new StringWriter(size);
         for (int i = 0 ; i < size ; i++) {

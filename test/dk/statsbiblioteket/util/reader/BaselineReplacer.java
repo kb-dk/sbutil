@@ -75,7 +75,7 @@ public class BaselineReplacer extends ReplaceReader {
 
     @Override
     public ReplaceReader setSource(CircularCharBuffer charBuffer) {
-        in = new StringReader(transform(charBuffer.flushString()));
+        in = new StringReader(transform(charBuffer.takeString()));
         return this;
     }
 

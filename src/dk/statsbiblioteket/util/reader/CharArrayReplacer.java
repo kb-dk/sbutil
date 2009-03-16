@@ -132,7 +132,7 @@ public class CharArrayReplacer extends ReplaceReader {
         for (char c: chars) {
             out.put(rules[c]);
         }
-        return out.getAll();
+        return out.takeAll();
     }
 
     public char[] transformToCharsAllowInplace(char[] chars) {

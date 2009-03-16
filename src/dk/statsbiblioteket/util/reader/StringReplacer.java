@@ -105,7 +105,7 @@ public class StringReplacer extends ReplaceReader {
             }
             tempOutBuffer.put(replacement.to); // Add the replacement
         }
-        return tempOutBuffer.getAll();
+        return tempOutBuffer.takeAll();
     }
 
     @Override
