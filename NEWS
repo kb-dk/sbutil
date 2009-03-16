@@ -1,0 +1,39 @@
+=========================
+2009-02-18: SB Util 0.4.0
+=========================
+
+ * Introduce a new 'reader' package with a set of handy Readers
+
+   - CharSequenceReader a reader that can read from anything implementing the
+     CharSequence interface. This includes important classes such as
+     StringBuilder and StringBuffer, not to mention SB Util's own
+     CircularCharBuffer
+
+   - ReplaceReaders a new abstract class for readers that substitute substrings
+     on the fly while reading. There is included a factory for selecting an
+     appropriate optimized impl. class among one of
+
+       o CharReplacer
+       o CharArrayReplacer
+       o StringReplacer
+
+ * Add CircularCharBuffer
+
+ * Add TextTransformer interfcace (implemented by ReplaceReaders)
+
+ * Add a StaticConnectionFactory for the rpc package. It is used to do
+   "local rpc" ie. the connection factory simply returns a given Java object,
+   effectively dispatching method calls to a local object
+
+ * Introduce a new collection of XML utilities in the 'xml' package. The intent
+   of this new package is not to provide hardcore XML handling capabilities,
+   but providing a set of *thread safe* convenience functions that provide
+   good performance by using caching tricks and what not:
+
+   - DOM, a collection of DOM manipulation utilities, also with an XPath
+     selection API
+
+   - XMLUtil with a method for xml-escaping a string, and probably more to
+     come in later versions of sbutil
+
+   - XSLT with methods for easy XSLT processing

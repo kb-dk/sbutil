@@ -63,13 +63,33 @@ public class DOM {
                                           XPathFactory.newInstance().newXPath();
 
     /**
-     * A thread local cache of the 5 most recently used XPath expressions
+     * The size of the XPath statement cache.
+     */
+    private static int xpathCacheSize;
+    static {
+        try {
+            xpathCacheSize = Integer.parseInt(
+                                System.getProperty("sbutil.xpath.cache", "10"));
+        } catch (SecurityException e) {
+            // We are not allowed to read that property
+            xpathCacheSize = 10;
+        } catch (NumberFormatException e) {
+            System.err.println(
+                    "System property sbutil.xpath.cache is not a number, "
+                    + "using default value 10: "
+                    + System.getProperty("sbutil.xpath.cache"));
+            xpathCacheSize = 10;
+        }
+    }
+
+    /**
+     * A thread local cache of the most recently used XPath expressions
      */
     private static ThreadLocal<LRUCache<String,XPathExpression>>
         localXPathCache = new ThreadLocal<LRUCache<String,XPathExpression>>() {
             @Override
             protected LRUCache<String,XPathExpression> initialValue() {
-                return new LRUCache<String, XPathExpression>(10);
+                return new LRUCache<String, XPathExpression>(xpathCacheSize);
             }
         };
 
