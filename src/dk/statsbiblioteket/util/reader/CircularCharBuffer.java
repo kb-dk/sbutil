@@ -25,17 +25,14 @@ package dk.statsbiblioteket.util.reader;
 import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.StringWriter;
-import java.util.Queue;
-import java.util.NoSuchElementException;
-import java.util.Iterator;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * A memory efficient queue-like mechanism for buffering character data.
  * It avoids memory reallocations by traversing its internal character buffer
  * in a circular manner, hence the name of the class.
  * </p><p>
- * The buffer is not thread-safe, it is method-compatible with Reader.
+ * The buffer is not thread-safe. It is method-compatible with Reader.
  * </p><p>
  * Note: the Queue-calls involved conversion between char and Character and
  * are thus not the fastest.
@@ -43,7 +40,7 @@ import java.util.Collection;
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te, mke")
-public class CircularCharBuffer implements CharSequence, Queue<Character> {
+public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     private static final int GROWTH_FACTOR = 2;
 
     /**
@@ -428,11 +425,36 @@ public class CircularCharBuffer implements CharSequence, Queue<Character> {
         return false;
     }
 
+    /**
+     * The iterator is non-destructive. It is not fail-fast.
+     * @return an iterator over the content of the buffer.
+     */
     public Iterator<Character> iterator() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return new CircularCharBufferIterator();
+    }
+    private class CircularCharBufferIterator implements Iterator<Character> {
+        private int pos = 0;
+
+        public boolean hasNext() {
+            return pos < size();
+        }
+
+        public Character next() {
+            return charAt(pos++);
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("Remove not supported");
+        }
     }
 
+    // TODO: Implement the rest of the Queue<Character> interface
+/*
     public Object[] toArray() {
+        Character[] result = new Character[size()];
+        for (int i = 0 ; i < size() ; i++) {
+            
+        }
         return new Object[0];  //To change body of implemented methods use File | Settings | File Templates.
     }
 
@@ -458,5 +480,5 @@ public class CircularCharBuffer implements CharSequence, Queue<Character> {
 
     public boolean retainAll(Collection<?> c) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
+    }*/
 }
