@@ -24,18 +24,24 @@ package dk.statsbiblioteket.util.reader;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 
-import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Queue;
+import java.util.NoSuchElementException;
+import java.util.Iterator;
+import java.util.Collection;
 
 /**
  * A circular buffer of the atomic type char. Allows for dynamic resizing.
  * </p><p>
- * The buffer is not thread-safe.
+ * The buffer is not thread-safe, it is method-compatible with Reader.
+ * </p><p>
+ * Note: the Queue-calls involved conversion between char and Character and
+ * are thus not the fastest.
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te, mke")
-public class CircularCharBuffer implements CharSequence {
+public class CircularCharBuffer implements CharSequence, Queue<Character> {
     private static final int GROWTH_FACTOR = 2;
 
     /**
@@ -345,5 +351,98 @@ public class CircularCharBuffer implements CharSequence {
         }
 
         return child;
+    }
+
+    /* Queue<Character> interface */
+
+    public boolean add(Character character) {
+        put(character);
+        return true;
+    }
+
+    public boolean offer(Character character) {
+        try {
+            put(character);
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
+    public Character remove() {
+        return get();
+    }
+
+    public Character poll() {
+        if (isEmpty()) {
+            return null;
+        }
+        return get();
+    }
+
+    public Character element() {
+        if (isEmpty()) {
+            throw new NoSuchElementException(
+                    "element() called on empty buffer");
+        }
+        return peek();
+    }
+
+    public Character peek() {
+        if (isEmpty()) {
+            return null;
+        }
+        return peek(0);
+    }
+
+    /* Collection<Character> interface */
+
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
+    public boolean contains(Object o) {
+        if (o == null || !(o instanceof Character)) {
+            return false;
+        }
+        Character c = (Character)o;
+        for (int i = 0 ; i < size() ; i++) {
+            if (c.equals(Character.valueOf(charAt(i)))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public Iterator<Character> iterator() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public Object[] toArray() {
+        return new Object[0];  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public <T> T[] toArray(T[] a) {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean remove(Object o) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean containsAll(Collection<?> c) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean addAll(Collection<? extends Character> c) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean removeAll(Collection<?> c) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    public boolean retainAll(Collection<?> c) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 }
