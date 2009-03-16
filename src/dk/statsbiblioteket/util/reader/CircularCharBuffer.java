@@ -34,10 +34,16 @@ import java.io.StringWriter;
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
-        author = "te")
+        author = "te, mke")
 public class CircularCharBuffer implements CharSequence {
     private static final int GROWTH_FACTOR = 2;
 
+    /**
+     * The maximum capacity of the buffer + 1. If the maximum capacity is
+     * Integer.MAX_VALUE, max is also Integer.MAX_VALUE.
+     * </p><p>
+     * The +1 hack is due to performance optimization.
+     */
     private int max; // Maximum size
     private int first = 0;
     private int next = 0; // if first = next, the buffer is empty
@@ -106,6 +112,14 @@ public class CircularCharBuffer implements CharSequence {
             first = 0;
         }
         return result;
+    }
+
+    /**
+     * @return the maximum capacity of the buffer.
+     * @see {@link #size()}.
+     */
+    public int getMaximumCapacity() {
+        return max == Integer.MAX_VALUE ? max : max-1;
     }
 
     /**
@@ -238,6 +252,7 @@ public class CircularCharBuffer implements CharSequence {
     /**
      * Number of characters in the buffer
      * @return the number of characters in the buffer.
+     * @see {@link #getMaximumCapacity()}.
      */
     public int size() {
         if (first <= next) {
@@ -321,8 +336,8 @@ public class CircularCharBuffer implements CharSequence {
                     "Ending point of subSequence is past buffer end: " + end);
         }
 
-        CircularCharBuffer child = new CircularCharBuffer(length(), max);
-        end = end - start;
+        CircularCharBuffer child = new CircularCharBuffer(length(),
+                                                          getMaximumCapacity());
         for (int i = start; i < end; i++) {
             child.put(charAt(i));
         }

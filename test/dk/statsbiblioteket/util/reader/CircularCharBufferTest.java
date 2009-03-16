@@ -3,16 +3,23 @@ package dk.statsbiblioteket.util.reader;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.framework.TestCase;
+import dk.statsbiblioteket.util.qa.QAInfo;
 
+@QAInfo(level = QAInfo.Level.NORMAL,
+        state = QAInfo.State.IN_DEVELOPMENT,
+        author = "te, mke")
+@SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class CircularCharBufferTest extends TestCase {
     public CircularCharBufferTest(String name) {
         super(name);
     }
 
+    @Override
     public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
     }
@@ -90,8 +97,29 @@ public class CircularCharBufferTest extends TestCase {
         CircularCharBuffer b = new CircularCharBuffer(5, 5);
 
         b.put("hello");
+        testAsCharSequence(b);
+    }
+
+    public void testShiftetCharSequence () {
+        CircularCharBuffer b = new CircularCharBuffer(5, 5);
+        b.put("zhell");
+        assertEquals("Get should return the first char", 'z', b.get());
+        b.put('o');
+        testAsCharSequence(b);
+
+        b.clear();
+        b.put("zzh");
+        b.get();
+        b.get();
+        b.put("ello");
+        testAsCharSequence(b);
+    }
+
+    public void testAsCharSequence(CircularCharBuffer b) {
         assertEquals(5, b.size());
-        assertEquals("ell", b.subSequence(1, 5).toString());
+        // To demonstrate correct behaviour
+        assertEquals("ello", "hello".subSequence(1, 5).toString());
+        assertEquals("ello", b.subSequence(1, 5).toString());
         assertEquals("hello", b.toString());
         assertEquals('h', b.charAt(0));
         assertEquals('e', b.charAt(1));
