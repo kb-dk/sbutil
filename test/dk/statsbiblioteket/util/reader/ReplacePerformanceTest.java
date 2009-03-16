@@ -121,8 +121,7 @@ public class ReplacePerformanceTest extends TestCase {
         Reader source = getRandomReader(replacements,
                                         Math.max(2, replacements.size() / 4),
                                         0.01, reads);
-        StringReplacer replacer = new StringReplacer(replacements);
-        replacer.setSource(source);
+        StringReplacer replacer = new StringReplacer(source, replacements);
 
         Profiler profiler = new Profiler();
         emptyReader(replacer);

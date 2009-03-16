@@ -26,6 +26,8 @@ import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.util.Map;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 
 /**
  * A highly speed-optimized single char to single char replacer.
@@ -44,14 +46,19 @@ public class CharReplacer extends ReplaceReader {
     private char[] rules;
 
     /**
-     * A map with rules, consisting of target chars and replacement chars.
+     * Create a new CharReplacer based on a map with rules, consisting of
+     * target chars and replacement chars.
      * If a rule contains a target or a replacement that isn't exactly 1
      * char long, an exception is thrown.
-     * @param rules the rules used for replacing chars.
+     *
+     * @param in the character stream in which to replace substrings
+     * @param rules the rules used for replacing chars
      * @throws IllegalArgumentException if one or more of the reules are
-     *         illegal for this Chartransformer.
+     *         illegal for this {@link TextTransformer}
      */
-    public CharReplacer(Map<String, String> rules) {
+    public CharReplacer(Reader in, Map<String, String> rules) {
+        super(in);
+
         this.rules = new char[Character.MAX_VALUE];
         for (char c = 0 ; c < Character.MAX_VALUE ; c++) {
             this.rules[c] = c;
@@ -67,6 +74,25 @@ public class CharReplacer extends ReplaceReader {
             }
             this.rules[target[0]] = destination[0];
         }
+    }
+
+    /**
+     * Create a new CharReplacer with an empty input character stream set,
+     * based on a map with rules consisting of target chars and replacement
+     * chars.
+     * <p/>
+     * Before calling any other methods on this reader you must call
+     * {@link CharReplacer#setSource(java.io.Reader)}.
+     * <p/> 
+     * If a rule contains a target or a replacement that isn't exactly 1
+     * char long, an exception is thrown.
+     *
+     * @param rules the rules used for replacing chars
+     * @throws IllegalArgumentException if one or more of the reules are
+     *         illegal for this {@link TextTransformer}
+     */
+    public CharReplacer(Map<String,String> rules) {
+        this(new StringReader(""), rules);
     }
 
     /* TextTransformer interface implementations */
@@ -103,8 +129,8 @@ public class CharReplacer extends ReplaceReader {
 
     public int read() throws IOException {
         try {
-            if (sourceReader != null) {
-                return rules[sourceReader.read()];
+            if (in != null) {
+                return rules[in.read()];
             } else if (sourceBuffer != null) {
                 return rules[sourceBuffer.get()];
             }
@@ -117,9 +143,9 @@ public class CharReplacer extends ReplaceReader {
     public int read(CircularCharBuffer cbuf, int length) throws IOException {
         int read = 0;
         try {
-            if (sourceReader != null) {
+            if (in != null) {
                 while (read < length) {
-                    cbuf.put(rules[sourceReader.read()]);
+                    cbuf.put(rules[in.read()]);
                     read++;
                 }
             } else if (sourceBuffer != null) {
@@ -142,8 +168,8 @@ public class CharReplacer extends ReplaceReader {
     public int read(char[] cbuf, int off, int length) throws IOException {
         int read = 0;
         try {
-            if (sourceReader != null) {
-                read = sourceReader.read(cbuf, off, length);
+            if (in != null) {
+                read = in.read(cbuf, off, length);
                 transformToCharsInplace(cbuf, off, read);
             }
             if (sourceBuffer != null) {

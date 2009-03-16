@@ -85,4 +85,29 @@ public class CircularCharBufferTest extends TestCase {
         assertEquals("The extracted chars should be correct",
                      "bcd", new String(buf, 0, 3));
     }
+
+    public void testAsCharSequence () {
+        CircularCharBuffer b = new CircularCharBuffer(5, 5);
+
+        b.put("hello");
+        assertEquals(5, b.size());
+        assertEquals("ell", b.subSequence(1, 5).toString());
+        assertEquals("hello", b.toString());
+        assertEquals('h', b.charAt(0));
+        assertEquals('e', b.charAt(1));
+        assertEquals('l', b.charAt(2));
+        assertEquals('l', b.charAt(3));
+        assertEquals('o', b.charAt(4));
+
+        CircularCharBuffer child = b.subSequence(0,5);
+        assertEquals("hello", child.toString());
+        assertEquals(5, child.size());
+        try {
+            // Test the capacity of child seqs are the same as their parent's
+            child.put('q');
+            fail("Child buffer exceeded parent capacity");
+        } catch (ArrayIndexOutOfBoundsException e) {
+            // Expected
+        }
+    }
 }

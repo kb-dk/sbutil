@@ -35,7 +35,7 @@ import java.io.StringWriter;
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
-public class CircularCharBuffer {
+public class CircularCharBuffer implements CharSequence {
     private static final int GROWTH_FACTOR = 2;
 
     private int max; // Maximum size
@@ -183,17 +183,35 @@ public class CircularCharBuffer {
      * buffer.
      * @return a String with the full content of the buffer;
      */
-    public String getString() {
+    public String flushString () {
         int size = size();
         StringWriter sw = new StringWriter(size);
         for (int i = 0 ; i < size ; i++) {
             sw.append(get());
         }
         return sw.toString();
-
     }
 
     /**
+     * Constructs a String with the full content of the buffer without
+     * affecting the state of the buffer.
+     *
+     * @return a string representation of the buffer contents
+     */
+    @Override
+    public String toString() {
+        StringBuilder b = new StringBuilder();
+        int size = size();
+        for (int i = 0; i < size; i++) {
+            b.append(peek(i));
+        }
+
+        return b.toString();
+    }
+
+    /**
+     * Get the character {@code ahead} steps from the current position in the
+     * buffer. Calling this method will affect the state of the buffer.
      *
      * @param ahead the number of characters to peek ahead.
      * @return the character at the offset ahead.
@@ -218,6 +236,7 @@ public class CircularCharBuffer {
     }
 
     /**
+     * Number of characters in the buffer
      * @return the number of characters in the buffer.
      */
     public int size() {
@@ -252,5 +271,62 @@ public class CircularCharBuffer {
         array = newArray;
         first = 0;
         next = oldSize;
+    }
+
+    /**
+     * Number of characters in the buffer
+     * @return the number of characters in the buffer.
+     */
+    @Override
+    public int length () {
+        return size();
+    }
+
+    /**
+     * Get the {@code n}'th character in the buffer. This method is equivalent
+     * to {@link #peek(int n)}.
+     *
+     * @param n offset into the character buffer
+     * @return the character at position {@code n}
+     */
+    @Override
+    public char charAt (int n) {
+        return peek(n);
+    }
+
+    /**
+     * Get a circular char buffer reflecting a subsequence of this one.
+     * The returned buffer will start with the character at {@code start} and
+     * end with the character at {@code end - 1}.
+     * <p/>
+     * The new buffer will have its maximum size equalling the maximum size of
+     * the buffer from which it was created.
+     * <p/>
+     * Calling this method will not affect the state of the buffer.
+     *
+     * @param start the start offset into this buffer, inclusive
+     * @param end the end index into this buffer, exclusive
+     * @return a newly allocated circular char buffer
+     */
+    public CircularCharBuffer subSequence (int start, int end) {
+        if (end < start) {
+            throw new IllegalArgumentException(String.format(
+              "Ending point, %s, is before starting point, %s, for subsequence",
+              end, start));
+        } else  if (start < 0) {
+            throw new IllegalArgumentException(
+              "Starting point for subSequence is negative: " + start);
+        } else if (end > length()) {
+            throw new ArrayIndexOutOfBoundsException(
+                    "Ending point of subSequence is past buffer end: " + end);
+        }
+
+        CircularCharBuffer child = new CircularCharBuffer(length(), max);
+        end = end - start;
+        for (int i = start; i < end; i++) {
+            child.put(charAt(i));
+        }
+
+        return child;
     }
 }

@@ -14,6 +14,7 @@ public class XMLUtilTest extends TestCase {
         assertEquals("&lt;", encode("<"));
         assertEquals("&amp;", encode("&"));
         assertEquals("&quot;", encode("\""));
+        assertEquals("&apos;", encode("'"));
 
         assertEquals("&amp;amp;", encode("&amp;"));
         assertEquals("&amp;&amp;", encode("&&"));

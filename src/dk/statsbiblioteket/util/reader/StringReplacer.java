@@ -26,6 +26,7 @@ import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.Reader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Map;
 
 /**
@@ -51,9 +52,15 @@ public class StringReplacer extends ReplaceReader {
     private long replacementsFromCurrentSource = 0;
 
     /**
+     * Create a new replacer replacing substrings in the {@code in} stream
+     * based on the rules defined by the {@code replacements} argument.
+     *
+     * @param in the character stream in which to replace substrings
      * @param replacements the Strings to replace, from target to destination.
      */
-    public StringReplacer(Map<String, String> replacements) {
+    public StringReplacer(Reader in, Map<String, String> replacements) {
+        super(in);
+
         for (Map.Entry<String, String> replacement: replacements.entrySet()) {
             minBufferSize = Math.max(minBufferSize,
                                      replacement.getKey().length());
@@ -64,7 +71,21 @@ public class StringReplacer extends ReplaceReader {
                                                    Integer.MAX_VALUE);
     }
 
-//    private char[] EMPTY = new char[0];
+
+    /**
+     * Create a new replacer, with an empty input stream, replacing substrings
+     * based on the rules defined by the {@code replacements} argument.
+     * <p/>
+     * Before calling any other methods on this reader you chould set its input
+     * stream by calling {@link StringReplacer#setSource(java.io.Reader)}.
+     *
+     * @param replacements the Strings to replace, from target to destination.
+     */
+    public StringReplacer(Map<String, String> replacements) {
+        this(new StringReader(""), replacements);
+    }
+
+    @Override
     public synchronized char[] transformToChars(char c) {
         tempInBuffer.clear();
         tempInBuffer.put(c);
@@ -87,24 +108,27 @@ public class StringReplacer extends ReplaceReader {
         return tempOutBuffer.getAll();
     }
 
+    @Override
     public char[] transformToChars(char[] chars) {
         tempInBuffer.clear();
         tempInBuffer.put(chars);
         return returnReplacement(tempInBuffer);
     }
 
+    @Override
     public String transform(String s) {
         tempInBuffer.clear();
         tempInBuffer.put(s.toCharArray());
         return new String(returnReplacement(tempInBuffer));
     }
 
+    @Override
     public char[] transformToCharsAllowInplace(char[] chars) {
         return transformToChars(chars);
     }
 
     /* Stream based */
-
+    @Override
     public synchronized int read(CircularCharBuffer cbuf, int length)
                                                             throws IOException {
         ensureBuffers(length);
@@ -158,13 +182,13 @@ public class StringReplacer extends ReplaceReader {
         if (sourceBuffer != null) {
             return sourceBuffer;
         }
-        if (sourceReader == null) {
+        if (in == null) {
             throw new IllegalStateException(NO_SOURCE);
         }
         // We're using a reader, so read up to minBufferSize is we can
         int next = 0;
         while (!eof
-               && (next = sourceReader.read()) != -1
+               && (next = in.read()) != -1
                && readerBuffer.size() < minBufferSize) {
             readerBuffer.put((char)next);
         }
@@ -175,11 +199,12 @@ public class StringReplacer extends ReplaceReader {
     }
 
     @Override
-    public synchronized void setSource(Reader source) {
+    public synchronized ReplaceReader setSource(Reader source) {
         super.setSource(source);
         readerBuffer.clear();
         destinationBuffer.clear();
         replacementsFromCurrentSource = 0;
+        return this;
     }
 
     /**

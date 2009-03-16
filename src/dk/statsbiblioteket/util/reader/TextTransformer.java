@@ -77,14 +77,16 @@ public interface TextTransformer {
     /**
      * Assigns a reader as source for transformation.
      * @param reader where to get chars.
+     * @return always returns {@code this}.
      */
-    public void setSource(Reader reader);
+    public TextTransformer setSource(Reader reader);
 
     /**
      * Assigns a char buffer as source for transformation.
      * @param cbuf where to get chars.
+     * @return always return {@code this}.
      */
-    public void setSource(CircularCharBuffer cbuf);
+    public TextTransformer setSource(CircularCharBuffer cbuf);
     
     /**
      * @return the next char or -1 if there are no more chars available.

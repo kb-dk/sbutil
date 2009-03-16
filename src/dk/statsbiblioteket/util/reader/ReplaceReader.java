@@ -26,6 +26,7 @@ import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.Reader;
 import java.io.IOException;
+import java.io.FilterReader;
 
 /**
  * Abstract class providing basic methods for making a TextTransformer that is
@@ -34,23 +35,43 @@ import java.io.IOException;
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
-public abstract class ReplaceReader extends Reader implements TextTransformer {
-    protected Reader sourceReader = null;
+public abstract class ReplaceReader extends FilterReader
+                                    implements TextTransformer {
+    
     protected CircularCharBuffer sourceBuffer = null;
 
-    public void setSource(Reader reader) {
-        this.sourceReader = reader;
+    public ReplaceReader(Reader reader) {
+        super(reader);
+
+        // Don't call setSource() here. Sub classes may have overridden
+        // it and it can cause unexpected behaviour
+        this.in = reader;
         sourceBuffer = null;
     }
 
-    public void setSource(CircularCharBuffer charBuffer) {
+    /**
+     * Reset the replace reader and prepare it for reading from {@code source}.
+     * What ever replacement rules the replace reader is enforcing
+     * remains unchanged.
+     *
+     * @param source the new character stream to replace substrings in
+     * @return always returns {@code this}
+     */
+    public ReplaceReader setSource(Reader source) {
+        this.in = source;
+        sourceBuffer = null;
+        return this;
+    }
+
+    public ReplaceReader setSource(CircularCharBuffer charBuffer) {
         this.sourceBuffer = charBuffer;
-        this.sourceReader = null;
+        this.in = null;
+        return this;
     }
 
     public void close() throws IOException {
-        if (sourceReader != null) {
-            sourceReader.close();
+        if (in != null) {
+            in.close();
         }
     }
 }

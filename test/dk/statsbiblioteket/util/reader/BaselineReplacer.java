@@ -1,4 +1,4 @@
-/* $Id:$
+/* $Id$
  *
  * The Summa project.
  * Copyright (C) 2005-2008  The State and University Library
@@ -20,8 +20,6 @@
 package dk.statsbiblioteket.util.reader;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
 
 import java.util.*;
 import java.io.StringReader;
@@ -40,9 +38,10 @@ public class BaselineReplacer extends ReplaceReader {
 //    private static Log log = LogFactory.getLog(BaselineReplacer.class);
 
     private List<Map.Entry<String, String>> rules;
-    private StringReader out = null;
 
-    public BaselineReplacer(Map<String, String> rules) {
+    public BaselineReplacer(Reader in, Map<String, String> rules) {
+        super(in);
+
         this.rules = new ArrayList<Map.Entry<String, String>>(rules.entrySet());
         Collections.sort(
                 this.rules,
@@ -53,10 +52,13 @@ public class BaselineReplacer extends ReplaceReader {
                                 compareTo(o2.getKey().length()));
                     }
                 });
+
+        // Recalc the internal buffer
+        setSource(in);
     }
 
     @Override
-    public void setSource(Reader reader) {
+    public ReplaceReader setSource(Reader reader) {
         StringWriter sw = new StringWriter(1000);
         int c;
         try {
@@ -66,17 +68,20 @@ public class BaselineReplacer extends ReplaceReader {
         } catch (IOException e) {
             throw new RuntimeException("Unable to read from source", e);
         }
-        out = new StringReader(transform(sw.toString())); 
+        in = new StringReader(transform(sw.toString()));
+
+        return this;
     }
 
     @Override
-    public void setSource(CircularCharBuffer charBuffer) {
-        out = new StringReader(transform(charBuffer.getString()));
+    public ReplaceReader setSource(CircularCharBuffer charBuffer) {
+        in = new StringReader(transform(charBuffer.flushString()));
+        return this;
     }
 
     @Override
     public int read(char cbuf[], int off, int len) throws IOException {
-        return out.read(cbuf, off, len);
+        return in.read(cbuf, off, len);
     }
 
     public String transform(String s) {
@@ -132,7 +137,7 @@ public class BaselineReplacer extends ReplaceReader {
         }
         int counter = 0;
         int c;
-        while (counter < length && (c = out.read()) != -1) {
+        while (counter < length && (c = in.read()) != -1) {
             cbuf.put((char)c);
             counter++;
         }

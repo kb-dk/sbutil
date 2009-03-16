@@ -27,6 +27,7 @@ import dk.statsbiblioteket.util.qa.QAInfo;
 import java.io.Reader;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.StringReader;
 import java.util.Map;
 
 /**
@@ -60,14 +61,20 @@ public class CharArrayReplacer extends ReplaceReader {
             new CircularCharBuffer(10, Integer.MAX_VALUE);
 
     /**
-     * A map with rules, consisting of target chars and replacement chars.
+     * Create a new replacer based on a map with rules, consisting of target
+     * chars and replacement chars.
+     * <p/>
      * If a rule contains a target or a replacement that isn't exactly 1
      * char long, an exception is thrown.
+     *
+     * @param in the character stream in which to replace substrings
      * @param rules the rules used for replacing chars.
      * @throws IllegalArgumentException if one or more of the reules are
-     *         illegal for this Chartransformer.
+     *         illegal for this {@link TextTransformer}.
      */
-    public CharArrayReplacer(Map<String, String> rules) {
+    public CharArrayReplacer(Reader in, Map<String, String> rules) {
+        super(in);
+
         this.rules = new char[Character.MAX_VALUE][];
         for (char c = 0 ; c < Character.MAX_VALUE ; c++) {
             this.rules[c] = new char[]{c};
@@ -85,6 +92,23 @@ public class CharArrayReplacer extends ReplaceReader {
         }
     }
 
+    /**
+     * Create a new replacer with an empty input stream set based on a map
+     * of target chars and replacement chars.
+     * <p/>
+     * You should set the input character stream of the new reader by
+     * calling {@link CharArrayReplacer#setSource(java.io.Reader)}. 
+     * <p/>
+     * If a rule contains a target or a replacement that isn't exactly 1
+     * char long, an exception is thrown.
+     *
+     * @param rules the rules used for replacing chars.
+     * @throws IllegalArgumentException if one or more of the reules are
+     *         illegal for this {@link TextTransformer}.
+     */
+    public CharArrayReplacer(Map<String,String> rules) {
+        this(new StringReader(""), rules);
+    }
 
     /* TextTransformer interface implementations */
 
@@ -127,14 +151,16 @@ public class CharArrayReplacer extends ReplaceReader {
 
     /* Stream oriented implementations */
 
-    public void setSource(Reader reader) {
-        this.sourceReader = reader;
+    public ReplaceReader setSource(Reader reader) {
+        this.in = reader;
         sourceBuffer = null;
+        return this;
     }
 
-    public void setSource(CircularCharBuffer charBuffer) {
+    public ReplaceReader setSource(CircularCharBuffer charBuffer) {
         this.sourceBuffer = charBuffer;
-        this.sourceReader = null;
+        this.in = null;
+        return this;
     }
 
     /**
@@ -156,9 +182,9 @@ public class CharArrayReplacer extends ReplaceReader {
 
     private void fillOutBuffer(int min) throws IOException {
         try {
-            if (sourceReader != null) {
+            if (in != null) {
                 while (outBuffer.size() < min) {
-                    outBuffer.put(rules[sourceReader.read()]);
+                    outBuffer.put(rules[in.read()]);
                 }
                 return;
             } else if (sourceBuffer != null) {
@@ -169,7 +195,7 @@ public class CharArrayReplacer extends ReplaceReader {
             }
             throw new IllegalStateException(NO_SOURCE);
         } catch (ArrayIndexOutOfBoundsException e) {
-            // This means the sourceReader or buffer is empty. As the number of
+            // This means the in or buffer is empty. As the number of
             // resulting chars can be determined from the outBuffer, we do
             // not need to do more about this.
         }

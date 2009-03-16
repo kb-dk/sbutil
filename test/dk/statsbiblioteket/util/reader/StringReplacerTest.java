@@ -89,10 +89,10 @@ public class StringReplacerTest extends TestCase {
     private String getReplaced(Map<String, String> map, String source)
                                                             throws IOException {
         StringReader in = new StringReader(source);
-        StringReplacer replacer = new StringReplacer(map);
-        replacer.setSource(in);
+        StringReplacer replacer = new StringReplacer(in, map);
         StringWriter sw = new StringWriter(100);
         int c;
+        
         while ((c = replacer.read()) != -1) {
             sw.append("").append((char)c);
         }

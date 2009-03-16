@@ -43,9 +43,10 @@ public class XMLUtil {
                     return ReplaceFactory.getReplacer("&", "&amp;",
                                                       "\"", "&quot;",
                                                       "<", "&lt;",
-                                                      ">", "&gt;");
+                                                      ">", "&gt;",
+                                                      "'", "&apos;");
                 }
-    };    
+    };
 
     /**
      * Performs a simple entity-encoding of input, making it safe to include in

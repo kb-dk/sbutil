@@ -103,10 +103,10 @@ public class BaselineReplacerTest extends TestCase {
     public static String getReplacedBaseline(Map<String, String> rules,
                                              String source) throws IOException {
         StringReader in = new StringReader(source);
-        BaselineReplacer replacer = new BaselineReplacer(rules);
-        replacer.setSource(in);
+        BaselineReplacer replacer = new BaselineReplacer(in, rules);
         StringWriter sw = new StringWriter(100);
         int c;
+        
         while ((c = replacer.read()) != -1) {
             sw.append("").append((char)c);
         }
