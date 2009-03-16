@@ -88,14 +88,16 @@ public class CircularCharBuffer implements CharSequence {
     }
 
     /**
-     * Converts the given String to chars and adds them to the buffer, expanding
-     * if necessary.
-     * @param s the String to add.
+     * Insert a {@code CharSequence} such as a {@link String} into the buffer.
+     *
+     * @param s the character sequence to add.
      * @throws ArrayIndexOutOfBoundsException if the buffer needs to be
      *         expanded, but has reached the maximum size.
      */
-    public void put(String s) {
-        put(s.toCharArray());
+    public void put(CharSequence s) {
+        for (int i = 0; i < s.length(); i++) {
+            put(s.charAt(i));
+        }
     }
 
     /**
