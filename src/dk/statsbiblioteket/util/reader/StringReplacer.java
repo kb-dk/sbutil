@@ -97,11 +97,11 @@ public class StringReplacer extends ReplaceReader {
         while (source.size() > 0) {
             Node replacement = tree.getReplacement(source, 0);
             if (replacement == null) { // Copy a char, then repeat
-                tempOutBuffer.put(source.get());
+                tempOutBuffer.put(source.take());
                 continue;
             }
             for (int i = 0 ; i < replacement.from.length() ; i++) {
-                source.get(); // Flush the target
+                source.take(); // Flush the target
             }
             tempOutBuffer.put(replacement.to); // Add the replacement
         }
@@ -132,14 +132,14 @@ public class StringReplacer extends ReplaceReader {
     public synchronized int read(CircularCharBuffer cbuf, int length)
                                                             throws IOException {
         ensureBuffers(length);
-        return destinationBuffer.get(cbuf, length);
+        return destinationBuffer.read(cbuf, length);
     }
 
     @Override
     public synchronized int read() throws IOException {
         ensureBuffers(1);
         if (destinationBuffer.size() > 0) {
-            return destinationBuffer.get();
+            return destinationBuffer.take();
         }
         return -1;
     }
@@ -148,7 +148,7 @@ public class StringReplacer extends ReplaceReader {
     public synchronized int read(char cbuf[], int off, int len)
                                                             throws IOException {
         ensureBuffers(len); // Dangerous as we risk large buffer
-        return destinationBuffer.get(cbuf, off, len);
+        return destinationBuffer.read(cbuf, off, len);
     }
 
     /**
@@ -166,11 +166,11 @@ public class StringReplacer extends ReplaceReader {
             }
             Node replacement = tree.getReplacement(source, 0);
             if (replacement == null) { // Copy a char, then repeat
-                destinationBuffer.put(source.get());
+                destinationBuffer.put(source.take());
                 continue;
             }
             for (int i = 0 ; i < replacement.from.length() ; i++) {
-                readerBuffer.get(); // Flush the target
+                readerBuffer.take(); // Flush the target
             }
             destinationBuffer.put(replacement.to); // Add the replacement
             replacementsFromCurrentSource++;

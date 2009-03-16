@@ -58,9 +58,9 @@ public class CircularCharBufferTest extends TestCase {
         b.put('a');
         b.put('b');
         b.put('c');
-        assertEquals("First get should work", 'a', b.get());
+        assertEquals("First take should work", 'a', b.take());
         b.put('d');
-        assertEquals("Second get should work", 'b', b.get());
+        assertEquals("Second take should work", 'b', b.take());
         b.put('e');
         try {
             b.put('f');
@@ -76,7 +76,7 @@ public class CircularCharBufferTest extends TestCase {
         b.put('b');
         b.put('c');
         assertEquals("Peek(1) should work ", 'b', b.peek(1));
-        b.get();
+        b.take();
         b.put('d');
         assertEquals("Peek(2) should work ", 'd', b.peek(2));
     }
@@ -84,11 +84,11 @@ public class CircularCharBufferTest extends TestCase {
     public void testGetArray() {
         CircularCharBuffer b = new CircularCharBuffer(3, 3);
         b.put("abc");
-        b.get();
+        b.take();
         b.put('d');
         char[] buf = new char[4];
         assertEquals("The number of copied chars should match",
-                     3, b.get(buf, 0, 4));
+                     3, b.read(buf, 0, 4));
         assertEquals("The extracted chars should be correct",
                      "bcd", new String(buf, 0, 3));
     }
@@ -103,14 +103,14 @@ public class CircularCharBufferTest extends TestCase {
     public void testShiftetCharSequence () {
         CircularCharBuffer b = new CircularCharBuffer(5, 5);
         b.put("zhell");
-        assertEquals("Get should return the first char", 'z', b.get());
+        assertEquals("Get should return the first char", 'z', b.take());
         b.put('o');
         testAsCharSequence(b);
 
         b.clear();
         b.put("zzh");
-        b.get();
-        b.get();
+        b.take();
+        b.take();
         b.put("ello");
         testAsCharSequence(b);
     }

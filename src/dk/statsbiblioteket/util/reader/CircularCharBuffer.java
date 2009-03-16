@@ -25,7 +25,9 @@ package dk.statsbiblioteket.util.reader;
 import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.StringWriter;
+import java.io.IOException;
 import java.util.*;
+import java.nio.CharBuffer;
 
 /**
  * A memory efficient queue-like mechanism for buffering character data.
@@ -39,7 +41,11 @@ import java.util.*;
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
-        author = "te, mke")
+        author = "te, mke",
+        comment="Lots of room for performance-improvements (basically for all "
+                + "iterative usages as arrayCopy is much more efficient). "
+                + "The Reader-compatible and Query-compatible methods are "
+                + "largely untested")
 public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     private static final int GROWTH_FACTOR = 2;
 
@@ -118,13 +124,25 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     }
 
     /**
+     * {@link java.io.Reader}-compatible read.
+     * @return the character read, as an integer in the range 0 to 65535 
+     *         (0x00-0xffff), or -1 if the end of the stream has been reached.
+     */
+    public int read() {
+        if (isEmpty()) {
+            return -1;
+        }
+        return take();
+    }
+
+    /**
      * @return the next char in the buffer.
      * @throws ArrayIndexOutOfBoundsException if the buffer is empty.
      */
-    public char get() {
+    public char take() {
         if (first == next) {
             throw new ArrayIndexOutOfBoundsException(
-                    "get() called on empty buffer");
+                    "take() called on empty buffer");
         }
         char result = array[first++];
         if (first == array.length) {
@@ -149,7 +167,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * @param len  the maximum number of chars to move.
      * @return the number of moved chars or -1 if no chars were buffered.
      */
-    public int get(char cbuf[], int off, int len) {
+    public int read(char cbuf[], int off, int len) {
         if (len == 0) {
             return 0;
         }
@@ -185,10 +203,10 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * @return the number of moved chars or -1 if no chars were buffered.
      */
     // TODO: Consider optimizing this with arraycopy
-    public int get(CircularCharBuffer other, int len) {
+    public int read(CircularCharBuffer other, int len) {
         int counter = 0;
         while (size() > 0 && counter < len) {
-            other.put(get());
+            other.put(take());
             counter++;
         }
         if (len == 0) {
@@ -206,7 +224,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
         int size = size();
         char[] result = new char[size];
         for (int i = 0 ; i < size ; i++) {
-            result[i] = get();
+            result[i] = take();
         }
         return result;
     }
@@ -220,7 +238,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
         int size = size();
         StringWriter sw = new StringWriter(size);
         for (int i = 0 ; i < size ; i++) {
-            sw.append(get());
+            sw.append(take());
         }
         return sw.toString();
     }
@@ -381,14 +399,14 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     }
 
     public Character remove() {
-        return get();
+        return take();
     }
 
     public Character poll() {
         if (isEmpty()) {
             return null;
         }
-        return get();
+        return take();
     }
 
     public Character element() {
@@ -409,7 +427,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     /* Collection<Character> interface */
 
     public boolean isEmpty() {
-        return size() == 0;
+        return first == next;
     }
 
     public boolean contains(Object o) {
@@ -449,17 +467,28 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     }
 
     // TODO: Implement the rest of the Queue<Character> interface
-/*
+
     public Object[] toArray() {
         Character[] result = new Character[size()];
         for (int i = 0 ; i < size() ; i++) {
-            
+            result[i] = charAt(i); // Need to iterate due to cast
         }
-        return new Object[0];  //To change body of implemented methods use File | Settings | File Templates.
+        return result;
     }
-
+/*
     public <T> T[] toArray(T[] a) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        Character[] result;
+        try { // How do we test for array-type?
+            result = (Character[])a;
+        } catch (ClassCastException e) {
+            result = new Character[size()];
+        }
+
+        result = result.length < size() ? new Character[size()] : result;
+        for (int i = 0 ; i < result.length ; i++) {
+            result[i] = i < size() ? charAt(i) : null;
+        }
+        return result;
     }
 
     public boolean remove(Object o) {
@@ -481,4 +510,81 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     public boolean retainAll(Collection<?> c) {
         return false;  //To change body of implemented methods use File | Settings | File Templates.
     }*/
+
+    /* Reader-compatible API */
+
+    /**
+     * Reader-compatible wrapper for {@link #clear()}.
+     */
+    public void close() {
+        clear();
+    }
+
+    /**
+     * Reader-compatible method (always fail as mark is not supported).
+     * @param readAheadLimit ignored.
+     * @throws IOException as this method is not supported.
+     */
+    public void mark(int readAheadLimit) throws IOException {
+        throw new IOException("Mark not supported (readAheadLimit given: "
+                              + readAheadLimit + ")");
+    }
+
+    /**
+     * Reader-compatible method.
+     * @return false.
+     */
+    public boolean markSupported() {
+        return false;
+    }
+
+    /**
+     * Reader-compatible method. Empries the buffer into the target.
+     * @param target where to put the content of the buffer. 
+     * @return the number of moved characters or -1 if empty.
+     */
+    public int read(CharBuffer target) {
+        int count = 0;
+        while (!isEmpty()) {
+            target.put(take());
+            count++;
+        }
+        return count == 0 ? -1 : count;
+    }
+
+    /**
+     * Reader-compatible method.
+     * @return true, as a CircularCharBuffer never blocks.
+     */
+    public boolean ready() {
+        return true;
+    }
+
+    /**
+     * @throws IOException always throws as mark is not supported.
+     */
+    public void reset() throws IOException {
+        throw new IOException("Mark not supported, so reset is not supported");
+    }
+
+    /**
+     * Reader-compatible method.
+     * @param n the amount of characters to skip.
+     * @throws IOException if n > {@link #size()}.
+     */
+    public void skip(long n) throws IOException {
+        if (n < 0) {
+            throw new IllegalArgumentException(
+                    "skip(" + n + ") failed: Only positive skips allowed");
+        }
+        int oldSize = size();
+        if (n > oldSize) {
+            clear();
+            throw new IOException("skip(" + n + ") called with only " + oldSize
+                                  + " available chars. Buffer is cleared");
+        }
+        for (int i = 0 ; i < n ; i++) {
+            take();
+        }
+    }
 }

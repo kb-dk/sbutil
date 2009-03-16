@@ -253,7 +253,7 @@ public class DOM {
             return Boolean.parseBoolean(tmp);
         } else {
             // The defaultValue is false so we can always just return what
-            // we get from the XPath expression
+            // we take from the XPath expression
             return (Boolean)selectObject(node, xpath, XPathConstants.BOOLEAN);
         }
     }

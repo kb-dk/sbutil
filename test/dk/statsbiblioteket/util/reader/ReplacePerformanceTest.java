@@ -283,7 +283,7 @@ public class ReplacePerformanceTest extends TestCase {
             }
             ensureBuffer(1);
             readCount++;
-            return out.get();
+            return out.take();
         }
 
         public int read(char cbuf[], int off, int len) throws IOException {
@@ -292,7 +292,7 @@ public class ReplacePerformanceTest extends TestCase {
             }
             ensureBuffer(len);
             for (int i = 0 ; i < len ; i++) {
-                cbuf[off + i] = out.get();
+                cbuf[off + i] = out.take();
                 readCount++;
                 if (readCount >= size) {
                     return i;

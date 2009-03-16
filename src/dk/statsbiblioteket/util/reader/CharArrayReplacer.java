@@ -174,7 +174,7 @@ public class CharArrayReplacer extends ReplaceReader {
     public synchronized int read() throws IOException {
         fillOutBuffer(1);
         try {
-            return outBuffer.get();
+            return outBuffer.take();
         } catch (ArrayIndexOutOfBoundsException e) {
             return -1;
         }
@@ -189,7 +189,7 @@ public class CharArrayReplacer extends ReplaceReader {
                 return;
             } else if (sourceBuffer != null) {
                 while (outBuffer.size() < min) {
-                    outBuffer.put(rules[sourceBuffer.get()]);
+                    outBuffer.put(rules[sourceBuffer.take()]);
                 }
                 return;
             }
@@ -212,11 +212,11 @@ public class CharArrayReplacer extends ReplaceReader {
      */
     public int read(CircularCharBuffer cbuf, int length) throws IOException {
         fillOutBuffer(length);
-        return outBuffer.get(cbuf, length);
+        return outBuffer.read(cbuf, length);
     }
 
     public int read(char[] cbuf, int off, int length) throws IOException {
         fillOutBuffer(length);
-        return outBuffer.get(cbuf, off, length);
+        return outBuffer.read(cbuf, off, length);
     }
 }

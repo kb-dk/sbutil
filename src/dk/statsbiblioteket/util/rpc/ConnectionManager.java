@@ -216,7 +216,7 @@ public class ConnectionManager<E> {
         connectionMonitor = new ConnectionMonitor<E>(this);
 
         /* Don't start the connection monitor until the first connection is
-         * made. Otherwise the monitor thread might get lingerTime wrong
+         * made. Otherwise the monitor thread might take lingerTime wrong
          * if someone else changes it before spawning a connection */
 
     }

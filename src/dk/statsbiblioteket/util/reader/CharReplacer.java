@@ -132,7 +132,7 @@ public class CharReplacer extends ReplaceReader {
             if (in != null) {
                 return rules[in.read()];
             } else if (sourceBuffer != null) {
-                return rules[sourceBuffer.get()];
+                return rules[sourceBuffer.take()];
             }
             throw new IllegalStateException(NO_SOURCE);
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -150,7 +150,7 @@ public class CharReplacer extends ReplaceReader {
                 }
             } else if (sourceBuffer != null) {
                 while (read < length) {
-                    cbuf.put(rules[sourceBuffer.get()]);
+                    cbuf.put(rules[sourceBuffer.take()]);
                     read++;
                 }
             } else {
@@ -174,7 +174,7 @@ public class CharReplacer extends ReplaceReader {
             }
             if (sourceBuffer != null) {
                 while (read < length) {
-                    cbuf[off + read] = rules[sourceBuffer.get()];
+                    cbuf[off + read] = rules[sourceBuffer.take()];
                     read++;
                 }
             } else {
