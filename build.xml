@@ -196,8 +196,8 @@
             <test name="dk.statsbiblioteket.util.I18nTest" />
             <test name="dk.statsbiblioteket.util.i18n.EscapeUTF8StreamTest" />
             <!-- LineReader tests temporarily disabled. See bug 1183:
-                 https://gforge.statsbiblioteket.dk/tracker/index.php?func=detail&aid=1183&group_id=9&atid=137
-            <test name="dk.statsbiblioteket.util.LineReaderTest" />-->
+                 https://gforge.statsbiblioteket.dk/tracker/index.php?func=detail&aid=1183&group_id=9&atid=137-->
+            <test name="dk.statsbiblioteket.util.LineReaderTest" />
             <test name="dk.statsbiblioteket.util.LogsTest" />
             <test name="dk.statsbiblioteket.util.ProfilerTest" />
             <test name="dk.statsbiblioteket.util.StreamsTest" />
@@ -209,7 +209,17 @@
             <test name="dk.statsbiblioteket.util.qa.PackageScannerTest" />
             <test name="dk.statsbiblioteket.util.console.FormatterTest" />
             <test name="dk.statsbiblioteket.util.console.ProcessRunnerTest" />
+            <test name="dk.statsbiblioteket.util.reader.BaselineReplacerTest" />
+            <test name="dk.statsbiblioteket.util.reader.CharSequenceReaderTest" />
+            <test name="dk.statsbiblioteket.util.reader.CircularCharBufferTest" />
+            <test name="dk.statsbiblioteket.util.reader.ReplaceFactoryTest" />
+            <test name="dk.statsbiblioteket.util.reader.ReplacerTest" />
+            <test name="dk.statsbiblioteket.util.reader.StringReplacerTest" />
             <test name="dk.statsbiblioteket.util.rpc.RMIConnectionManagerTest" />
+            <test name="dk.statsbiblioteket.util.rpc.StaticConnectionManagerTest" />
+            <test name="dk.statsbiblioteket.util.xml.DOMSelectTest" />
+            <test name="dk.statsbiblioteket.util.xml.XMLUtilTest" />
+            <test name="dk.statsbiblioteket.util.xml.XSLTTest" />
         </junit>
     </target>
 
