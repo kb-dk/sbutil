@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.Random;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
@@ -78,6 +79,20 @@ public class XSLTTest extends TestCase {
                 "data/xml/expected2.xml").getFile()));
         assertEquals("Sample 2 should transform correctly",
                      expected2.trim(), XSLT.transform(xslt2, input).trim());
+    }
+
+    public void testParameter() throws Exception {
+        Properties properties = new Properties();
+        properties.put("keyword", "foo");
+        URL xslt1 = getURL("data/xml/parameter_transform.xslt");
+        String input = Files.loadString(new File(getURL(
+                "data/xml/trivial_input.xml").getFile()));
+        String expected1 = Files.loadString(new File(getURL(
+                "data/xml/parameter_expected.xml").getFile()));
+        assertEquals("Parameter should transform correctly",
+                     expected1.trim(),
+                     XSLT.transform(xslt1, input, properties).trim());
+
     }
 
     public void testMediumStress() throws Exception {

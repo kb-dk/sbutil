@@ -150,9 +150,10 @@ public class XSLT {
         }
         transformer.clearParameters(); // Is this safe? Any defaults lost?
         if (parameters != null) {
-            for (Object o : parameters.keySet()) {
-                String pname = (String)o;
-                transformer.setParameter(pname, map.get(pname));
+            for (Object entryObject: parameters.entrySet()) {
+                Map.Entry entry = (Map.Entry)entryObject;
+                transformer.setParameter((String)entry.getKey(), 
+                                         entry.getValue());
             }
         }
         return transformer;
