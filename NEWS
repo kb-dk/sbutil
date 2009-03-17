@@ -1,5 +1,12 @@
 =========================
-2009-02-18: SB Util 0.4.0
+2009-03-17: SB Util 0.4.1
+=========================
+
+ * Critical bugfix: The StringReplacer lost the final character on
+   input of length 11 or more
+
+=========================
+2009-03-16: SB Util 0.4.0
 =========================
 
  * Introduce a new 'reader' package with a set of handy Readers

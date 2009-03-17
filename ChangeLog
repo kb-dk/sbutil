@@ -1,7 +1,22 @@
-2009-03-16 14:10  mke
+2009-03-17 12:44  mke
 
-	* [r148]
-	  ChangeLog
+	* [r153] ChangeLog
+	NEWS
+	build.xml
+	
+	Release SB Util 0.4.1
+
+2009-03-17 12:36  toke
+
+	* [r152] src/dk/statsbiblioteket/util/reader/StringReplacer.java,
+	  test/dk/statsbiblioteket/util/reader/StringReplacerTest.java:
+	  
+	  Critical bugfix: The StringReplacer lost the final character on
+	  input of length 11 or more
+
+2009-03-16 14:18  mke
+
+	* [r148] ChangeLog:
 	  
 	  Release sbutil-0.4.0
 	  
