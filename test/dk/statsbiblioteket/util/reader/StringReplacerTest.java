@@ -13,15 +13,18 @@ import java.io.IOException;
 /**
  * ReplaceReader Tester.
  */
+@SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class StringReplacerTest extends TestCase {
     public StringReplacerTest(String name) {
         super(name);
     }
 
+    @Override
     public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
     }
@@ -84,6 +87,26 @@ public class StringReplacerTest extends TestCase {
         assertEquals("No-rules-test should work",
                      "klamm", getReplaced(map, "klamm"));
 
+    }
+
+    public void testIncreasing() throws Exception {
+        Map<String, String> map = new HashMap<String, String>(10);
+        map.put("a", "foo");
+        for (int i = 0 ; i < 100 ; i++) {
+            StringWriter sw = new StringWriter(i);
+            for (int j = 0 ; j < i ; j++) {
+                sw.append(Integer.toString(j % 10));
+            }
+            assertEquals("Input of length " + i + " should work",
+                         sw.toString(), getReplaced(map, sw.toString()));
+        }
+    }
+
+    public void testBufferSizePlusOne() throws Exception {
+        Map<String, String> map = new HashMap<String, String>(10);
+        map.put("a", "foo");
+        assertEquals("Input of length 11 should work",
+                     "12345678901", getReplaced(map, "12345678901"));
     }
 
     private String getReplaced(Map<String, String> map, String source)

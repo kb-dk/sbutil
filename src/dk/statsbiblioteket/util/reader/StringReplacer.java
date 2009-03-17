@@ -187,9 +187,9 @@ public class StringReplacer extends ReplaceReader {
         }
         // We're using a reader, so read up to minBufferSize is we can
         int next = 0;
-        while (!eof
-               && (next = in.read()) != -1
-               && readerBuffer.size() < minBufferSize) {
+        while (readerBuffer.size() < minBufferSize
+               && !eof
+               && (next = in.read()) != -1) {
             readerBuffer.put((char)next);
         }
         if (next == -1) {
