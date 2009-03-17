@@ -151,12 +151,14 @@ public class CharArrayReplacer extends ReplaceReader {
 
     /* Stream oriented implementations */
 
+    @Override
     public ReplaceReader setSource(Reader reader) {
         this.in = reader;
         sourceBuffer = null;
         return this;
     }
 
+    @Override
     public ReplaceReader setSource(CircularCharBuffer charBuffer) {
         this.sourceBuffer = charBuffer;
         this.in = null;
@@ -171,6 +173,7 @@ public class CharArrayReplacer extends ReplaceReader {
      * @return the next char or -1 if there are no more chars available.
      * @throws java.io.IOException if an I/O error occured.
      */
+    @Override
     public synchronized int read() throws IOException {
         fillOutBuffer(1);
         try {
@@ -215,6 +218,7 @@ public class CharArrayReplacer extends ReplaceReader {
         return outBuffer.read(cbuf, length);
     }
 
+    @Override
     public int read(char[] cbuf, int off, int length) throws IOException {
         fillOutBuffer(length);
         return outBuffer.read(cbuf, off, length);

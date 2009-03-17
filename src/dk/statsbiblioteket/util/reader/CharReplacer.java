@@ -127,6 +127,7 @@ public class CharReplacer extends ReplaceReader {
 
     /* Stream oriented implementations */
 
+    @Override
     public int read() throws IOException {
         try {
             if (in != null) {
@@ -165,14 +166,14 @@ public class CharReplacer extends ReplaceReader {
         return read;
     }
 
+    @Override
     public int read(char[] cbuf, int off, int length) throws IOException {
         int read = 0;
         try {
             if (in != null) {
                 read = in.read(cbuf, off, length);
                 transformToCharsInplace(cbuf, off, read);
-            }
-            if (sourceBuffer != null) {
+            } else if (sourceBuffer != null) {
                 while (read < length) {
                     cbuf[off + read] = rules[sourceBuffer.take()];
                     read++;

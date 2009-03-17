@@ -20,6 +20,7 @@
 package dk.statsbiblioteket.util.reader;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
+import dk.statsbiblioteket.util.Strings;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 import junit.framework.TestCase;
@@ -28,7 +29,9 @@ import junit.framework.TestSuite;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.HashMap;
 import java.io.IOException;
+import java.io.StringReader;
 
 /**
  * Performs comparisons and tests of different replacers.
@@ -73,6 +76,26 @@ public class ReplacerTest extends TestCase {
         Map<String, String> rules =
                 ReplacePerformanceTest.getRangeReplacements(300, 1, 5, 0, 5);
         testMonkey(new StringReplacer(rules), rules);
+    }
+    
+    public void testSetSourceChar() throws Exception {
+        CharReplacer rep = new CharReplacer(
+                new StringReader("foo"), new HashMap<String,String>());
+
+        assertEquals("foo", Strings.flushLocal(rep));
+        rep.setSource(new StringReader("bar"));
+        assertEquals("bar", Strings.flushLocal(rep));
+
+    }
+
+    public void testSetSourceCharArray() throws Exception {
+        ReplaceReader rep = new CharArrayReplacer(
+                new StringReader("foo"), new HashMap<String,String>());
+
+        assertEquals("foo", Strings.flushLocal(rep));
+        rep.setSource(new StringReader("bar"));
+        assertEquals("bar", Strings.flushLocal(rep));
+
     }
 
     public void testSpeedCharsVsString() throws Exception {

@@ -10,6 +10,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.IOException;
 
+import dk.statsbiblioteket.util.Strings;
+
 /**
  * ReplaceReader Tester.
  */
@@ -120,5 +122,14 @@ public class StringReplacerTest extends TestCase {
             sw.append("").append((char)c);
         }
         return sw.toString();
+    }
+
+    public void testSetSource() throws Exception {
+        StringReplacer rep = new StringReplacer(
+                new StringReader("foo"), new HashMap<String,String>());
+        assertEquals("foo", Strings.flushLocal(rep));
+
+        rep.setSource(new StringReader("bar"));
+        assertEquals("bar", Strings.flushLocal(rep));
     }
 }

@@ -204,6 +204,7 @@ public class StringReplacer extends ReplaceReader {
         readerBuffer.clear();
         destinationBuffer.clear();
         replacementsFromCurrentSource = 0;
+        eof = false;
         return this;
     }
 
