@@ -344,7 +344,7 @@ public class Files {
             in.close();
             out.close();
         }
-        destination.setExecutable(source.canExecute());
+//        destination.setExecutable(source.canExecute());
     }
 
     /**
@@ -525,7 +525,9 @@ public class Files {
             // No BufferedInputStream as it does not support 2GB+.
             con = url.openStream();
         } catch (IOException e) {
-            throw new IOException("Failed to open stream to '" + url + "'", e);
+            IOException ex = new IOException("Failed to open stream to '" + url + "'");
+            ex.initCause(e);
+            throw e;
         }
         OutputStream out = new FileOutputStream (result);
         Streams.pipeStream(con, out);
