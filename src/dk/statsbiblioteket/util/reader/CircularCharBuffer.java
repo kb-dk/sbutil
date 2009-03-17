@@ -332,7 +332,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * Number of characters in the buffer
      * @return the number of characters in the buffer.
      */
-    @Override
+
     public int length () {
         return size();
     }
@@ -344,7 +344,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * @param n offset into the character buffer
      * @return the character at position {@code n}
      */
-    @Override
+    
     public char charAt (int n) {
         return peek(n);
     }

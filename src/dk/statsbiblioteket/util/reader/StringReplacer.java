@@ -85,7 +85,7 @@ public class StringReplacer extends ReplaceReader {
         this(new StringReader(""), replacements);
     }
 
-    @Override
+
     public synchronized char[] transformToChars(char c) {
         tempInBuffer.clear();
         tempInBuffer.put(c);
@@ -108,34 +108,34 @@ public class StringReplacer extends ReplaceReader {
         return tempOutBuffer.takeAll();
     }
 
-    @Override
+
     public char[] transformToChars(char[] chars) {
         tempInBuffer.clear();
         tempInBuffer.put(chars);
         return returnReplacement(tempInBuffer);
     }
 
-    @Override
+
     public String transform(String s) {
         tempInBuffer.clear();
         tempInBuffer.put(s.toCharArray());
         return new String(returnReplacement(tempInBuffer));
     }
 
-    @Override
+
     public char[] transformToCharsAllowInplace(char[] chars) {
         return transformToChars(chars);
     }
 
     /* Stream based */
-    @Override
+
     public synchronized int read(CircularCharBuffer cbuf, int length)
                                                             throws IOException {
         ensureBuffers(length);
         return destinationBuffer.read(cbuf, length);
     }
 
-    @Override
+
     public synchronized int read() throws IOException {
         ensureBuffers(1);
         if (destinationBuffer.size() > 0) {
@@ -144,7 +144,7 @@ public class StringReplacer extends ReplaceReader {
         return -1;
     }
 
-    @Override
+
     public synchronized int read(char cbuf[], int off, int len)
                                                             throws IOException {
         ensureBuffers(len); // Dangerous as we risk large buffer
@@ -198,7 +198,7 @@ public class StringReplacer extends ReplaceReader {
         return readerBuffer;
     }
 
-    @Override
+    
     public synchronized ReplaceReader setSource(Reader source) {
         super.setSource(source);
         readerBuffer.clear();

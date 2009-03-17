@@ -8,7 +8,7 @@
     <property name="release" value="${project.name}-${project.version}" />
 
     <!-- Build deps -->
-    <property name="sbutil.compiler.version" value="1.6"/>
+    <property name="sbutil.compiler.version" value="1.5"/>
     <property name="sbutil.ant.version" value="1.7.0"/>
 
 	<!-- Persistent files and directories -->
@@ -75,14 +75,14 @@
         <condition property="hasJava">
             <equals arg1="${sbutil.compiler.version}" arg2="${java.specification.version}"/>
         </condition>
-        <fail message="Currently Summa only compiles with Java ${sbutil.compiler.version}. Found Java ${java.specification.version}"
+        <fail message="Currently SBUtil only compiles with Java ${sbutil.compiler.version}. Found Java ${java.specification.version}"
               unless="hasJava"/>
         
         <echo message="Checking Ant version is atleast ${sbutil.ant.version}"/>
         <condition property="hasAnt">
             <antversion atleast="${sbutil.ant.version}"/>
         </condition>
-        <fail message="Currently Summa only compiles with Ant ${sbutil.ant.version}. Found Ant ${ant.version}"
+        <fail message="Currently SBUtil only compiles with Ant ${sbutil.ant.version}. Found Ant ${ant.version}"
               unless="hasAnt"/>
     </target>
 
@@ -138,7 +138,7 @@
     <target name="jar" depends="compile">
         <jar basedir="${build.dir}" compress="true" jarfile="${release}.jar"/>
     </target>
-    
+
     <target name="release" depends="clean, jar, doc, .qa-scan.release, .src.zip">
         <!-- TODO: Insert build num and date like this:
         <replaceregexp file="rep.test" match="\$Id[^\$]*\$" replace="Hello - ${build.time}"/>
@@ -157,7 +157,7 @@
             <zipfileset prefix="${prefix}" file="${release.apidocs.zip}"/>
         </zip>
     </target>
-    
+
     <target name="compile-test" depends="compile">
         <javac srcdir="${test.src.dir}" destdir="${test.build.dir}" encoding="UTF-8"
                compiler="${compiler}" optimize="on" debug="on">
