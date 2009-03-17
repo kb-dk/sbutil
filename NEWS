@@ -1,4 +1,13 @@
 =========================
+2009-03-17: SB Util 0.4.2
+=========================
+
+ * Bugfix: setSource did not work for StringReplacer and
+   CharReplacer 
+
+ * Small optimization in the way paramters are handled when applying XSLTs
+
+=========================
 2009-03-17: SB Util 0.4.1
 =========================
 

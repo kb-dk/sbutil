@@ -1,10 +1,50 @@
-2009-03-17 12:44  mke
+2009-03-17 19:45  mke
 
-	* [r153] ChangeLog
-	NEWS
-	build.xml
-	
-	Release SB Util 0.4.1
+        * [r158] NEWS
+	  
+	  Release SBUtil 0.4.2
+
+2009-03-17 18:33  mke
+
+	* [r158] build.xml,
+	  test/dk/statsbiblioteket/util/rpc/ConnectionManagerTestCase.java[DEL]:
+	  
+	  Add ability to append a project.version.extra property to the
+	  version string. This way it is easier to handle special builds
+	  like the Java 1.5 port
+	  
+	  Remove obsolete
+	  test/dk/statsbiblioteket/util/rpc/ConnectionManagerTestCase.java
+	  file after renaming it to *TestBase.java
+
+2009-03-17 15:57  toke
+
+	* [r157] src/dk/statsbiblioteket/util/xml/XSLT.java,
+	  test/data/xml/parameter_expected.xml[CPY],
+	  test/data/xml/parameter_transform.xslt[CPY],
+	  test/dk/statsbiblioteket/util/xml/XSLTTest.java:
+	  
+	  Performance: The setting of parameters for transformations was
+	  not optimal
+	  Unit-test: Test for parameter-use with transformations
+
+2009-03-17 13:37  toke
+
+	* [r156]
+	  src/dk/statsbiblioteket/util/reader/CharArrayReplacer.java,
+	  src/dk/statsbiblioteket/util/reader/CharReplacer.java,
+	  src/dk/statsbiblioteket/util/reader/StringReplacer.java,
+	  test/dk/statsbiblioteket/util/reader/ReplacerTest.java,
+	  test/dk/statsbiblioteket/util/reader/StringReplacerTest.java:
+	  
+	  Bugfix: setSource did not work for StringReplacer and
+	  CharReplacer
+
+2009-03-17 12:47  mke
+
+	* [r153] ChangeLog, NEWS, build.xml:
+	  
+	  Release SB Util 0.4.1
 
 2009-03-17 12:36  toke
 
