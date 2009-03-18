@@ -25,6 +25,7 @@ package dk.statsbiblioteket.util.reader;
 import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -131,12 +132,17 @@ public class CharReplacer extends ReplaceReader {
     public int read() throws IOException {
         try {
             if (in != null) {
-                return rules[in.read()];
+                int codePoint = in.read();
+                if (codePoint != -1) {
+                    return rules[codePoint];
+                } else {
+                    return -1;
+                }
             } else if (sourceBuffer != null) {
                 return rules[sourceBuffer.take()];
             }
             throw new IllegalStateException(NO_SOURCE);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (NoSuchElementException e) {
             return -1;
         }
     }
@@ -157,7 +163,7 @@ public class CharReplacer extends ReplaceReader {
             } else {
                 throw new IllegalStateException(NO_SOURCE);
             }
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (NoSuchElementException e) {
             if (length == 0) {
                 return 0;
             }
@@ -181,7 +187,7 @@ public class CharReplacer extends ReplaceReader {
             } else {
                 throw new IllegalStateException(NO_SOURCE);
             }
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (NoSuchElementException e) {
             if (length == 0) {
                 return 0;
             }
@@ -197,3 +203,4 @@ public class CharReplacer extends ReplaceReader {
         }
     }
 }
+

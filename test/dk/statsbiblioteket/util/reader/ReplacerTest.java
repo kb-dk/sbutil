@@ -77,25 +77,77 @@ public class ReplacerTest extends TestCase {
                 ReplacePerformanceTest.getRangeReplacements(300, 1, 5, 0, 5);
         testMonkey(new StringReplacer(rules), rules);
     }
-    
+
+    public void testSetSourceString() throws Exception {
+        StringReplacer rep = new StringReplacer(
+                new StringReader("foo"), new HashMap<String,String>());
+        assertEquals("foo", Strings.flushLocal(rep));
+
+        rep.setSource(new StringReader("bar"));
+        assertEquals("bar", Strings.flushLocal(rep));
+
+        rep.setSource(new StringReader(""));
+        assertEquals("", Strings.flushLocal(rep));
+
+        rep.setSource(new StringReader("abcdefghijklmnopqrstuvwxyz"));
+        assertEquals("abcdefghijklmnopqrstuvwxyz", Strings.flushLocal(rep));
+    }
+
     public void testSetSourceChar() throws Exception {
         CharReplacer rep = new CharReplacer(
                 new StringReader("foo"), new HashMap<String,String>());
-
         assertEquals("foo", Strings.flushLocal(rep));
+
         rep.setSource(new StringReader("bar"));
         assertEquals("bar", Strings.flushLocal(rep));
+        
+        rep.setSource(new StringReader(""));
+        assertEquals("", Strings.flushLocal(rep));
 
+        rep.setSource(new StringReader("abcdefghijklmnopqrstuvwxyz"));
+        assertEquals("abcdefghijklmnopqrstuvwxyz", Strings.flushLocal(rep));
     }
 
     public void testSetSourceCharArray() throws Exception {
-        ReplaceReader rep = new CharArrayReplacer(
+        CharArrayReplacer rep = new CharArrayReplacer(
                 new StringReader("foo"), new HashMap<String,String>());
-
         assertEquals("foo", Strings.flushLocal(rep));
+        
         rep.setSource(new StringReader("bar"));
         assertEquals("bar", Strings.flushLocal(rep));
 
+        rep.setSource(new StringReader(""));
+        assertEquals("", Strings.flushLocal(rep));
+
+        rep.setSource(new StringReader("abcdefghijklmnopqrstuvwxyz"));
+        assertEquals("abcdefghijklmnopqrstuvwxyz", Strings.flushLocal(rep));
+    }
+
+    public void testEmptyCharArrayReadSingle() throws Exception {
+        ReplaceReader rep = new CharArrayReplacer(
+                new StringReader(""), new HashMap<String,String>());
+        assertEquals(-1, rep.read());
+
+        rep.setSource(new CircularCharBuffer(1,1));
+        assertEquals(-1, rep.read());
+    }
+
+    public void testEmptyCharReadSingle() throws Exception {
+        ReplaceReader rep = new CharReplacer(
+                new StringReader(""), new HashMap<String,String>());
+        assertEquals(-1, rep.read());
+
+        rep.setSource(new CircularCharBuffer(1,1));
+        assertEquals(-1, rep.read());
+    }
+
+    public void testEmptyStringReadSingle() throws Exception {
+        ReplaceReader rep = new StringReplacer(
+                new StringReader(""), new HashMap<String,String>());
+        assertEquals(-1, rep.read());
+
+        rep.setSource(new CircularCharBuffer(1,1));
+        assertEquals(-1, rep.read());
     }
 
     public void testSpeedCharsVsString() throws Exception {

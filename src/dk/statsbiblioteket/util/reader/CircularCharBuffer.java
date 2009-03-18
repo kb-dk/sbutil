@@ -269,8 +269,10 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      *
      * @param ahead the number of characters to peek ahead.
      * @return the character at the offset ahead.
-     * @throws ArrayIndexOutOfBoundsException if the buffer is empty or ahead
-     *         exceeds the size-1.
+     * @throws ArrayIndexOutOfBoundsException if {@code ahead} is past the
+     *                                        buffer end. That is, calling this
+     *                                        method on an empty buffer will
+     *                                        always throw this exception
      */
     public char peek(int ahead) {
         if (ahead >= size()) {
@@ -362,6 +364,9 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * @param start the start offset into this buffer, inclusive
      * @param end the end index into this buffer, exclusive
      * @return a newly allocated circular char buffer
+     * @throws IllegalArgumentException if {@code start} is negative
+     * @throws ArrayIndexOutOfBoundsException if {@code end} is past
+     *                                        the buffer length
      */
     public CircularCharBuffer subSequence (int start, int end) {
         if (end < start) {

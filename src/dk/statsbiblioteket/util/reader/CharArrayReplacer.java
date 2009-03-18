@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.StringReader;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * A highly speed-optimized single char to char array replacer.
@@ -178,7 +179,7 @@ public class CharArrayReplacer extends ReplaceReader {
         fillOutBuffer(1);
         try {
             return outBuffer.take();
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (NoSuchElementException e) {
             return -1;
         }
     }
@@ -186,8 +187,10 @@ public class CharArrayReplacer extends ReplaceReader {
     private void fillOutBuffer(int min) throws IOException {
         try {
             if (in != null) {
-                while (outBuffer.size() < min) {
-                    outBuffer.put(rules[in.read()]);
+                int codePoint = -1;
+                while (outBuffer.size() < min
+                       && (codePoint =in.read()) != -1) {                    
+                    outBuffer.put(rules[codePoint]);
                 }
                 return;
             } else if (sourceBuffer != null) {
@@ -197,7 +200,7 @@ public class CharArrayReplacer extends ReplaceReader {
                 return;
             }
             throw new IllegalStateException(NO_SOURCE);
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (NoSuchElementException e) {
             // This means the in or buffer is empty. As the number of
             // resulting chars can be determined from the outBuffer, we do
             // not need to do more about this.
