@@ -39,6 +39,12 @@ import java.util.HashMap;
 /**
  * Helpers for transforming XML using XSLTs. All methods are Thread-safe,
  * as long as Threads do not share the same Transformer.
+ * </p><p>
+ * Most of the helpers have an option for ifnoring XML namespace. Setting this
+ * to true strips namespaces from the input by doing a full DOM-parsing.
+ * Besides being fairly expensive in terms of processing time and temporary
+ * memory allocation, this is also a bad practice with regard to QA of the
+ * input.
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
