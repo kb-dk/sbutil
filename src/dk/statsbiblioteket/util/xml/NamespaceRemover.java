@@ -1,4 +1,4 @@
-/* $Id:$
+/* $Id$
  *
  * The Summa project.
  * Copyright (C) 2005-2008  The State and University Library
@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
-public class NamespaceRemover extends XMLFilterImpl {
+class NamespaceRemover extends XMLFilterImpl {
     private static Log log = LogFactory.getLog(NamespaceRemover.class);
 
     public NamespaceRemover(XMLReader parent) {
