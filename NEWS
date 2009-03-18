@@ -1,4 +1,17 @@
 =========================
+2009-03-18: SB Util 0.4.3
+=========================
+
+ * Add methods to the XSLT utilities enabling namespace-ignoring
+   transformations. Use at your own peril :-)
+
+ * Bug fixes: Lots of edge cases with empty streams and buffers fixed
+
+ * Bug fix: Before 0.4.0 CircularCharBuffer.take() was changed to raise
+   a NoSuchElementException. This was not reflected everywhere in the code
+   using it - still expecting a ArrayIndexOutOfBoundsException
+
+=========================
 2009-03-17: SB Util 0.4.2
 =========================
 

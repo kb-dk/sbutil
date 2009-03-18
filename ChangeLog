@@ -1,6 +1,69 @@
-2009-03-17 19:45  mke
+2009-03-18 14:58  mke
 
-        * [r158] NEWS
+	* [r170] NEWS, build.xml, ChangeLog
+
+	  Release 0.4.3
+
+2009-03-18 13:52  mke
+
+	* [r169] src/dk/statsbiblioteket/util/xml/NamespaceRemover.java:
+	  
+	  Make NamespaceRemover package private
+
+2009-03-18 13:42  toke
+
+	* [r168] src/dk/statsbiblioteket/util/xml/XSLT.java:
+	  
+	  JavaDoc: Added general comment to XSLT
+
+2009-03-18 13:39  toke
+
+	* [r167] src/dk/statsbiblioteket/util/xml/LegacyXSLT.java[DEL],
+	  src/dk/statsbiblioteket/util/xml/XSLT.java,
+	  test/data/xml/namespace_expected_correct.xml,
+	  test/data/xml/namespace_expected_faulty.xml,
+	  test/data/xml/namespace_input.xml,
+	  test/data/xml/namespace_transform.xslt,
+	  test/dk/statsbiblioteket/util/xml/XSLTTest.java:
+	  
+	  Refactoring: Moved the legacy.handling of badly namespaces
+	  XML/XSLT's into from LegacyXSLT to XSLT
+
+2009-03-18 12:52  mke
+
+	* [r166]
+	  src/dk/statsbiblioteket/util/reader/CharArrayReplacer.java,
+	  src/dk/statsbiblioteket/util/reader/CharReplacer.java,
+	  src/dk/statsbiblioteket/util/reader/CircularCharBuffer.java,
+	  test/dk/statsbiblioteket/util/reader/ReplacerTest.java:
+	  
+	  Bug-fixes: Lots of edge cases with empty streams and buffers
+	  fixed
+	  
+	  Bug-fix: Before 0.4.0 CircularCharBuffer.take() was changed to
+	  raise a NoSuchElementException. This was not reflected everywhere
+	  in the code using it - still expecting a
+	  ArrayIndexOutOfBoundsException
+
+2009-03-18 12:39  toke
+
+	* [r165] build.xml,
+	  src/dk/statsbiblioteket/util/xml/LegacyXSLT.java,
+	  src/dk/statsbiblioteket/util/xml/NamespaceRemover.java,
+	  src/dk/statsbiblioteket/util/xml/XSLT.java:
+	  
+	  Added legacy-handling class LegacyXSLT that ensures that
+	  namespace-mismatches XML/XSLT transformations works
+
+2009-03-17 18:50  mke
+
+	* [r163] build.xml:
+	  
+	  Fix project.version.extra which was set to -java1.5 by accident
+
+2009-03-17 18:43  mke
+
+	* [r159] ChangeLog, NEWS:
 	  
 	  Release SBUtil 0.4.2
 
