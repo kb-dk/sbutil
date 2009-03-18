@@ -68,6 +68,7 @@ public class XSLT {
             in = xslt.openStream();
             transformer = tfactory.newTransformer(
                     new StreamSource(in, xslt.toString()));
+            
         } catch (MalformedURLException e) {
             throw new TransformerException(String.format(
                     "The URL to the XSLT is not a valid URL: '%s'",
