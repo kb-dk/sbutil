@@ -3,4 +3,7 @@
     <id xmlns="http://my">SomeID</id>
     <foo:elementOne attributeOne="Really?">The One</foo:elementOne>
     <elementTwo attributeTwo="Did you mean minute?">The Second</elementTwo>
+    <cdata><![CDATA[
+            <incdata:someelement>No escapie!<&></incdata:someelement>
+    ]]></cdata>
 </record>

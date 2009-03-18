@@ -20,8 +20,6 @@
 package dk.statsbiblioteket.util.xml;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
 import org.xml.sax.helpers.XMLFilterImpl;
 import org.xml.sax.XMLReader;
 import org.xml.sax.Attributes;
@@ -30,12 +28,13 @@ import org.xml.sax.SAXException;
 /**
  * Simple XMLFilter that strips all namespace information from elements.
  * CData are not affected.
+ * Inspired by http://www.simonstl.com/ns/namespaces/elements/strip/
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 class NamespaceRemover extends XMLFilterImpl {
-    private static Log log = LogFactory.getLog(NamespaceRemover.class);
+//    private static Log log = LogFactory.getLog(NamespaceRemover.class);
 
     public NamespaceRemover(XMLReader parent) {
         super(parent);

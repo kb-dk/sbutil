@@ -24,12 +24,15 @@ import junit.framework.TestSuite;
 import junit.framework.TestCase;
 import dk.statsbiblioteket.util.qa.QAInfo;
 import dk.statsbiblioteket.util.Files;
+import dk.statsbiblioteket.util.Profiler;
 
 import javax.xml.transform.TransformerException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
 import java.io.IOException;
+import java.io.FileInputStream;
+import java.io.StringBufferInputStream;
 import java.util.Random;
 import java.util.List;
 import java.util.ArrayList;
@@ -108,7 +111,7 @@ public class XSLTTest extends TestCase {
     }
 
     public void testThread(int threadCount, int runs, int maxPause) throws
-                                                                     Exception {
+                                                                    Exception {
         int TESTS = 2;
         Random random = new Random();
         transformationCount.set(0);
@@ -121,7 +124,7 @@ public class XSLTTest extends TestCase {
         for (int i = 1 ; i <= TESTS ; i++) {
             xslts.add(getURL("data/xml/trivial_transform" + i + ".xslt"));
             expected.add(Files.loadString(new File(getURL(
-                "data/xml/expected" + i + ".xml").getFile())));
+                    "data/xml/expected" + i + ".xml").getFile())));
         }
         // Make and start threads
         //noinspection MismatchedQueryAndUpdateOfCollection
@@ -180,7 +183,7 @@ public class XSLTTest extends TestCase {
                     if (!expected.trim().equals(actual)) {
                         fullStop = true;
                         fail("Not the expected result for '" + xslt
-                             + "'. Expected:\n" + expected + "\nActual:\n" 
+                             + "'. Expected:\n" + expected + "\nActual:\n"
                              + actual);
 
                     }
@@ -246,5 +249,30 @@ public class XSLTTest extends TestCase {
                 "data/xml/namespace_expected_correct.xml").getFile()));
         assertEquals("Fault namespaces should give faulty output",
                      expected.trim(), XSLT.transform(xslt, input, true).trim());
+    }
+
+    public void testNoNamespaceSpeed() throws Exception {
+        int RUNS = 1000;
+        int GC = 100;
+        URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
+        String input = Files.loadString(new File(XSLTTest.getURL(
+                "data/xml/namespace_input.xml").getFile()));
+        Profiler profiler = new Profiler(RUNS);
+        for (int i = 0 ; i < RUNS ; i++) {
+            XSLT.transform(xslt, input, true);
+            profiler.beat();
+            if (i % GC == 0) {
+                System.gc();
+            }
+        }
+        System.out.println("Average speed: " + profiler.getBps(false)
+                           + " namespace-ignoring transformation/second");
+    }
+
+    public void testNamespaceRemove() throws Exception {
+        String input = Files.loadString(new File(XSLTTest.getURL(
+                "data/xml/namespace_input.xml").getFile()));
+        System.out.println(XSLT.removeNamespaces(
+                new StringBufferInputStream(input)).toString("utf-8"));
     }
 }

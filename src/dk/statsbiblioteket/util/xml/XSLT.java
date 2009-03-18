@@ -253,6 +253,12 @@ public class XSLT {
             Document dom;
             dom = DOM.stringToDOM(in);
             transform(getLocalTransformer(xslt, parameters), dom, sw);
+
+            /*
+            Reader noNamespace = removeNamespaces(new StringReader(in));
+            transform(getLocalTransformer(xslt, parameters), noNamespace, sw);
+              */
+
         }
         return sw.toString();
     }
@@ -395,8 +401,7 @@ public class XSLT {
      */
     public static ByteArrayOutputStream transform(
             URL xslt, InputStream in, Map parameters,
-            boolean ignoreXMLNamespaces)
-                                                   throws TransformerException {
+            boolean ignoreXMLNamespaces) throws TransformerException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         if (!ignoreXMLNamespaces) {
             transform(getLocalTransformer(xslt, parameters), in, out);
@@ -511,5 +516,28 @@ public class XSLT {
     public static void transform(Transformer transformer, Document dom,
                                  Writer out) throws TransformerException {
         transformer.transform(new DOMSource(dom), new StreamResult(out));
+    }
+
+    /* Using XSLT's to remove the namespaces is slower than DOM-parsing.
+       Memory-usage has not been tested. 
+     */
+
+    static URL NAMESPACE_XSLT;
+    static {
+        NAMESPACE_XSLT =
+                Thread.currentThread().getContextClassLoader().getResource(
+                        "dk/statsbiblioteket/util/xml/namespace_remover.xslt");
+    }
+    static ByteArrayOutputStream removeNamespaces(InputStream in) throws
+                                                          TransformerException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        transform(NAMESPACE_XSLT, in, out, null);
+        return out;
+    }
+
+    static Reader removeNamespaces(Reader in) throws TransformerException {
+        StringWriter sw = new StringWriter();
+        transform(NAMESPACE_XSLT, in, sw, null);
+        return new StringReader(sw.toString());
     }
 }
