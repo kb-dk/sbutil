@@ -20,9 +20,11 @@
 package dk.statsbiblioteket.util.xml;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
+import dk.statsbiblioteket.util.Strings;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
@@ -185,7 +187,25 @@ public class XSLT {
      */
     public static String transform(URL xslt, String in)
                                                    throws TransformerException {
-        return transform(xslt, in, null);
+        return transform(xslt, in, null, false);
+    }
+
+    /**
+     * Requests a cached ThreadLocal Transformer and performs the
+     * transformation.
+     * @param xslt the location of the XSLT to use.
+     * @param in   the content to transform.
+     * @param ignoreXMLNamespaces if true, namespaces in the input content will
+     *        be stripped. This is not recommended, but a lot of XML and XSLTs
+     *        does not match namespaces correctly. Setting this to true will
+     *        have an impact on performance.
+     * @return     the transformed content.
+     * @throws TransformerException if the transformation failed.
+     */
+    public static String transform(URL xslt, String in,
+                                   boolean ignoreXMLNamespaces)
+                                                   throws TransformerException {
+        return transform(xslt, in, null, ignoreXMLNamespaces);
     }
 
     /**
@@ -200,8 +220,34 @@ public class XSLT {
      */
     public static String transform(URL xslt, String in, Map parameters)
                                                    throws TransformerException {
-        StringWriter sw = new StringWriter(in.length());
-        transform(xslt, new StringReader(in), sw, parameters);
+        return transform(xslt, in, parameters, false);
+    }
+
+    /**
+     * Requests a cached ThreadLocal Transformer and performs the
+     * transformation.
+     * @param xslt the location of the XSLT to use.
+     * @param in   the content to transform.
+     * @param parameters for the Transformer. The keys must be Strings.
+     *        If the map is null, it will be ignored.
+     * @param ignoreXMLNamespaces if true, namespaces in the input content will
+     *        be stripped. This is not recommended, but a lot of XML and XSLTs
+     *        does not match namespaces correctly. Setting this to true will
+     *        have an impact on performance.
+     * @return     the transformed content.
+     * @throws TransformerException if the transformation failed.
+     */
+    public static String transform(URL xslt, String in, Map parameters,
+                                   boolean ignoreXMLNamespaces)
+                                                   throws TransformerException {
+        StringWriter sw = new StringWriter();
+        if (!ignoreXMLNamespaces) {
+            transform(xslt, new StringReader(in), sw, parameters);
+        } else {
+            Document dom;
+            dom = DOM.stringToDOM(in);
+            transform(getLocalTransformer(xslt, parameters), dom, sw);
+        }
         return sw.toString();
     }
 
@@ -217,8 +263,41 @@ public class XSLT {
      */
     public static String transform(URL xslt, Reader in, Map parameters)
                                                    throws TransformerException {
+        return transform(xslt, in, parameters, false);
+    }
+
+    /**
+     * Requests a cached ThreadLocal Transformer and performs the
+     * transformation.
+     * @param xslt the location of the XSLT to use.
+     * @param in   the content to transform.
+     * @param parameters for the Transformer. The keys must be Strings.
+     *        If the map is null, it will be ignored.
+     * @param ignoreXMLNamespaces if true, namespaces in the input content will
+     *        be stripped. This is not recommended, but a lot of XML and XSLTs
+     *        does not match namespaces correctly. Setting this to true will
+     *        have an impact on performance.
+     * @return     the transformed content.
+     * @throws TransformerException if the transformation failed.
+     */
+    public static String transform(URL xslt, Reader in, Map parameters,
+                                   boolean ignoreXMLNamespaces)
+                                                   throws TransformerException {
         StringWriter sw = new StringWriter();
-        transform(xslt, in, sw, parameters);
+        if (!ignoreXMLNamespaces) {
+            transform(xslt, in, sw, parameters);
+        } else {
+            InputSource is = new InputSource();
+            is.setCharacterStream(in);
+            Document dom;
+            try {
+                dom = DOM.stringToDOM(Strings.flush(in));
+            } catch (IOException e) {
+                throw new TransformerException(
+                        "Unable to convert Reader to String", e);
+            }
+            transform(getLocalTransformer(xslt, parameters), dom, sw);
+        }
         return sw.toString();
     }
 
@@ -249,6 +328,36 @@ public class XSLT {
      * @param in   the content to transform.
      * @param parameters for the Transformer. The keys must be Strings.
      *        If the map is null, it will be ignored.
+     * @param ignoreXMLNamespaces if true, namespaces in the input content will
+     *        be stripped. This is not recommended, but a lot of XML and XSLTs
+     *        does not match namespaces correctly. Setting this to true will
+     *        have an impact on performance.
+     * @return the transformed content. Note that the correct charset must be
+     *         supplied to toString("charset") to get proper String results.
+     *         The charset is specified by the XSLT.
+     * @throws TransformerException if the transformation failed.
+     */
+    public static ByteArrayOutputStream transform(
+            URL xslt, byte[] in, Map parameters, boolean ignoreXMLNamespaces)
+                                                   throws TransformerException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        if (!ignoreXMLNamespaces) {
+            transform(xslt, new ByteArrayInputStream(in), out, parameters);
+        } else {
+            Document dom;
+            dom = DOM.streamToDOM(new ByteArrayInputStream(in));
+            transform(getLocalTransformer(xslt, parameters), dom, out);
+        }
+        return out;
+    }
+
+    /**
+     * Requests a cached ThreadLocal Transformer and performs the
+     * transformation.
+     * @param xslt the location of the XSLT to use.
+     * @param in   the content to transform.
+     * @param parameters for the Transformer. The keys must be Strings.
+     *        If the map is null, it will be ignored.
      * @return the transformed content. Note that the correct charset must be
      *         supplied to toString("charset") to get proper String results.
      *         The charset is specified by the XSLT.
@@ -259,6 +368,37 @@ public class XSLT {
                                                    throws TransformerException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         transform(getLocalTransformer(xslt, parameters), in, out);
+        return out;
+    }
+
+    /**
+     * Requests a cached ThreadLocal Transformer and performs the
+     * transformation.
+     * @param xslt the location of the XSLT to use.
+     * @param in   the content to transform.
+     * @param parameters for the Transformer. The keys must be Strings.
+     *        If the map is null, it will be ignored.
+     * @param ignoreXMLNamespaces if true, namespaces in the input content will
+     *        be stripped. This is not recommended, but a lot of XML and XSLTs
+     *        does not match namespaces correctly. Setting this to true will
+     *        have an impact on performance.
+     * @return the transformed content. Note that the correct charset must be
+     *         supplied to toString("charset") to get proper String results.
+     *         The charset is specified by the XSLT.
+     * @throws TransformerException if the transformation failed.
+     */
+    public static ByteArrayOutputStream transform(
+            URL xslt, InputStream in, Map parameters,
+            boolean ignoreXMLNamespaces)
+                                                   throws TransformerException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        if (!ignoreXMLNamespaces) {
+            transform(getLocalTransformer(xslt, parameters), in, out);
+        } else {
+            Document dom;
+            dom = DOM.streamToDOM(in);
+            transform(getLocalTransformer(xslt, parameters), dom, out);
+        }
         return out;
     }
 

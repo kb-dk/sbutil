@@ -100,7 +100,7 @@ public class XSLTTest extends TestCase {
     }
 
     public void testFewThreadsManyRepeats() throws Exception {
-        testThread(5, 2000, 20);
+        testThread(5, 200, 20);
     }
 
     public void testManyThreadsFewRepeats() throws Exception {
@@ -226,5 +226,25 @@ public class XSLTTest extends TestCase {
         }
         return Thread.currentThread().getContextClassLoader().getResource(
                 resource);
+    }
+
+    public void testFaultyRemoveNamespace() throws Exception {
+        URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
+        String input = Files.loadString(new File(XSLTTest.getURL(
+                "data/xml/namespace_input.xml").getFile()));
+        String expected = Files.loadString(new File(XSLTTest.getURL(
+                "data/xml/namespace_expected_faulty.xml").getFile()));
+        assertEquals("Fault namespaces should give faulty output",
+                     expected.trim(), XSLT.transform(xslt, input).trim());
+    }
+
+    public void testCorrectRemoveNamespace() throws Exception {
+        URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
+        String input = Files.loadString(new File(XSLTTest.getURL(
+                "data/xml/namespace_input.xml").getFile()));
+        String expected = Files.loadString(new File(XSLTTest.getURL(
+                "data/xml/namespace_expected_correct.xml").getFile()));
+        assertEquals("Fault namespaces should give faulty output",
+                     expected.trim(), XSLT.transform(xslt, input, true).trim());
     }
 }

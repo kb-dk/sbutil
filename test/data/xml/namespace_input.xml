@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record xmlns:foo="http://foonamespace">
+    <id xmlns="http://my">SomeID</id>
+    <foo:elementOne attributeOne="Really?">The One</foo:elementOne>
+    <elementTwo attributeTwo="Did you mean minute?">The Second</elementTwo>
+</record>
