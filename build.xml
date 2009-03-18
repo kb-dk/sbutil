@@ -2,13 +2,13 @@
 <project default="all" name="sbutil" basedir=".">
 
     <property name="project.name" value="sbutil" />
-    <property name="project.version.variant" value=""/>
+    <property name="project.version.variant" value="-java1.5"/>
     <property name="project.version" value="0.4.3${project.version.variant}" />
     <property name="builder" value="mke" />
     <property name="release" value="${project.name}-${project.version}" />
 
     <!-- Build deps -->
-    <property name="sbutil.compiler.version" value="1.6"/>
+    <property name="sbutil.compiler.version" value="1.5"/>
     <property name="sbutil.ant.version" value="1.7.0"/>
 
 	<!-- Persistent files and directories -->
@@ -75,14 +75,14 @@
         <condition property="hasJava">
             <equals arg1="${sbutil.compiler.version}" arg2="${java.specification.version}"/>
         </condition>
-        <fail message="Currently Summa only compiles with Java ${sbutil.compiler.version}. Found Java ${java.specification.version}"
+        <fail message="Currently SBUtil only compiles with Java ${sbutil.compiler.version}. Found Java ${java.specification.version}"
               unless="hasJava"/>
         
         <echo message="Checking Ant version is atleast ${sbutil.ant.version}"/>
         <condition property="hasAnt">
             <antversion atleast="${sbutil.ant.version}"/>
         </condition>
-        <fail message="Currently Summa only compiles with Ant ${sbutil.ant.version}. Found Ant ${ant.version}"
+        <fail message="Currently SBUtil only compiles with Ant ${sbutil.ant.version}. Found Ant ${ant.version}"
               unless="hasAnt"/>
     </target>
 

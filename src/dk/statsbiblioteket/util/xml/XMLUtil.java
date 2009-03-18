@@ -24,7 +24,7 @@ import dk.statsbiblioteket.util.reader.ReplaceReader;
 import dk.statsbiblioteket.util.reader.ReplaceFactory;
 import dk.statsbiblioteket.util.Strings;
 
-import javax.xml.stream.events.XMLEvent;
+//import javax.xml.stream.events.XMLEvent;
 import java.io.StringReader;
 import java.io.IOException;
 
@@ -66,6 +66,7 @@ public class XMLUtil {
      * @param eventType the XMLEvent-id.
      * @return the event as human redable String.
      */
+/*
     public static String eventID2String(int eventType) {
         switch (eventType) {
             case XMLEvent.START_ELEMENT:  return "START_ELEMENT";
@@ -84,4 +85,5 @@ public class XMLUtil {
             default: return "UNKNOWN_EVENT_TYPE " + "," + eventType;
         }
     }
+    */
 }
