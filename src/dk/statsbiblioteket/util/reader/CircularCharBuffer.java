@@ -352,6 +352,40 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     }
 
     /**
+     * Return the index within this string of the first occurrence of the
+     * specified substring.
+     * @param str       the String to locate.
+     * @return the index of the first occurence of str or -1 if the str could
+     *         not be located.
+     * @see {@link String#indexOf(String)}.
+     */
+    public int indexOf(final String str) {
+        return indexOf(str, 0);
+    }
+
+    /**
+     * Return the index within this string of the first occurrence of the
+     * specified substring, starting at the specified index.
+     * @param str       the String to locate.
+     * @param fromIndex the index to start from.
+     * @return the index of the first occurence of str, starting from fromIndex
+     *         or -1 if the str could not be located.
+     * @see {@link String#indexOf(String, int)}.
+     */
+    public int indexOf(final String str, final int fromIndex) {
+        begin:
+        for (int pos = fromIndex ; pos < size() - str.length() + 1 ; pos++) {
+            for (int i = 0 ; i < str.length() ; i++) {
+                if (str.charAt(i) != charAt(pos + i)) {
+                    continue begin;
+                }
+            }
+            return pos;
+        }
+        return -1;
+    }
+
+    /**
      * Get a circular char buffer reflecting a subsequence of this one.
      * The returned buffer will start with the character at {@code start} and
      * end with the character at {@code end - 1}.

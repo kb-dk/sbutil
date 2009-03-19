@@ -150,4 +150,18 @@ public class CircularCharBufferTest extends TestCase {
             // Expected
         }
     }
+
+    public void testIndexOf() throws Exception {
+        CircularCharBuffer b = new CircularCharBuffer(5, 5);
+        b.put("zhell");
+        b.take();
+        b.put("o");
+        assertEquals("indexOf ell should be correct", 1, b.indexOf("ell"));
+        assertEquals("indexOf o should be correct", 4, b.indexOf("o"));
+        assertEquals("indexOf l should be correct", 2, b.indexOf("l"));
+        assertEquals("indexOf hello should be correct", 0, b.indexOf("hello"));
+        assertEquals("indexOf fnaf should be correct", -1, b.indexOf("fnaf"));
+        assertEquals("indexOf ello should be correct", 1, b.indexOf("ello"));
+        assertEquals("indexOf elloz should be correct", -1, b.indexOf("elloz"));
+    }
 }
