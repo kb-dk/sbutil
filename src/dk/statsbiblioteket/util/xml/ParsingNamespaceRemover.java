@@ -33,10 +33,10 @@ import org.xml.sax.SAXException;
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
-class NamespaceRemover extends XMLFilterImpl {
-//    private static Log log = LogFactory.getLog(NamespaceRemover.class);
+class ParsingNamespaceRemover extends XMLFilterImpl {
+//    private static Log log = LogFactory.getLog(ParsingNamespaceRemover.class);
 
-    public NamespaceRemover(XMLReader parent) {
+    public ParsingNamespaceRemover(XMLReader parent) {
         super(parent);
     }
 
