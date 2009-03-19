@@ -69,7 +69,7 @@ public class CharReplacer extends ReplaceReader {
             char[] destination = entry.getValue().toCharArray();
             if (target.length != 1 || destination.length != 1) {
                 throw new IllegalArgumentException(String.format(
-                        "The rule '" + entry.getKey() + "' => "
+                        "The rule '" + entry.getKey() + "' => '"
                         + entry.getValue() + "' was not single char to single"
                         + " char"));
             }
