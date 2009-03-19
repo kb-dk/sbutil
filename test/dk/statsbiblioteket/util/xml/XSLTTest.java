@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Document;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection"})
 @QAInfo(level = QAInfo.Level.NORMAL,
@@ -252,20 +253,57 @@ public class XSLTTest extends TestCase {
     }
 
     public void testNoNamespaceSpeed() throws Exception {
-        int RUNS = 1000;
-        int GC = 100;
+        int OUTER = 10;
+        int RUNS = 5000;
         URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
         String input = Files.loadString(new File(XSLTTest.getURL(
                 "data/xml/namespace_input.xml").getFile()));
+
+        Profiler profiler = new Profiler(RUNS);
+        for (int outer = 0 ; outer < OUTER ; outer++) {
+
+            System.gc();
+            profiler.reset();
+            for (int i = 0 ; i < RUNS ; i++) {
+                XSLT.transform(xslt, input, true);
+                profiler.beat();
+            }
+            System.out.println("Speed: " + profiler.getBps(false)
+                               + " namespace-ignoring transformation/second");
+
+            System.gc();
+            profiler.reset();
+            for (int i = 0 ; i < RUNS ; i++) {
+                Document dom = DOM.stringToDOM(input);
+                XSLT.transform(xslt, dom, null);
+                profiler.beat();
+            }
+            System.out.println("Speed: " + profiler.getBps(false)
+                               + " DOM-using transformation/second");
+
+            System.gc();
+            profiler.reset();
+            for (int i = 0 ; i < RUNS ; i++) {
+                XSLT.transform(xslt, input, false);
+                profiler.beat();
+            }
+            System.out.println("Speed: " + profiler.getBps(false)
+                               + " namespace-keeping transformation/second\n");
+        }
+    }
+
+    public void tsestBurnNoNamespace() throws Exception {
+        int RUNS = 50000;
+        URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
+        String input = Files.loadString(new File(XSLTTest.getURL(
+                "data/xml/namespace_input.xml").getFile()));
+
         Profiler profiler = new Profiler(RUNS);
         for (int i = 0 ; i < RUNS ; i++) {
             XSLT.transform(xslt, input, true);
             profiler.beat();
-            if (i % GC == 0) {
-                System.gc();
-            }
         }
-        System.out.println("Average speed: " + profiler.getBps(false)
+        System.out.println("Speed: " + profiler.getBps(false)
                            + " namespace-ignoring transformation/second");
     }
 

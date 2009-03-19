@@ -250,15 +250,17 @@ public class XSLT {
         if (!ignoreXMLNamespaces) {
             transform(xslt, new StringReader(in), sw, parameters);
         } else {
-            Document dom;
-            dom = DOM.stringToDOM(in);
+            Document dom = DOM.stringToDOM(in);
             transform(getLocalTransformer(xslt, parameters), dom, sw);
 
             /*
             Reader noNamespace = removeNamespaces(new StringReader(in));
             transform(getLocalTransformer(xslt, parameters), noNamespace, sw);
               */
-
+        /*
+            Reader noNamespace = new NamespaceRemover(new StringReader(in));
+            transform(getLocalTransformer(xslt, parameters), noNamespace, sw);
+            */
         }
         return sw.toString();
     }
