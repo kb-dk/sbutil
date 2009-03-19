@@ -71,7 +71,8 @@ public class CharReplacer extends ReplaceReader {
                 throw new IllegalArgumentException(String.format(
                         "The rule '" + entry.getKey() + "' => '"
                         + entry.getValue() + "' was not single char to single"
-                        + " char"));
+                        + " char. The input had length "
+                        + entry.getKey().length()));
             }
             this.rules[target[0]] = destination[0];
         }
