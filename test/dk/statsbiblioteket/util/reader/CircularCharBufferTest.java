@@ -163,5 +163,7 @@ public class CircularCharBufferTest extends TestCase {
         assertEquals("indexOf fnaf should be correct", -1, b.indexOf("fnaf"));
         assertEquals("indexOf ello should be correct", 1, b.indexOf("ello"));
         assertEquals("indexOf elloz should be correct", -1, b.indexOf("elloz"));
+        assertEquals("indexOf helloz should be correct",
+                     -1, b.indexOf("helloz"));
     }
 }
