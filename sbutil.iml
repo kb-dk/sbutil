@@ -16,6 +16,7 @@
     <orderEntry type="library" name="xstream-1.2.2" level="project" />
     <orderEntry type="library" name="log4j-1.2.14" level="project" />
     <orderEntry type="library" name="commons-cli-1.1" level="project" />
+    <orderEntry type="library" name="commons-logging-1.1.1" level="project" />
     <orderEntryProperties />
   </component>
   <component name="VcsManagerConfiguration">
