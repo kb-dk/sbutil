@@ -45,11 +45,16 @@ import java.util.HashMap;
  * Besides being fairly expensive in terms of processing time and temporary
  * memory allocation, this is also a bad practice with regard to QA of the
  * input.
+ * </p><p>
+ * Note: Transformer-errors and exceptions are thrown when they occur while
+ *       warnings are logged on {@link #warnlog}.
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class XSLT {
+    private static Log warnlog = LogFactory.getLog(
+            XSLT.class.getName() + "#warnings");
     private static Log log = LogFactory.getLog(XSLT.class);
 
     /**
@@ -76,6 +81,7 @@ public class XSLT {
             in = xslt.openStream();
             transformer = tfactory.newTransformer(
                     new StreamSource(in, xslt.toString()));
+            transformer.setErrorListener(getErrorListener());
             
         } catch (MalformedURLException e) {
             throw new TransformerException(String.format(
@@ -105,6 +111,30 @@ public class XSLT {
         return transformer;
     }
 
+    private static ErrorListener ERRORLISTENER; // Singleton
+    private static ErrorListener getErrorListener() {
+        if (ERRORLISTENER == null) {
+            ERRORLISTENER = new ErrorListener() {
+                public void warning(TransformerException exception)
+                                                   throws TransformerException {
+                    warnlog.debug("A transformer warning occured", exception);
+                }
+
+                public void error(TransformerException exception)
+                                                   throws TransformerException {
+                    throw new TransformerException(
+                            "A Transformer error occured", exception);
+                }
+
+                public void fatalError(TransformerException exception)
+                                                   throws TransformerException {
+                    throw new TransformerException(
+                            "A Transformer exception occured", exception);
+                }
+            };
+        }
+        return ERRORLISTENER;
+    }
 
     private static ThreadLocal<Map<String, Transformer>> localMapCache =
             createLocalMapCache();
