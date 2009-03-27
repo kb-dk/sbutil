@@ -97,6 +97,24 @@ public class CharReplacer extends ReplaceReader {
         this(new StringReader(""), rules);
     }
 
+    private CharReplacer(char[] rules) {
+        super(null);
+        this.rules = rules;
+    }
+
+    /**
+     * A clone of the CharReplacer will share the rules of the replacer, but
+     * will otherwise be independent. A clone will not have a source defined.
+     * Creating a clone is very cheap with regard to memory and processing time.
+     * @return a clone of this ReplaceReader.
+     */
+    @SuppressWarnings({"CloneDoesntCallSuperClone",
+            "CloneDoesntDeclareCloneNotSupportedException"})
+    @Override
+    public Object clone() {
+        return new CharReplacer(rules);
+    }
+    
     /* TextTransformer interface implementations */
 
     public char transform(char c) {

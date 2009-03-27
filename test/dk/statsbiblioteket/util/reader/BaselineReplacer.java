@@ -57,6 +57,25 @@ public class BaselineReplacer extends ReplaceReader {
         setSource(in);
     }
 
+    private BaselineReplacer(List<Map.Entry<String, String>> rules) {
+        super(null);
+        this.rules = rules;
+    }
+
+    /**
+     * A clone of the BaselineReplacer will share the rules of the replacer, but
+     * will otherwise be independent. A clone will not have a source defined.
+     * Creating a clone is very cheap with regard to memory and processing time.
+     * @return a clone of this ReplaceReader.
+     */
+    @SuppressWarnings({"CloneDoesntCallSuperClone",
+            "CloneDoesntDeclareCloneNotSupportedException"})
+    @Override
+    public Object clone() {
+        return new BaselineReplacer(rules);
+    }
+
+
     @Override
     public ReplaceReader setSource(Reader reader) {
         StringWriter sw = new StringWriter(1000);

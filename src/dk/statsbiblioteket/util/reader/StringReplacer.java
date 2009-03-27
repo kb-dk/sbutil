@@ -66,11 +66,14 @@ public class StringReplacer extends ReplaceReader {
                                      replacement.getKey().length());
             tree.addRule(replacement.getKey(), replacement.getValue(), 0);
         }
+        initBuffers(minBufferSize);
+    }
+
+    private void initBuffers(int minBufferSize) {
         readerBuffer = new CircularCharBuffer(minBufferSize, minBufferSize);
         destinationBuffer = new CircularCharBuffer(minBufferSize,
                                                    Integer.MAX_VALUE);
     }
-
 
     /**
      * Create a new replacer, with an empty input stream, replacing substrings
@@ -83,6 +86,25 @@ public class StringReplacer extends ReplaceReader {
      */
     public StringReplacer(Map<String, String> replacements) {
         this(new StringReader(""), replacements);
+    }
+
+    private StringReplacer(int minBufferSize, Node ruleTree) {
+        super(null);
+        tree = ruleTree;
+        initBuffers(minBufferSize);
+    }
+
+    /**
+     * A clone of the StringReplacer will share the rules of the replacer, but
+     * will otherwise be independent. A clone will not have a source defined.
+     * Creating a clone is very cheap with regard to memory and processing time.
+     * @return a clone of this ReplaceReader.
+     */
+    @SuppressWarnings({"CloneDoesntCallSuperClone",
+            "CloneDoesntDeclareCloneNotSupportedException"})
+    @Override
+    public Object clone() {
+        return new StringReplacer(minBufferSize, tree);
     }
 
     @Override

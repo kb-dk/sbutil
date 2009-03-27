@@ -28,10 +28,12 @@ public class ReplacePerformanceTest extends TestCase {
         super(name);
     }
 
+    @Override
     public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
     }
@@ -52,7 +54,7 @@ public class ReplacePerformanceTest extends TestCase {
     }
 
     public void testRange() throws Exception {
-        int GETS = 1000000;
+        int GETS = 10000;
         int RUNS = 2;
         int REPLACEMENT_TO_MAXLENGTH = 5;
 
@@ -70,7 +72,27 @@ public class ReplacePerformanceTest extends TestCase {
                 }
             }
         }
+    }
 
+    public void testCreation() throws Exception {
+        int REPLACEMENTS = 10000;
+        int RUNS = 2;
+        int REPLACEMENT_TO_MAXLENGTH = 5;
+
+        int[] REPLACEMENT_COUNTS = {10, 100, 1000, 10000, 1000, 100, 10};
+        int[] REPLACEMENT_FROM_MAXLENGTHS = {1, 5, 10};
+        for (int rCount: REPLACEMENT_COUNTS) {
+            for (int rMaxLength: REPLACEMENT_FROM_MAXLENGTHS) {
+                log.info("Replacement count: " + rCount
+                         + ", replacement-from max length: " + rMaxLength);
+                System.gc();
+                Map<String, String> replacements = getRangeReplacements(
+                        rCount, rMaxLength, REPLACEMENT_TO_MAXLENGTH);
+                for (int i = 0 ; i < RUNS ; i++) {
+                    createSpeedTest(RUNS, REPLACEMENTS, 100, replacements);
+                }
+            }
+        }
     }
 
     /**
@@ -212,6 +234,14 @@ public class ReplacePerformanceTest extends TestCase {
                                    int shortenedSources,
                                    double knownWordChance, int size) {
         Random random = new Random(87);
+        return getRandomReader(
+                replacements, shortenedSources, knownWordChance, size, random);
+    }
+
+    private Reader getRandomReader(Map<String, String> replacements,
+                                   int shortenedSources,
+                                   double knownWordChance, int size,
+                                   Random random) {
         List<String> known = new ArrayList<String>(replacements.size());
         List<String> largerThan1 = new ArrayList<String>(replacements.size());
         for (Map.Entry<String, String> entry: replacements.entrySet()) {
@@ -277,6 +307,7 @@ public class ReplacePerformanceTest extends TestCase {
             this.size = size;
         }
 
+        @Override
         public int read() throws IOException {
             if (readCount >= size) {
                 return -1;
@@ -286,6 +317,7 @@ public class ReplacePerformanceTest extends TestCase {
             return out.take();
         }
 
+        @Override
         public int read(char cbuf[], int off, int len) throws IOException {
             if (readCount >= size) {
                 return -1;
@@ -311,8 +343,65 @@ public class ReplacePerformanceTest extends TestCase {
             }
         }
 
+        @Override
         public void close() throws IOException {
             // Do nothing
+        }
+    }
+
+    /**
+     * Creates ReplaceReaders with and without clone and compares the speed.
+     * @param creations    the number of creations to perform.
+     * @param reads        the size of the semi-random input.
+     * @param replacements the replacements for the readers.
+     * @throws IOException if an I/O error occured.
+     */
+    private void createSpeedTest(int runs, int creations, int reads,
+                                  Map<String, String> replacements)
+            throws IOException {
+        System.gc();
+        for (int r = 0 ; r < runs ; r++) {
+            Random random = new Random(87);
+
+            Profiler profiler = new Profiler(creations);
+            for (int i = 0 ; i < creations ; i++) {
+                getRandomReader(replacements,
+                                Math.max(2, replacements.size() / 4),
+                                0.01, reads, random);
+                profiler.beat();
+            }
+            log.info(String.format(
+                    "Dry-run created %d sources at %f sources/sec",
+                    creations, profiler.getBps(false)));
+
+            System.gc();
+            profiler.reset();
+            for (int i = 0 ; i < creations ; i++) {
+                Reader source = getRandomReader(
+                        replacements,
+                        Math.max(2, replacements.size() / 4),
+                        0.01, reads, random);
+                ReplaceFactory.getReplacer(source, replacements);
+                profiler.beat();
+            }
+            log.info(String.format(
+                    "Created %d replacers from scratch at %f creations/sec",
+                    creations, profiler.getBps(false)));
+
+            System.gc();
+            ReplaceFactory factory = new ReplaceFactory(replacements);
+            profiler.reset();
+            for (int i = 0 ; i < creations ; i++) {
+                Reader source = getRandomReader(
+                        replacements,
+                        Math.max(2, replacements.size() / 4),
+                        0.01, reads, random);
+                factory.getReplacer(source);
+                profiler.beat();
+            }
+            log.info(String.format(
+                    "Created %d replacers with clone at %f creations/sec",
+                    creations, profiler.getBps(false)));
         }
     }
 }

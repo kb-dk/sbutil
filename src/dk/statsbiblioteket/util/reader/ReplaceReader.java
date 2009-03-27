@@ -27,6 +27,7 @@ import dk.statsbiblioteket.util.qa.QAInfo;
 import java.io.Reader;
 import java.io.IOException;
 import java.io.FilterReader;
+import java.io.StringReader;
 
 /**
  * Abstract class providing basic methods for making a TextTransformer that is
@@ -36,17 +37,21 @@ import java.io.FilterReader;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public abstract class ReplaceReader extends FilterReader
-                                    implements TextTransformer {
+                                    implements TextTransformer, Cloneable {
     
     protected CircularCharBuffer sourceBuffer = null;
 
     public ReplaceReader(Reader reader) {
-        super(reader);
+        super(dummyIfNull(reader));
 
         // Don't call setSource() here. Sub classes may have overridden
         // it and it can cause unexpected behaviour
         this.in = reader;
         sourceBuffer = null;
+    }
+
+    private static Reader dummyIfNull(Reader reader) {
+        return reader == null ? new StringReader("") : reader;
     }
 
     /**
@@ -69,9 +74,15 @@ public abstract class ReplaceReader extends FilterReader
         return this;
     }
 
+    @Override
     public void close() throws IOException {
+        super.close();
         if (in != null) {
             in.close();
         }
     }
+
+    @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException"})
+    @Override
+    public abstract Object clone();
 }

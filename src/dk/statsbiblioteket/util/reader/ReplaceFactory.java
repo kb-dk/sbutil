@@ -45,6 +45,46 @@ import java.io.StringReader;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class ReplaceFactory {
+
+    private ReplaceReader replacer;
+
+    /**
+     * Creates a factory that generates a replacer for the given rules.
+     * Changes to the rules between calls to {@link #getReplacer()} are not
+     * guaranteed to take effect: Create a new Factory instead.
+     * </p><p>
+     * After a factory for a given set of rules is created, getting a replacer
+     * for the rules is very cheap as internal mappings are shared between the
+     * replacer instances.
+     * @param rules what to replace in the form of target=>replacement pairs.
+     */
+    public ReplaceFactory(Map<String, String> rules) {
+        replacer = getReplacer(rules);
+    }
+
+    /**
+     * Creates a new replacer which uses the rules given in the constructor.
+     * This is fast and with little memory-overhead. This is a recommended
+     * method for getting distinct replacers for the same rules.
+     * @return a replacer based on the rules given in the constructor.
+     */
+    public ReplaceReader getReplacer() {
+        return (ReplaceReader)replacer.clone();
+    }
+
+    /**
+     * Creates a new replacer which uses the rules given in the constructor.
+     * This is fast and with little memory-overhead. This is a recommended
+     * method for getting distinct replacers for the same rules.
+     * @param in the input character stream in which to replace substrings
+     * @return a replacer based on the rules given in the constructor.
+     */
+    public ReplaceReader getReplacer(Reader in) {
+        ReplaceReader reader = getReplacer();
+        reader.setSource(in);
+        return reader;
+    }
+
     /**
      * Creates a replacer from the given rules reading character data from
      * {@code in}.

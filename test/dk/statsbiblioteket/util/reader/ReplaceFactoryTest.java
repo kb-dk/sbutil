@@ -49,20 +49,33 @@ public class ReplaceFactoryTest extends TestCase {
                 ReplacePerformanceTest.getRangeReplacements(300, 1, 1, 1, 1);
         assertTrue("1=>1 should yield a CharReplacer",
                    ReplaceFactory.getReplacer(rules) instanceof CharReplacer);
+        assertTrue("1=>1 should yield a CharReplacer with get",
+                   new ReplaceFactory(rules).getReplacer() instanceof CharReplacer);
+
         rules = ReplacePerformanceTest.getRangeReplacements(300, 1, 1, 0, 1);
         assertTrue("1=>0-1 should yield a CharArrayReplacer",
                    ReplaceFactory.getReplacer(rules) instanceof
                            CharArrayReplacer);
+        assertTrue("1=>0-1 should yield a CharArrayReplacer with get",
+                   new ReplaceFactory(rules).getReplacer() instanceof
+                           CharArrayReplacer);
+
         rules = ReplacePerformanceTest.getRangeReplacements(300, 1, 1, 0, 5);
         assertTrue("1=>0-5 should yield a CharArrayReplacer",
                    ReplaceFactory.getReplacer(rules) instanceof
                            CharArrayReplacer);
+        assertTrue("1=>0-5 should yield a CharArrayReplacer with get",
+                   new ReplaceFactory(rules).getReplacer() instanceof
+                           CharArrayReplacer);
+
         rules = ReplacePerformanceTest.getRangeReplacements(300, 1, 1, 1, 5);
         assertTrue("1=>1-5 should yield a CharArrayReplacer",
                    ReplaceFactory.getReplacer(rules) instanceof
                            CharArrayReplacer);
+
         rules = ReplacePerformanceTest.getRangeReplacements(300, 1, 5, 0, 5);
         assertTrue("1-5=>1-5 should yield a StringReplacer",
                    ReplaceFactory.getReplacer(rules) instanceof StringReplacer);
     }
+
 }
