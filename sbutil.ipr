@@ -317,13 +317,6 @@
       <JAVADOC />
       <SOURCES />
     </library>
-    <library name="commons-logging-1.1">
-      <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/commons-logging-1.1.jar!/" />
-      </CLASSES>
-      <JAVADOC />
-      <SOURCES />
-    </library>
     <library name="xstream-1.2.2">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/lib/xstream-1.2.2.jar!/" />

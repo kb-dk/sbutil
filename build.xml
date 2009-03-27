@@ -35,7 +35,7 @@
 
     <!-- The libs are used for unit testing only -->
     <property name="log4j.version" value="1.2.14" />
-    <property name="commons-logging.version" value="1.1" />
+    <property name="commons-logging.version" value="1.1.1" />
     <property name="junit.version" value="4.1" />
     
     <!-- Helper libs that will be inlined in the release jar -->
@@ -227,7 +227,7 @@
     <target name=".qa-scan.release" depends="compile">
         <property name="qa-scan.dir" value="${tmp.dir}/qaScan-${project.version}"/>
         <property name="commons.cli.version" value="1.1"/>
-        <property name="commons.logging.version" value="1.1"/>
+        <property name="commons.logging.version" value="1.1.1"/>
         <property name="log4j.version" value="1.2.14"/>
         <property name="commons.cli.jar" value="${lib.dir}/commons-cli-${commons.cli.version}.jar"/>
         <property name="commons.logging.jar" value="${lib.dir}/commons-logging-${commons.logging.version}.jar"/>
