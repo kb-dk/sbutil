@@ -159,6 +159,33 @@ public class XProperties extends Properties implements Converter {
     }
 
     /**
+     * If createNew is true, create a blank set of properties. If createNew is
+     * false, attempt to retrieve the properties from resource. If the attempt
+     * fails because the resource could not be localed and failOnNotfound is
+     * true, throw an IOException.
+     * @param resource       the resource to use as basis for the XProperties.
+     * @param createNew      if true, a clean XProperties (filled from the
+     *                       environment) is created with resource as its name.
+     * @param failOnNotFound if true and createNew is false and the resource is
+     *                       not available, an IOException will be thrown.
+     * @throws InvalidPropertiesException if the resource was not proper
+     *                       XProperties XML.
+     * @throws IOException   if the resource was invalid or if the resource did
+     *                       not exist and failOnNotFound was true.
+     */
+    public XProperties(String resource, boolean createNew,
+                       boolean failOnNotFound)
+            throws InvalidPropertiesException, IOException {
+        if (createNew) {
+            this.resourceName = resource;
+        } else {
+            load(resource, !failOnNotFound, false);
+        }
+        fillFromEnvironment();
+    }
+
+
+    /**
      * Construct a XProperties, potentially without letting the environment
      * override any properties.
      * @param override if true, let the environment override properties.
@@ -491,8 +518,7 @@ public class XProperties extends Properties implements Converter {
         this.resourceName = resourceName;
         clear();
         InputStream instream;
-
-        log.trace("Locating resource");
+        log.trace("Locating resource '" + resourceName + "'");
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         URL resourceURL = loader.getResource(resourceName);
         if (new File(defaultPath, resourceName).isFile()) {

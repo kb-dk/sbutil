@@ -22,14 +22,7 @@
  */
 package dk.statsbiblioteket.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
+import java.io.*;
 import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
@@ -736,6 +729,22 @@ public class XPropertiesTest extends TestCase {
             assertEquals(1, props.size());
         } finally {
             file.delete();
+        }
+    }
+
+    public void testNonExistingResource() throws Exception {
+        try {
+            new XProperties("nonexisting", false, true);
+            fail("XProperties should throw an exception when fetching "
+                 + "non-existing resource with failOnNotFould == true");
+        } catch (IOException e) {
+            // Expected
+        }
+        try {
+            new XProperties("nonexisting2", false, false);
+        } catch (IOException e) {
+            fail("XProperties should not throw an exception when fetching "
+                 + "non-existing resource with failOnNotFould == false");
         }
     }
 }
