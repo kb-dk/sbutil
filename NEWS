@@ -1,4 +1,26 @@
 =========================
+2009-04-02: SB Util 0.4.4
+=========================
+
+ * Make ReplaceReader clonable. This facilitates an optimized construction
+   strategy in ReplaceFactory: If you create an instance of a ReplaceFactory
+   and call getReplacer() on it you merely create clones of an already
+   constructed replacer. This is much faster since it avoids the rule parsing
+   step as well as memory allocations
+
+ * You can now log errors from XSLT processing by creating an appender
+   for 'dk.statsbiblioteket.util.xml.XSLT#warnings'
+
+ * Add convenience method DOM.selectInteger()
+
+ * Added constructor to XProperties that throws an exception if the wanted
+   resource could not be located
+
+ * Upgrade internal commons-logging to 1.1.1
+
+ * No bugs fixed! We found none!
+
+=========================
 2009-03-18: SB Util 0.4.3
 =========================
 
