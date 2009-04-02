@@ -200,8 +200,41 @@ public class DOM {
         return sw.toString();
     }
 
+
     /**
-     * Extract a double precission floating point value from {@code node} or
+     * Extract an integer value from {@code node} or return {@code defaultValue}
+     * if it is not found.
+     *
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the XPath to extract.
+     * @param defaultValue the default value.
+     * @return             the value of the path, if existing, else
+     *                     defaultValue
+     */
+    public static Integer selectInteger(Node node,
+                                      String xpath, Integer defaultValue) {
+        String strVal = selectString(node, xpath);
+        if (strVal == null || "".equals(strVal)) {
+            return defaultValue;
+        }
+        return Integer.valueOf(strVal);
+    }
+
+
+    /**
+     * Extract an integer value from {@code node} or return {@code null} if it
+     * is not found
+     *
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the XPath to extract.
+     * @return             the value of the path or {@code null}
+     */
+    public static Integer selectInteger(Node node, String xpath) {
+        return selectInteger(node, xpath,  null);
+    }
+
+    /**
+     * Extract a double precision floating point value from {@code node} or
      * return {@code defaultValue} if it is not found
      *
      * @param node         the node with the wanted attribute.
@@ -219,8 +252,9 @@ public class DOM {
         return d;
     }
 
+
     /**
-     * Extract a double precission floating point value from {@code node} or
+     * Extract a double precision floating point value from {@code node} or
      * return {@code null} if it is not found
      *
      * @param node         the node with the wanted attribute.
