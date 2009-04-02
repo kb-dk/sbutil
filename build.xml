@@ -3,7 +3,7 @@
 
     <property name="project.name" value="sbutil" />
     <property name="project.version.variant" value=""/>
-    <property name="project.version" value="0.4.3${project.version.variant}" />
+    <property name="project.version" value="0.4.4${project.version.variant}" />
     <property name="builder" value="mke" />
     <property name="release" value="${project.name}-${project.version}" />
 
@@ -131,7 +131,9 @@
             <zipfileset prefix="${prefix}" file="README"/>
             <zipfileset prefix="${prefix}" file="MAINTAINERS"/>
             <zipfileset prefix="${prefix}" file="POLICY"/>
-            <zipfileset prefix="${prefix}" file="COPYING"/>            
+            <zipfileset prefix="${prefix}" file="COPYING"/>
+            <zipfileset prefix="${prefix}" file="ChangeLog"/>
+            <zipfileset prefix="${prefix}" file="NEWS"/>
         </zip>
     </target>
 
@@ -150,6 +152,8 @@
             <zipfileset prefix="${prefix}" file="MAINTAINERS"/>
             <zipfileset prefix="${prefix}" file="POLICY"/>
             <zipfileset prefix="${prefix}" file="COPYING"/>
+            <zipfileset prefix="${prefix}" file="ChangeLog"/>
+            <zipfileset prefix="${prefix}" file="NEWS"/>
             <zipfileset prefix="${prefix}/doc" includes="**/*" dir="${doc.dir}"/>
             <zipfileset prefix="${prefix}" file="${xstream.license}"/>
             <zipfileset prefix="${prefix}" file="${qa-scan.jar}"/>
@@ -271,6 +275,8 @@
             <zipfileset prefix="${prefix}" file="MAINTAINERS"/>
             <zipfileset prefix="${prefix}" file="POLICY"/>
             <zipfileset prefix="${prefix}" file="COPYING"/>
+            <zipfileset prefix="${prefix}" file="ChangeLog"/>
+            <zipfileset prefix="${prefix}" file="NEWS"/>
             <zipfileset prefix="${prefix}" file="sbutil.iml"/>
             <zipfileset prefix="${prefix}" file="sbutil.ipr"/>
         </zip>

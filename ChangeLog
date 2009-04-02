@@ -1,7 +1,140 @@
-2009-03-18 14:58  mke
+2009-04-02 14:57  mke
 
-	* [r170] NEWS, build.xml, ChangeLog
+    * [r189] build.xml, ChangeLog:
 
+    Release SBUtil 0.4.4
+    Add ChangeLog and NEWS to the distributed files
+
+2009-04-02 12:50  mke
+
+	* [r188] NEWS:
+	  
+	  Prepare NEWS file for 0.4.4
+
+2009-04-02 12:22  mke
+
+	* [r187] test/dk/statsbiblioteket/util/xml/DOMSelectTest.java:
+	  
+	  Add unit tests for DOM.selectInteger()
+
+2009-04-02 12:17  toke
+
+	* [r186] src/dk/statsbiblioteket/util/xml/DOM.java:
+	  
+	  Feature: Added getInteger to DOM
+
+2009-04-01 10:56  toke
+
+	* [r185] src/dk/statsbiblioteket/util/XProperties.java,
+	  test/dk/statsbiblioteket/util/XPropertiesTest.java:
+	  
+	  Feature: Added constructor to XProperties that throws an
+	  exception is the wanted resource could not be located
+
+2009-03-27 14:42  toke
+
+	* [r184] build.xml, sbutil.iml, sbutil.ipr:
+	  
+	  Bugfix: Corrected dependencies and the build-file to reflect the
+	  change to commons-logging-1.1.1
+
+2009-03-27 14:03  toke
+
+	* [r183]
+	  src/dk/statsbiblioteket/util/reader/CharArrayReplacer.java,
+	  src/dk/statsbiblioteket/util/reader/CharReplacer.java,
+	  src/dk/statsbiblioteket/util/reader/ReplaceFactory.java,
+	  src/dk/statsbiblioteket/util/reader/ReplaceReader.java,
+	  src/dk/statsbiblioteket/util/reader/StringReplacer.java,
+	  test/dk/statsbiblioteket/util/reader/BaselineReplacer.java,
+	  test/dk/statsbiblioteket/util/reader/ReplaceFactoryTest.java,
+	  test/dk/statsbiblioteket/util/reader/ReplacePerformanceTest.java:
+	  
+	  Update: Added clone to ReplaceReaders, making it very cheap to
+	  produce an array of Replacers sharing the same rules by creating
+	  a ReplaceFactory instance
+
+2009-03-25 15:19  toke
+
+	* [r182] src/dk/statsbiblioteket/util/xml/XSLT.java:
+	  
+	  Update: Changed the behaviour of transform in XSLT to throw
+	  transformation errors and exceptions
+
+2009-03-23 13:17  toke
+
+	* [r181] lib/commons-logging-1.1.1-javadoc.jar,
+	  lib/commons-logging-1.1.1-sources.jar,
+	  lib/commons-logging-1.1.1.jar, lib/commons-logging-1.1.jar[DEL],
+	  sbutil.iml, sbutil.ipr:
+	  
+	  Update: Changed to commons-logging 1.1.1 as it is more
+	  Maven-compatible
+
+2009-03-19 14:45  toke
+
+	* [r180] src/dk/statsbiblioteket/util/xml/NamespaceRemover.java,
+	  src/dk/statsbiblioteket/util/xml/XSLT.java,
+	  test/data/xml/namespace_input.xml,
+	  test/data/xml/namespace_removed.xml[CPY],
+	  test/dk/statsbiblioteket/util/xml/NamespaceRemoverTest.java,
+	  test/dk/statsbiblioteket/util/xml/XSLTTest.java:
+	  
+	  Added first version of a non-DOM-parsing namespace remover. Right
+	  now it performs just as good (or bad) af DOM-parsing
+
+2009-03-19 13:51  toke
+
+	* [r179]
+	  src/dk/statsbiblioteket/util/xml/NamespaceRemover.java[DEL],
+	  src/dk/statsbiblioteket/util/xml/ParsingNamespaceRemover.java[CPY]:
+	  
+	  Refactoring: Renamed NamespaceRemover
+
+2009-03-19 13:08  toke
+
+	* [r178] sbutil.ipr,
+	  src/dk/statsbiblioteket/util/reader/CharReplacer.java:
+	  
+	  Debug: Micro-tweak to debug from CharReplacer on faulty input
+
+2009-03-19 12:58  toke
+
+	* [r177] src/dk/statsbiblioteket/util/reader/CharReplacer.java:
+	  
+	  Debug: Microtweak to debug from CharReplacer on faulty input
+
+2009-03-19 12:40  toke
+
+	* [r176]
+	  test/dk/statsbiblioteket/util/reader/CircularCharBufferTest.java:
+	  
+	  Enhancement: AExtra unit-test of indexOf
+
+2009-03-19 12:34  toke
+
+	* [r175]
+	  src/dk/statsbiblioteket/util/reader/CircularCharBuffer.java,
+	  test/dk/statsbiblioteket/util/reader/CircularCharBufferTest.java:
+	  
+	  Enhancement: Added indexOf to CircularCharBuffer
+
+2009-03-18 16:07  toke
+
+	* [r174] src/dk/statsbiblioteket/util/xml/NamespaceRemover.java,
+	  src/dk/statsbiblioteket/util/xml/XSLT.java,
+	  src/dk/statsbiblioteket/util/xml/namespace_remover.xslt,
+	  test/data/xml/namespace_input.xml,
+	  test/dk/statsbiblioteket/util/xml/XSLTTest.java:
+	  
+	  Experimentation: Using an XSLT to remove the namespaces instead
+	  of a DOM proved to be leff effective, with regard to performance.
+	  The code is committed in the hope that it can be optimized
+
+2009-03-18 14:00  mke
+
+	* [r170] ChangeLog, NEWS, build.xml:
+	  
 	  Release 0.4.3
 
 2009-03-18 13:52  mke
