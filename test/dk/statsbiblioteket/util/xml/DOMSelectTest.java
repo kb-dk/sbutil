@@ -18,6 +18,7 @@ public class DOMSelectTest extends TestCase {
         "  <double>1.1234</double>"+
         "  <boolean>true</boolean>"+
         "  <string>foobar</string>"+
+        "  <integer>27</integer>"+
         "</body>";
 
     Document dom;
@@ -26,6 +27,17 @@ public class DOMSelectTest extends TestCase {
         clearXPathCache();
         dom = stringToDOM(SIMPLE_XML);
         assertNotNull(dom);
+    }
+
+     public void testSelectInteger() {
+        Integer i = selectInteger(dom, "asdfg");
+        assertEquals(null, i);
+
+        i = selectInteger(dom, "asdfg", 1);
+        assertEquals(1, i.intValue());
+
+        i = selectInteger(dom, "/body/integer");
+        assertEquals(27, i.intValue());
     }
 
     public void testSelectDouble() {
@@ -86,6 +98,6 @@ public class DOMSelectTest extends TestCase {
         l = selectNodeList(dom, "/body/node()");
         NodeList expected = dom.getFirstChild().getChildNodes(); 
         assertSame(expected.getLength(), l.getLength());
-        assertEquals(6, l.getLength());
+        assertEquals(8, l.getLength());
     }
 }
