@@ -70,6 +70,7 @@ public class StringReplacer extends ReplaceReader {
     }
 
     private void initBuffers(int minBufferSize) {
+        this.minBufferSize = minBufferSize;
         readerBuffer = new CircularCharBuffer(minBufferSize, minBufferSize);
         destinationBuffer = new CircularCharBuffer(minBufferSize,
                                                    Integer.MAX_VALUE);

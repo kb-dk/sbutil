@@ -9,8 +9,10 @@ import java.util.HashMap;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.IOException;
+import java.io.Reader;
 
 import dk.statsbiblioteket.util.Strings;
+import dk.statsbiblioteket.util.Streams;
 
 /**
  * ReplaceReader Tester.
@@ -49,6 +51,34 @@ public class StringReplacerTest extends TestCase {
         map.put("b", "bar");
         assertEquals("Trivial replacement should work",
                      "foo", getReplaced(map, "a"));
+    }
+
+    public static final String JAVASCRIPT =
+            "<script language=\"javascript\">function openwidnowb(linkname)"
+            + "{window.open (linkname,\"_blank\",\"resizable=yes,location=1"
+            + ",status=1,scrollbars=1\");} </script><script language=\"java"
+            + "script\">function openwidnowb(linkname){window.open (linknam"
+            + "e,\"_blank\",\"resizable=yes,location=1,status=1,scrollbars="
+            + "1\");} </script>";
+    public void testComplex() throws Exception {
+        Map<String, String> rules = new HashMap<String, String>(10);
+        rules.put(JAVASCRIPT, "");
+        assertEquals("Complex replacement should work",
+                     "foo", getReplaced(rules, JAVASCRIPT + "foo"));
+    }
+
+    public void testLongTargetOnStream() throws Exception {
+        Map<String, String> rules = new HashMap<String, String>(10);
+        rules.put(JAVASCRIPT, "");
+        Reader replacedReader = new StringReplacer(new StringReader(
+                JAVASCRIPT + "foo"), rules);
+        StringWriter out = new StringWriter(100);
+        int c;
+        while ((c = replacedReader.read()) != -1) {
+            out.write(c);
+        }
+        assertEquals("Target should be removed", "foo", out.toString());
+
     }
 
     public void testPriority() throws IOException {

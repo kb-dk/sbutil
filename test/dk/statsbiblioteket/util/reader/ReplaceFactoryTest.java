@@ -24,6 +24,10 @@ import junit.framework.TestSuite;
 import junit.framework.TestCase;
 
 import java.util.Map;
+import java.util.HashMap;
+import java.io.ByteArrayInputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 public class ReplaceFactoryTest extends TestCase {
     public ReplaceFactoryTest(String name) {
@@ -78,4 +82,31 @@ public class ReplaceFactoryTest extends TestCase {
                    ReplaceFactory.getReplacer(rules) instanceof StringReplacer);
     }
 
+    public void testComplexFactory() throws Exception {
+        Map<String, String> rules = new HashMap<String, String>(10);
+        rules.put(StringReplacerTest.JAVASCRIPT, "");
+        ReplaceFactory factory = new ReplaceFactory(rules);
+        ReplaceReader replacer = factory.getReplacer();
+        String actual =
+                replacer.transform(StringReplacerTest.JAVASCRIPT + "foo");
+        assertEquals("Complex factory based replacement should work",
+                     "foo", actual);
+    }
+
+    /* This used to fail due to a missing proper initialization of minBufferSize
+       when using a factory together with stream bases replacing.
+     */
+    public void testComplexFactoryStream() throws Exception {
+        Map<String, String> rules = new HashMap<String, String>(10);
+        rules.put(StringReplacerTest.JAVASCRIPT, "");
+        ReplaceFactory factory = new ReplaceFactory(rules);
+        StringReader ir =
+                new StringReader(StringReplacerTest.JAVASCRIPT + "foo");
+        ReplaceReader replacer = factory.getReplacer(ir);
+        CircularCharBuffer actual =
+                new CircularCharBuffer(10, Integer.MAX_VALUE);
+        replacer.read(actual, Integer.MAX_VALUE);
+        assertEquals("Complex factory & stream based replacement should work",
+                     "foo", actual.toString());
+    }
 }
