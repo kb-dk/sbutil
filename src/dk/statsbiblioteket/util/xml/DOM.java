@@ -55,43 +55,8 @@ public class DOM {
     public static final String XML_HEADER =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
-    /**
-     * Importatnt: All access to the xpathCompiler should be synchronized on it
-     * since it is not thread safe!
-     */
-    private static final XPath xpathCompiler =
-                                          XPathFactory.newInstance().newXPath();
-
-    /**
-     * The size of the XPath statement cache.
-     */
-    private static int xpathCacheSize;
-    static {
-        try {
-            xpathCacheSize = Integer.parseInt(
-                                System.getProperty("sbutil.xpath.cache", "10"));
-        } catch (SecurityException e) {
-            // We are not allowed to read that property
-            xpathCacheSize = 10;
-        } catch (NumberFormatException e) {
-            System.err.println(
-                    "System property sbutil.xpath.cache is not a number, "
-                    + "using default value 10: "
-                    + System.getProperty("sbutil.xpath.cache"));
-            xpathCacheSize = 10;
-        }
-    }
-
-    /**
-     * A thread local cache of the most recently used XPath expressions
-     */
-    private static ThreadLocal<LRUCache<String,XPathExpression>>
-        localXPathCache = new ThreadLocal<LRUCache<String,XPathExpression>>() {
-            @Override
-            protected LRUCache<String,XPathExpression> initialValue() {
-                return new LRUCache<String, XPathExpression>(xpathCacheSize);
-            }
-        };
+    private static final XPathSelectorImpl selector =
+                                              new XPathSelectorImpl(null, 50);
 
     /**
      * Extracts all textual and CDATA content from the given node and its
@@ -117,16 +82,23 @@ public class DOM {
     /* **************************************** */
 
     /**
-     * Parses a XML document from a String to a DOM.
+     * Parses an XML document from a String to a DOM.
+     * 
      * @param xmlString a String containing an XML document.
+     * @param namespaceAware if {@code true} the parsed DOM will reflect any
+     *                       XML namespaces declared in the document
      * @return The document in a DOM or {@code null} on errors.
      */
-    public static Document stringToDOM(String xmlString) {
+    public static Document stringToDOM(String xmlString,
+                                       boolean namespaceAware) {
         try {
             InputSource in = new InputSource();
             in.setCharacterStream(new StringReader(xmlString));
-            return DocumentBuilderFactory.newInstance().newDocumentBuilder().
-                    parse(in);
+
+            DocumentBuilderFactory dbFact = DocumentBuilderFactory.newInstance();
+            dbFact.setNamespaceAware(namespaceAware);
+
+            return dbFact.newDocumentBuilder().parse(in);
         } catch (IOException e) {
             log.warn("I/O error when parsing XML :" + e.getMessage() + "\n"
                      + xmlString, e);
@@ -139,6 +111,16 @@ public class DOM {
                      + xmlString, e);
         }
         return null;
+    }
+
+    /**
+     * Parses an XML document from a String disregarding namespaces
+     *
+     * @param xmlString a String containing an XML document.
+     * @return The document in a DOM or {@code null} on errors.
+     */
+    public static Document stringToDOM(String xmlString) {
+        return stringToDOM(xmlString, false);
     }
 
     /**
@@ -200,225 +182,52 @@ public class DOM {
         return sw.toString();
     }
 
-
-    /**
-     * Extract an integer value from {@code node} or return {@code defaultValue}
-     * if it is not found.
-     *
-     * @param node         the node with the wanted attribute.
-     * @param xpath        the XPath to extract.
-     * @param defaultValue the default value.
-     * @return             the value of the path, if existing, else
-     *                     defaultValue
-     */
-    public static Integer selectInteger(Node node,
-                                      String xpath, Integer defaultValue) {
-        String strVal = selectString(node, xpath);
-        if (strVal == null || "".equals(strVal)) {
-            return defaultValue;
-        }
-        return Integer.valueOf(strVal);
+    public static XPathSelector createXPathSelector(String... nsContext) {
+        return new XPathSelectorImpl(
+               new DefaultNamespaceContext(null, nsContext), 50);
     }
 
+    public static Integer selectInteger(Node node, String xpath, Integer defaultValue) {
+        return selector.selectInteger(node, xpath, defaultValue);
+    }
 
-    /**
-     * Extract an integer value from {@code node} or return {@code null} if it
-     * is not found
-     *
-     * @param node         the node with the wanted attribute.
-     * @param xpath        the XPath to extract.
-     * @return             the value of the path or {@code null}
-     */
     public static Integer selectInteger(Node node, String xpath) {
-        return selectInteger(node, xpath,  null);
+        return selector.selectInteger(node, xpath);
     }
 
-    /**
-     * Extract a double precision floating point value from {@code node} or
-     * return {@code defaultValue} if it is not found
-     *
-     * @param node         the node with the wanted attribute.
-     * @param xpath        the XPath to extract.
-     * @param defaultValue the default value.
-     * @return             the value of the path, if existing, else
-     *                     defaultValue
-     */
-    public static Double selectDouble(Node node,
-                                      String xpath, Double defaultValue) {
-        Double d = (Double)selectObject(node, xpath, XPathConstants.NUMBER);
-        if(d == null || d.equals(Double.NaN)) {
-            d = defaultValue;
-        }
-        return d;
+    public static Double selectDouble(Node node, String xpath, Double defaultValue) {
+        return selector.selectDouble(node, xpath, defaultValue);
     }
 
-
-    /**
-     * Extract a double precision floating point value from {@code node} or
-     * return {@code null} if it is not found
-     *
-     * @param node         the node with the wanted attribute.
-     * @param xpath        the XPath to extract.
-     * @return             the value of the path or {@code null}
-     */
-    public static Double selectDouble (Node node, String xpath) {
-        return selectDouble(node, xpath, null);
+    public static Double selectDouble(Node node, String xpath) {
+        return selector.selectDouble(node, xpath);
     }
 
-    /**
-     * Extract a boolean value from {@code node} or return {@code defaultValue}
-     * if there is no boolean value at {@code xpath}
-
-     * @param node         the node with the wanted attribute.
-     * @param xpath        the path to extract.
-     * @param defaultValue the default value.
-     * @return             the value of the path, if existing, else
-     *                     {@code defaultValue}
-     */
-    public static Boolean selectBoolean(Node node,
-                                        String xpath, Boolean defaultValue) {
-        if (defaultValue == null || Boolean.TRUE.equals(defaultValue)) {
-            // Using QName.BOOLEAN will always return false if it is not found
-            // therefore we must try and look it up as a string
-            String tmp = selectString(node, xpath, null);
-            if (tmp == null) {
-                return defaultValue;
-            }
-            return Boolean.parseBoolean(tmp);
-        } else {
-            // The defaultValue is false so we can always just return what
-            // we take from the XPath expression
-            return (Boolean)selectObject(node, xpath, XPathConstants.BOOLEAN);
-        }
+    public static Boolean selectBoolean(Node node, String xpath, Boolean defaultValue) {
+        return selector.selectBoolean(node, xpath, defaultValue);
     }
 
-    /**
-     * Extract a boolean value from {@code node} or return {@code false}
-     * if there is no boolean value at {@code xpath}
-     *
-     * @param node         the node with the wanted attribute.
-     * @param xpath        the path to extract.
-     * @return             the value of the path, if existing, else
-     *                     {@code false}
-     */
     public static Boolean selectBoolean(Node node, String xpath) {
-        return selectBoolean(node, xpath, false);
+        return selector.selectBoolean(node, xpath);
     }
 
-    /**
-     * Extract the given value from the node as a String or if the value cannot
-     * be extracted, {@code defaultValue} is returned.
-     * <p/>
-     * Example: To get the value of the attribute "foo" in the node, specify
-     *          "@foo" as the path.
-     * <p/>
-     * Note: This method does not handle namespaces explicitely.
-     *
-     * @param node         the node with the wanted attribute
-     * @param xpath        the XPath to extract.
-     * @param defaultValue the default value
-     * @return             the value of the path, if existing, else
-     *                     {@code defaultValue}
-     */
-    public static String selectString(Node node,
-                                      String xpath, String defaultValue) {
-        if ("".equals(defaultValue)) {
-            // By default the XPath engine will return an empty string
-            // if it is unable to find the requested path
-            return (String)selectObject(node, xpath, XPathConstants.STRING);
-        }
-
-        Node n = selectNode(node, xpath);
-        if (n == null) {
-            return defaultValue;
-        }
-
-        // FIXME: Can we avoid running the xpath twice?
-        //        The local expression cache helps, but anyway...
-        return (String)selectObject(node, xpath, XPathConstants.STRING);
+    public static String selectString(Node node, String xpath, String defaultValue) {
+        return selector.selectString(node, xpath, defaultValue);
     }
 
-    /**
-     * Extract the given value from the node as a String or if the value cannot
-     * be extracted, the empty string is returned
-     * <p/>
-     * Example: To get the value of the attribute "foo" in the node, specify
-     *          "@foo" as the path.
-     * <p/>
-     * Note: This method does not handle namespaces explicitely.
-     *
-     * @param node         the node with the wanted attribute
-     * @param xpath        the XPath to extract
-     * @return             the value of the path, if existing, else
-     *                     the empty string
-     */
     public static String selectString(Node node, String xpath) {
-        return selectString(node, xpath, "");
+        return selector.selectString(node, xpath);
     }
 
-    /**
-     * Select the Node list with the given XPath.
-     * </p><p>
-     * Note: This is a convenience method that logs exceptions instead of
-     *       throwing them.
-     * @param dom   the root document.
-     * @param xpath the xpath for the Node list.
-     * @return the NodeList requested or an empty NodeList if unattainable
-     */
-    public static NodeList selectNodeList(Node dom, String xpath) {
-        return (NodeList) selectObject(dom, xpath, XPathConstants.NODESET);
+    public static NodeList selectNodeList(Node node, String xpath) {
+        return selector.selectNodeList(node, xpath);
     }
 
-    /**
-     * Select the Node with the given XPath.
-     * </p><p>
-     * Note: This is a convenience method that logs exceptions instead of
-     *       throwing them.
-     * @param dom   the root document.
-     * @param xpath the xpath for the node.
-     * @return the Node or null if unattainable.
-     */
     public static Node selectNode(Node dom, String xpath) {
-        return (Node) selectObject(dom, xpath, XPathConstants.NODE);
+        return selector.selectNode(dom, xpath);
     }
 
-    private static Object selectObject(Node dom,
-                                       String xpath, QName returnType) {
-        Object retval = null;
-
-        try {
-            // Get the compiled xpath from the cache or compile and
-            // cache it if we don't have it
-            LRUCache<String,XPathExpression> cache = localXPathCache.get();
-            XPathExpression exp = cache.get(xpath);
-            if (exp == null) {
-                synchronized (xpathCompiler) {
-                    exp = xpathCompiler.compile(xpath);
-                }
-                cache.put(xpath, exp);
-            }
-
-            retval = exp.evaluate(dom, returnType);
-        } catch (NullPointerException e) {
-            //noinspection DuplicateStringLiteralInspection
-            log.debug(String.format(
-                    "NullPointerException when extracting XPath '%s' on " +
-                    "element type %s. Returning null",
-                    xpath, returnType.getLocalPart()), e);
-        } catch (XPathExpressionException e) {
-            log.warn(String.format(
-                    "Error in XPath expression '%s' when selecting %s: %s",
-                    xpath, returnType.getLocalPart(), e.getMessage()), e);
-        }
-
-        return retval;
-    }
-
-    /**
-     * Package private method to clear the cache of precompiled XPath
-     * expressions. Used mainly for debugging and unit tests
-     */
     static void clearXPathCache() {
-        localXPathCache.get().clear();
+        selector.clearCache();
     }
 }
