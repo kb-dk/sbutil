@@ -167,7 +167,9 @@
         </zip>
     </target>
 
-    <target name="compile-test" depends="compile">
+    <!-- Depends on the 'jar' target to make
+         sure that we copy over any needed XSLTs-->
+    <target name="compile-test" depends="jar">
         <javac srcdir="${test.src.dir}" destdir="${test.build.dir}" encoding="UTF-8"
                compiler="${compiler}" optimize="on" debug="on">
             <compilerarg value="-Xlint:unchecked"/>
