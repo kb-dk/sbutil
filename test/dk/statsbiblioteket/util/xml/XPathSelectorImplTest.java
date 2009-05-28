@@ -101,4 +101,18 @@ public class XPathSelectorImplTest extends TestCase {
         assertSame(expected.getLength(), l.getLength());
         assertEquals(8, l.getLength());
     }
+
+    public void testNamespaceSwitch() {
+        Double d;
+
+        XPathSelector s2 = DOM.createXPathSelector("grollub",
+                                                   "http://example.com/grollub");
+
+        d = s2.selectDouble(dom, "/foo:body/ex:double");
+        assertNull(d);
+
+        d = selector.selectDouble(dom, "/foo:body/ex:double");
+        assertEquals(1.1234, d);
+
+    }
 }
