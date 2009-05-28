@@ -28,7 +28,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import org.xml.sax.InputSource;
 
-import javax.xml.xpath.*;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.TransformerException;
@@ -37,7 +36,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.namespace.QName;
 import java.io.StringWriter;
 import java.io.IOException;
 import java.io.StringReader;
