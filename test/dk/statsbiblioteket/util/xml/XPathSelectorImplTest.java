@@ -20,12 +20,6 @@ public class XPathSelectorImplTest extends TestCase {
         "  <integer>27</integer>"+
         "</body>";
 
-    static final String NO_NS_XML =
-            DOM.XML_HEADER +
-            "<body>"+
-            "  <child>value</child>"+
-            "</body>";
-
     Document dom;
     XPathSelector selector;
 

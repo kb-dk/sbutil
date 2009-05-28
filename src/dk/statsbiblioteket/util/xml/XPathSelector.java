@@ -5,7 +5,13 @@ import org.w3c.dom.NodeList;
 
 /**
  * Interface for doing efficient XPath selections. To obtain an implementation
- * of this interface use {@link DOM#createSelector}.
+ * of this interface use {@link DOM#createXPathSelector(String[])}.
+ * <p/>
+ * Note that your DOM must be constructed with namespaces explicitly enabled
+ * for a namespace aware selector to work properly. You do this either via
+ * the {@link DOM#streamToDOM(java.io.InputStream , boolean)} or
+ * {@link DOM#stringToDOM(String, boolean)} methods or by calling
+ * {@code setNamespaceAware(true)} on your {@code DocumentBuilderFactory}.
  */
 public interface XPathSelector {
 

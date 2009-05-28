@@ -228,6 +228,7 @@
             <test name="dk.statsbiblioteket.util.rpc.RMIConnectionManagerTest" />
             <test name="dk.statsbiblioteket.util.rpc.StaticConnectionManagerTest" />
             <test name="dk.statsbiblioteket.util.xml.DOMSelectTest" />
+            <test name="dk.statsbiblioteket.util.xml.XPathSelectorImplTest" />
             <test name="dk.statsbiblioteket.util.xml.XMLUtilTest" />
             <test name="dk.statsbiblioteket.util.xml.XSLTTest" />
         </junit>

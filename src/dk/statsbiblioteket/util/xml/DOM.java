@@ -128,12 +128,17 @@ public class DOM {
      * {@code null} on error.
      *
      * @param xmlStream a stream containing an XML document.
-     * @return The document in a DOM
+     * @param namespaceAware if {@code true} the constructed DOM will reflect
+     *                       the namespaces declared in the XML document
+     * @return The document in a DOM or {@code null} in case of errors
      */
-    public static Document streamToDOM(InputStream xmlStream) {
+    public static Document streamToDOM(InputStream xmlStream,
+                                       boolean namespaceAware) {
         try {
-            return DocumentBuilderFactory.newInstance().newDocumentBuilder().
-                    parse(xmlStream);
+            DocumentBuilderFactory dbFact = DocumentBuilderFactory.newInstance();
+            dbFact.setNamespaceAware(namespaceAware);
+
+            return dbFact.newDocumentBuilder().parse(xmlStream);
         } catch (IOException e) {
             log.warn("I/O error when parsing stream :" + e.getMessage(), e);
         } catch (SAXException e) {
@@ -143,6 +148,17 @@ public class DOM {
                      + e.getMessage(), e);
         }
         return null;
+    }
+
+    /**
+     * Parses a XML document from a stream to a DOM disregarding namespaces.
+     * Returns {@code null} on error.
+     *
+     * @param xmlStream a stream containing an XML document.
+     * @return The document in a DOM or {@code null} in case of errors
+     */
+    public static Document streamToDOM(InputStream xmlStream) {
+        return streamToDOM(xmlStream, false);
     }
 
     /**
@@ -182,51 +198,178 @@ public class DOM {
         return sw.toString();
     }
 
+    /**
+     * Create a new {@link XPathSelector} instance with a given namespace
+     * mapping. The arguments are parsed as
+     * {@code prefix1, uri1, prefix2, uri2, ...}.
+     * <p/>
+     * If you want to apply XPath expressions without namespaces use the static
+     * {@code select*} methods directly on the {@code DOM} class.
+     * <p/>
+     * Note that if you want to apply XPath selections on a DOM constructed from
+     * either {@link DOM#streamToDOM(InputStream, boolean)} or
+     * {@link DOM#stringToDOM(String, boolean)} you must pass
+     * {@code namespaceAware=true} as the boolean argument. Namespaced
+     * selections will fail on a DOM constructed without namespaces.
+     *
+     * @param nsContext prefix, uri pairs
+     * @throws IllegalArgumentException if an uneven number of arguments are
+     *                                  passed
+     * @return a newly allocated {@link XPathSelector}
+     */
     public static XPathSelector createXPathSelector(String... nsContext) {
         return new XPathSelectorImpl(
                new DefaultNamespaceContext(null, nsContext), 50);
     }
 
+    /**
+     * Extract an integer value from {@code node} or return {@code defaultValue}
+     * if it is not found.
+     *
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the XPath to extract.
+     * @param defaultValue the default value.
+     * @return             the value of the path, if existing, else
+     *                     defaultValue
+     */
     public static Integer selectInteger(Node node, String xpath, Integer defaultValue) {
         return selector.selectInteger(node, xpath, defaultValue);
     }
 
+    /**
+     * Extract an integer value from {@code node} or return {@code null} if it
+     * is not found
+     *
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the XPath to extract.
+     * @return             the value of the path or {@code null}
+     */
     public static Integer selectInteger(Node node, String xpath) {
         return selector.selectInteger(node, xpath);
     }
 
-    public static Double selectDouble(Node node, String xpath, Double defaultValue) {
+    /**
+     * Extract a double precision floating point value from {@code node} or
+     * return {@code defaultValue} if it is not found
+     *
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the XPath to extract.
+     * @param defaultValue the default value.
+     * @return             the value of the path, if existing, else
+     *                     defaultValue
+     */
+    public static Double selectDouble(Node node,
+                                      String xpath, Double defaultValue) {
         return selector.selectDouble(node, xpath, defaultValue);
     }
 
+    /**
+     * Extract a double precision floating point value from {@code node} or
+     * return {@code null} if it is not found
+     *
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the XPath to extract.
+     * @return             the value of the path or {@code null}
+     */
     public static Double selectDouble(Node node, String xpath) {
         return selector.selectDouble(node, xpath);
     }
 
-    public static Boolean selectBoolean(Node node, String xpath, Boolean defaultValue) {
+    /**
+     * Extract a boolean value from {@code node} or return {@code defaultValue}
+     * if there is no boolean value at {@code xpath}
+
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the path to extract.
+     * @param defaultValue the default value.
+     * @return             the value of the path, if existing, else
+     *                     {@code defaultValue}
+     */
+    public static Boolean selectBoolean(Node node,
+                                        String xpath, Boolean defaultValue) {
         return selector.selectBoolean(node, xpath, defaultValue);
     }
 
+    /**
+     * Extract a boolean value from {@code node} or return {@code false}
+     * if there is no boolean value at {@code xpath}
+     *
+     * @param node         the node with the wanted attribute.
+     * @param xpath        the path to extract.
+     * @return             the value of the path, if existing, else
+     *                     {@code false}
+     */
     public static Boolean selectBoolean(Node node, String xpath) {
         return selector.selectBoolean(node, xpath);
     }
 
+    /**
+     * Extract the given value from the node as a String or if the value cannot
+     * be extracted, {@code defaultValue} is returned.
+     * <p/>
+     * Example: To get the value of the attribute "foo" in the node, specify
+     *          "@foo" as the path.
+     * <p/>
+     * Note: This method does not handle namespaces explicitely.
+     *
+     * @param node         the node with the wanted attribute
+     * @param xpath        the XPath to extract.
+     * @param defaultValue the default value
+     * @return             the value of the path, if existing, else
+     *                     {@code defaultValue}
+     */
     public static String selectString(Node node, String xpath, String defaultValue) {
         return selector.selectString(node, xpath, defaultValue);
     }
 
+    /**
+     * Extract the given value from the node as a String or if the value cannot
+     * be extracted, the empty string is returned
+     * <p/>
+     * Example: To get the value of the attribute "foo" in the node, specify
+     *          "@foo" as the path.
+     * <p/>
+     * Note: This method does not handle namespaces explicitely.
+     *
+     * @param node         the node with the wanted attribute
+     * @param xpath        the XPath to extract
+     * @return             the value of the path, if existing, else
+     *                     the empty string
+     */
     public static String selectString(Node node, String xpath) {
         return selector.selectString(node, xpath);
     }
 
+    /**
+     * Select the {@link NodeList} with the given XPath.
+     * </p><p>
+     * Note: This is a convenience method that logs exceptions instead of
+     *       throwing them.
+     * @param node   the root document.
+     * @param xpath the xpath for the Node list.
+     * @return the NodeList requested or an empty NodeList if unattainable
+     */
     public static NodeList selectNodeList(Node node, String xpath) {
         return selector.selectNodeList(node, xpath);
     }
 
+    /**
+     * Select the Node with the given XPath.
+     * </p><p>
+     * Note: This is a convenience method that logs exceptions instead of
+     *       throwing them.
+     * @param dom   the root document.
+     * @param xpath the xpath for the node.
+     * @return the Node or null if unattainable.
+     */
     public static Node selectNode(Node dom, String xpath) {
         return selector.selectNode(dom, xpath);
     }
 
+    /**
+     * Package private method to clear the expression cache
+     * - used for unit testing
+     */
     static void clearXPathCache() {
         selector.clearCache();
     }
