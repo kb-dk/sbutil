@@ -1,4 +1,30 @@
 =========================
+2009-04-28: SB Util 0.4.5
+=========================
+
+ * Add a Table class in the console package that can be used to do formatted
+   tabular layout of data to the console (or more generally to Appendables,
+   like System.out and StringBuilder)
+
+ * Add overloaded methods DOM.streamToDOM() and DOM.stringToDOM() that takes
+   an additional boolean determining whether or not namespaces should be
+   reflected in the DOM (default is no)
+
+ * Implement a namespace aware framework for doing XPath selects. It revolves
+   around the XPathSelector interface. Instances of XPathSelectors can be
+   created via the statis factory DOM.createXPathSelector.
+
+ * Include a simple default implementation of the NamespaceContext interface
+   in the xml package
+
+ * Bugfix: Fix the 'test' target completing without the 'release' target
+           being run first
+
+ * Bugfix: When using rules with targets longer than 10 characters
+           together with ReplaceFactory and Streams, the rules were not
+           honored
+
+=========================
 2009-04-02: SB Util 0.4.4
 =========================
 

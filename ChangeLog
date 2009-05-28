@@ -1,9 +1,97 @@
-2009-04-02 14:57  mke
+2009-05-28 11:40  mke
 
-    * [r189] build.xml, ChangeLog:
+	* [r200]
+	  build.xml, ChangeLog, NEWS:
 
-    Release SBUtil 0.4.4
-    Add ChangeLog and NEWS to the distributed files
+	  Release SBUtil 0.4.5
+
+2009-05-28 11:36  mke
+
+	* [r199]
+	  test/dk/statsbiblioteket/util/xml/XPathSelectorImplTest.java:
+	  
+	  Add additional unit test to check parallel selectors on different
+	  namespaces
+
+2009-05-28 10:46  mke
+
+	* [r198] src/dk/statsbiblioteket/util/console/Formatter.java,
+	  src/dk/statsbiblioteket/util/console/Table.java,
+	  test/dk/statsbiblioteket/util/console/TableTest.java:
+	  
+	  Import the Layout class from Summa into the console package and
+	  call it Table. It can be used to print formatted tabular layouts
+	  to a terminal
+	  
+	  Add a method to Formatter to render into an Appendable
+
+2009-05-28 08:45  mke
+
+	* [r197] build.xml:
+	  
+	  Fix the 'test' build target when it was run without running the
+	  'release' target first. The issue was that 'test' depended on the
+	  XSLTs being copied over to the build dir by the 'jar' target.
+	  This closes #1607
+
+2009-05-28 08:33  mke
+
+	* [r196] src/dk/statsbiblioteket/util/xml/DOM.java:
+	  
+	  Fix unused imports
+
+2009-05-28 08:33  mke
+
+	* [r195] build.xml, src/dk/statsbiblioteket/util/xml/DOM.java,
+	  src/dk/statsbiblioteket/util/xml/XPathSelector.java,
+	  test/dk/statsbiblioteket/util/xml/XPathSelectorImplTest.java:
+	  
+	  Implement a DOM.streamToDOM method that respects namespaces
+	  
+	  Document all the selector methods on DOM
+	  
+	  Add XPathSelectorImplTest to the list of unit tests in the
+	  build.xml
+
+2009-05-27 13:06  mke
+
+	* [r194] src/dk/statsbiblioteket/util/xml/DOM.java,
+	  src/dk/statsbiblioteket/util/xml/DefaultNamespaceContext.java,
+	  src/dk/statsbiblioteket/util/xml/XPathSelector.java,
+	  src/dk/statsbiblioteket/util/xml/XPathSelectorImpl.java,
+	  test/dk/statsbiblioteket/util/xml/XPathSelectorImplTest.java:
+	  
+	  Add a namespace aware version of the XPath utilities. This
+	  involves
+	  - Adding the interface XPathSelector (with private impl
+	  XPathSelectorImpl)
+	  - Using DOM.createSelector() as static factory
+	  
+	  Include a DefaultNamespaceContext impl
+
+2009-05-24 21:21  toke
+
+	* [r193] src/dk/statsbiblioteket/util/reader/StringReplacer.java,
+	  test/dk/statsbiblioteket/util/reader/ReplaceFactoryTest.java,
+	  test/dk/statsbiblioteket/util/reader/StringReplacerTest.java:
+	  
+	  Bugfix: When using rules with targets longer than 10 characters
+	  together with ReplaceFactory and Streams, the rules were not
+	  honored
+
+2009-04-02 13:09  mke
+
+	* [r191] build.xml:
+	  
+	  Copy XSLTs from the source tree into the final .jar. This fix
+	  will make it to SBUtil 0.4.4
+
+2009-04-02 12:56  mke
+
+	* [r189] ChangeLog, build.xml:
+	  
+	  Release SBUtil 0.4.4
+	  Add ChangeLog and NEWS to the distributed files
 
 2009-04-02 12:50  mke
 
