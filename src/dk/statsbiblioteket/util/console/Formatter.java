@@ -1,5 +1,7 @@
 package dk.statsbiblioteket.util.console;
 
+import java.io.IOException;
+
 /**
  * A string type that can render colored and formatted output to a console.
  */
@@ -90,30 +92,43 @@ public class Formatter {
      * @return Formatted string ready for displaying in a terminal
      */
     public String format (String s) {
-        String result = "";
+        StringBuilder buf = new StringBuilder();
+        try {
+            format(s, buf);
+        } catch (IOException e) {
+            return "Error: " + e.getMessage();
+        }
+
+        return buf.toString();
+    }
+
+    public Appendable format (String s, Appendable buf) throws IOException {
+        if (foreground == null && background == null && hint == null) {
+            buf.append(s);
+            return buf;
+        }
+
+        buf.append(controlStart);
+
         if (foreground != null) {
-            result = "" + (30 + foreground.ordinal());
+            buf.append(Integer.toString(30 + foreground.ordinal()));
         }
 
         if (background != null) {
-            result += (foreground != null ? ";" : "")
-                       + (40 + background.ordinal());
+            buf.append(foreground != null ? ";" : "");
+            buf.append(Integer.toString(40 + background.ordinal()));
         }
 
         if (hint != null) {
-            result += ((background != null) || (foreground != null) ? ";" : "")
-                      + hint.ordinal();
+            buf.append((background != null) || (foreground != null) ? ";" : "");
+            buf.append(Integer.toString(hint.ordinal()));
         }
 
-        if (result.length() != 0) {
-            result = controlStart + result + "" + controlEnd // Add style
-                    + s
-                    + controlStart + 0 + controlEnd; // Reset style
-        } else {
-            return s;
-        }
+        buf.append(controlEnd);
+        buf.append(s);
+        buf.append(controlStart).append("0").append(controlEnd); // Reset style
 
-        return result;
+        return buf;
     }
 
 }
