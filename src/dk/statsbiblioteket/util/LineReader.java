@@ -40,6 +40,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.nio.channels.FileChannel;
 import java.nio.ByteBuffer;
+import java.util.Comparator;
 
 import org.apache.log4j.Logger;
 import dk.statsbiblioteket.util.qa.QAInfo;
@@ -56,7 +57,7 @@ import dk.statsbiblioteket.util.qa.QAInfo;
  *            method {@link DataOutputStream#writeUTF(String, DataOutput)} is
  *            package private.
  * </p><p>
-   * This class is not synchronised.
+ * This class is not synchronised.
  */
 @QAInfo(state=QAInfo.State.QA_NEEDED,
         level=QAInfo.Level.NORMAL)
@@ -760,5 +761,52 @@ public class LineReader implements DataInput, DataOutput {
         throw new UnsupportedEncodingException("This is not supported as the "
                                                + "necessary util is package "
                                                + "private in DataOutputStream");
+    }
+
+    /**
+     * Find the start-position of a line matching the given query.
+     * A binary-search is used, thus requiring the user of the LineReader to
+     * maintain a structure matching the comparator.
+     * The binary search works by
+     * @param comparator used for the binary search. If the comparator is null,
+     *                   the default String.compareTo is used.
+     *                   The comparator will be used with compare(query, line).
+     * @param query      the element to look for. If comparator is null, this
+     *                   should be a full line.
+     * @return the index of the query or {@code (-(insertion point) - 1)} if it
+     *         could not be found.
+     * @throws IOException if reads of the underlying file failed.
+     */
+    long binaryLineSearch(Comparator<String> comparator, String query)
+                                                            throws IOException {
+        long low = 0;
+        long high = length()-1;
+
+        while (low <= high) {
+            long mid = (low + high) >>> 1;
+            seek(mid);
+            byte c = 0;
+            while (mid != 0 && !eof() && c != '\n') {
+                c = readByte();
+            }
+            if (eof()) {
+                return (-1 * getPosition()) - 1;
+            }
+            mid = getPosition(); // Update mid to be the right place?
+            // TODO: Do we need to check if (mid > high) ?
+            String line = readLine();
+            int cmp = comparator == null ?
+                      query.compareTo(line) :
+                      comparator.compare(query, line);
+
+            if (cmp > 0) {
+                low = mid + 1;
+            } else if (cmp < 0) {
+                high = mid - 1;
+            } else
+                return mid;
+        }
+
+        return -(low + 1);
     }
 }

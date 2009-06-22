@@ -804,4 +804,23 @@ public class LineReaderTest extends TestCase {
     public LineReader getLR() throws IOException {
         return new LineReader(createTempFile(), "rw");
     }
+
+    public void testBinarySearch() throws Exception {
+        File testFile = File.createTempFile("binarySearch", ".tmp");
+        testFile.deleteOnExit();
+        String content = "a\nab\naabb\nc\nd\nde\nzz\nzzz";
+        Files.saveString(content, testFile);
+        LineReader reader = new LineReader(testFile, "r");
+        assertPos(reader, 0, "a");
+        assertPos(reader, 2, "ab");
+        assertPos(reader, 5, "aabb");
+        assertPos(reader, 10, "c");
+        reader.close();
+    }
+    private void assertPos(LineReader reader, int expectedPos, String query)
+                                                            throws IOException {
+        assertEquals(String.format(
+                "The query '%s' should have the correct position", query),
+                     expectedPos, reader.binaryLineSearch(null, "a"));
+    }
 }
