@@ -811,8 +811,8 @@ public class LineReaderTest extends TestCase {
         String content = "a\nab\naabb\nc\nd\nde\nzz\nzzz";
         Files.saveString(content, testFile);
         LineReader reader = new LineReader(testFile, "r");
-        assertPos(reader, 0, "a");
         assertPos(reader, 2, "ab");
+        assertPos(reader, 0, "a");
         assertPos(reader, 5, "aabb");
         assertPos(reader, 10, "c");
         reader.close();

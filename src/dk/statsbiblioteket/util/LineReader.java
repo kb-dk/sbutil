@@ -792,16 +792,16 @@ public class LineReader implements DataInput, DataOutput {
             if (eof()) {
                 return (-1 * getPosition()) - 1;
             }
-            mid = getPosition(); // Update mid to be the right place?
+    //        mid = getPosition(); // Update mid to be the right place?
             // TODO: Do we need to check if (mid > high) ?
             String line = readLine();
             int cmp = comparator == null ?
                       query.compareTo(line) :
                       comparator.compare(query, line);
 
-            if (cmp > 0) {
+            if (cmp < 0) {
                 low = mid + 1;
-            } else if (cmp < 0) {
+            } else if (cmp > 0) {
                 high = mid - 1;
             } else
                 return mid;
