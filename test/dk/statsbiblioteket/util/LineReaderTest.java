@@ -22,15 +22,8 @@
  */
 package dk.statsbiblioteket.util;
 
-import java.io.File;
-import java.io.RandomAccessFile;
-import java.io.DataOutput;
-import java.io.DataInput;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
-import java.util.Random;
+import java.io.*;
+import java.util.*;
 import java.nio.channels.FileChannel;
 import java.nio.ByteBuffer;
 
@@ -39,13 +32,6 @@ import junit.framework.TestSuite;
 import junit.framework.TestCase;
 import org.apache.log4j.Logger;
 
-/**
- * LineReader Tester.
- *
- * @author <Authors name>
- * @since <pre>06/15/2007</pre>
- * @version 1.0
- */
 @SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class LineReaderTest extends TestCase {
     private static Logger log = Logger.getLogger(LineReaderTest.class);
@@ -58,10 +44,12 @@ public class LineReaderTest extends TestCase {
         super(name);
     }
 
+    @Override
     public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
     }
@@ -805,16 +793,68 @@ public class LineReaderTest extends TestCase {
         return new LineReader(createTempFile(), "rw");
     }
 
-    public void testBinarySearch() throws Exception {
+    public void testMonkeyBinarySearch() throws Exception {
         File testFile = File.createTempFile("binarySearch", ".tmp");
         testFile.deleteOnExit();
-        String content = "a\n\naabb\n\nab\n\nc\n\nd\n\nde\n\nzz\n\nzzz";
+        Random random = new Random(87);
+
+        int LINES = 50;
+        int MINWORDLENGTH = 1;
+        int MAXWORDLENGTH = 10;
+        int MINCHAR = 32;
+        int MAXCHAR = 14200;
+        Set<String> lineSet = new HashSet<String>(LINES);
+        for (int line = 0 ; line < LINES ; line++) {
+            int wordLength = random.nextInt(MAXWORDLENGTH - MINWORDLENGTH) + MINWORDLENGTH;
+            StringWriter word = new StringWriter(wordLength);
+            for (int i = 0 ; i < wordLength ; i++) {
+                word.append((char)(random.nextInt(
+                        MAXCHAR - MINCHAR) + MINCHAR));
+            }
+            lineSet.add(word.toString());
+        }
+
+        List<String> lines = new ArrayList<String>(lineSet);
+        Collections.sort(lines);
+        log.info("Created content: " + Strings.join(lines, "  "));
+        StringWriter sw = new StringWriter(MAXWORDLENGTH * LINES);
+        for (String word: lines) {
+            sw.append(word);
+            sw.append("\n");
+        }
+        String content = sw.toString();
+        Files.saveString(content, testFile);
+
+        LineReader reader = new LineReader(testFile, "r");
+        int pos = 0;
+        for (String word: lines) {
+            assertPos(reader, pos, word);
+            pos += word.getBytes("utf-8").length + 1;
+        }
+        reader.close();
+    }
+
+    public void testBinarySearch2() throws Exception {
+        File testFile = File.createTempFile("binarySearch", ".tmp");
+        testFile.deleteOnExit();
+        String content = "a\nbb";
         Files.saveString(content, testFile);
         LineReader reader = new LineReader(testFile, "r");
         assertPos(reader, 0, "a");
-        assertPos(reader, 9, "ab");
-        assertPos(reader, 3, "aabb");
-        assertPos(reader, 13, "c");
+        assertPos(reader, 2, "bb");
+        reader.close();
+    }
+
+    public void testBinarySearch() throws Exception {
+        File testFile = File.createTempFile("binarySearch", ".tmp");
+        testFile.deleteOnExit();
+        String content = "a\naabb\nab\nc\nd\nde\nzz\nzzz";
+        Files.saveString(content, testFile);
+        LineReader reader = new LineReader(testFile, "r");
+        assertPos(reader, 0, "a");
+        assertPos(reader, 7, "ab");
+        assertPos(reader, 2, "aabb");
+        assertPos(reader, 10, "c");
         reader.close();
     }
     private void assertPos(LineReader reader, int expectedPos, String query)

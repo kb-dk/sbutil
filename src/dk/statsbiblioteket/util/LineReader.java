@@ -26,11 +26,9 @@
  */
 package dk.statsbiblioteket.util;
 
-import java.io.FileInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.EOFException;
-import java.io.FileOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.RandomAccessFile;
 import java.io.DataInput;
@@ -659,6 +657,7 @@ public class LineReader implements DataInput, DataOutput {
             checkBuffer();
             int writeLength = Math.min(left, bufferSize - buffer.position());
             if (log.isTraceEnabled()) {
+                //noinspection DuplicateStringLiteralInspection
                 log.trace("write: buf.length=" + buf.length
                           + ", offset=" + offset
                           + ", length=" + length
@@ -768,9 +767,9 @@ public class LineReader implements DataInput, DataOutput {
      * A binary-search is used, thus requiring the user of the LineReader to
      * maintain specific structure and a matching comparator.
      * </p><p>
-     * The expected structure is UTF-8 with double line-breaks {@code "\n"} as
-     * line-delimiters. The reason for the double delimiters is to avoid
-     * the treatment of certain multi-byte UTF-8 characters as delimiters.
+     * The expected structure is UTF-8 with new-line {@code "\n"} as
+     * line-delimiters. As the byte {@code 0x0A} for new-line is never part
+     * of a valid multi-byte UTF-8 character this should pose no problems.
      * </p><p>
      * Searching for an empty line is not supported. Escaping on line breaks is
      * the responsibility of the user.
@@ -792,28 +791,9 @@ public class LineReader implements DataInput, DataOutput {
             long mid = (low + high) >>> 1;
             seek(mid);
 
-            // Read until two \n followed by another byte has been reached
-            // then seek to one less
-            while (mid != 0 && !eof()) {
+            if (mid != 0) {
                 //noinspection StatementWithEmptyBody
                 while (!eof() && readByte() != '\n');
-                if (eof()) {
-                    break;
-                }
-                // The first \n encountered
-                if (readByte() != '\n') {
-                    continue;
-                }
-                // The second \n encountered
-                if (eof()) {
-                    break;
-                }
-                // Read until something else than \n is encountered
-                //noinspection StatementWithEmptyBody
-                while (!eof() && readByte() == '\n');
-                // Three step forward and one step back
-                seek(getPosition()-1);
-                break;
             }
             if (eof()) {
                 high = mid - 1;
