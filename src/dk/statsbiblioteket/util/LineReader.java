@@ -783,7 +783,7 @@ public class LineReader implements DataInput, DataOutput {
      *         could not be found.
      * @throws IOException if reads of the underlying file failed.
      */
-    long binaryLineSearch(Comparator<String> comparator, String query)
+    public long binaryLineSearch(Comparator<String> comparator, String query)
                                                             throws IOException {
         long low = 0;
         long high = length()-1;
