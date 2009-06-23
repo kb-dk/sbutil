@@ -816,7 +816,9 @@ public class LineReader implements DataInput, DataOutput {
                 break;
             }
             if (eof()) {
-                return (-1 * getPosition()) - 1;
+                high = mid - 1;
+                continue;
+                //return (-1 * getPosition()) - 1;
             }
 
             // Remember the line start position to return if we have a match
