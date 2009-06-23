@@ -808,13 +808,13 @@ public class LineReaderTest extends TestCase {
     public void testBinarySearch() throws Exception {
         File testFile = File.createTempFile("binarySearch", ".tmp");
         testFile.deleteOnExit();
-        String content = "a\naabb\nab\nc\nd\nde\nzz\nzzz";
+        String content = "a\n\naabb\n\nab\n\nc\n\nd\n\nde\n\nzz\n\nzzz";
         Files.saveString(content, testFile);
         LineReader reader = new LineReader(testFile, "r");
-        assertPos(reader, 7, "ab");
         assertPos(reader, 0, "a");
-        assertPos(reader, 2, "aabb");
-        assertPos(reader, 10, "c");
+        assertPos(reader, 9, "ab");
+        assertPos(reader, 3, "aabb");
+        assertPos(reader, 13, "c");
         reader.close();
     }
     private void assertPos(LineReader reader, int expectedPos, String query)

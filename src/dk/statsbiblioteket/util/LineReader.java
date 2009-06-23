@@ -766,8 +766,14 @@ public class LineReader implements DataInput, DataOutput {
     /**
      * Find the start-position of a line matching the given query.
      * A binary-search is used, thus requiring the user of the LineReader to
-     * maintain a structure matching the comparator.
-     * The binary search works by
+     * maintain specific structure and a matching comparator.
+     * </p><p>
+     * The expected structure is UTF-8 with double line-breaks {@code "\n"} as
+     * line-delimiters. The reason for the double delimiters is to avoid
+     * the treatment of certain multi-byte UTF-8 characters as delimiters.
+     * </p><p>
+     * Searching for an empty line is not supported. Escaping on line breaks is
+     * the responsibility of the user.
      * @param comparator used for the binary search. If the comparator is null,
      *                   the default String.compareTo is used.
      *                   The comparator will be used with compare(query, line).
@@ -785,21 +791,42 @@ public class LineReader implements DataInput, DataOutput {
         while (low <= high) {
             long mid = (low + high) >>> 1;
             seek(mid);
-            byte c = 0;
-            while (mid != 0 && !eof() && c != '\n') {
-                c = readByte();
+
+            // Read until two \n followed by another byte has been reached
+            // then seek to one less
+            while (mid != 0 && !eof()) {
+                //noinspection StatementWithEmptyBody
+                while (!eof() && readByte() != '\n');
+                if (eof()) {
+                    break;
+                }
+                // The first \n encountered
+                if (readByte() != '\n') {
+                    continue;
+                }
+                // The second \n encountered
+                if (eof()) {
+                    break;
+                }
+                // Read until something else than \n is encountered
+                //noinspection StatementWithEmptyBody
+                while (!eof() && readByte() == '\n');
+                // Three step forward and one step back
+                seek(getPosition()-1);
+                break;
             }
             if (eof()) {
                 return (-1 * getPosition()) - 1;
             }
+
+            // Remember the line start position to return if we have a match
             long lineStart = getPosition();
-    //        mid = getPosition(); // Update mid to be the right place?
-            // TODO: Do we need to check if (mid > high) ?
             String line = readLine();
             int cmp = comparator == null ?
                       query.compareTo(line) :
                       comparator.compare(query, line);
 
+            // Halve or return
             if (cmp < 0) {
                 high = mid - 1;
             } else if (cmp > 0) {
