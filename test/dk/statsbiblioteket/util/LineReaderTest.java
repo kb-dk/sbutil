@@ -808,12 +808,12 @@ public class LineReaderTest extends TestCase {
     public void testBinarySearch() throws Exception {
         File testFile = File.createTempFile("binarySearch", ".tmp");
         testFile.deleteOnExit();
-        String content = "a\nab\naabb\nc\nd\nde\nzz\nzzz";
+        String content = "a\naabb\nab\nc\nd\nde\nzz\nzzz";
         Files.saveString(content, testFile);
         LineReader reader = new LineReader(testFile, "r");
-        assertPos(reader, 2, "ab");
+        assertPos(reader, 7, "ab");
         assertPos(reader, 0, "a");
-        assertPos(reader, 5, "aabb");
+        assertPos(reader, 2, "aabb");
         assertPos(reader, 10, "c");
         reader.close();
     }
@@ -821,6 +821,6 @@ public class LineReaderTest extends TestCase {
                                                             throws IOException {
         assertEquals(String.format(
                 "The query '%s' should have the correct position", query),
-                     expectedPos, reader.binaryLineSearch(null, "a"));
+                     expectedPos, reader.binaryLineSearch(null, query));
     }
 }
