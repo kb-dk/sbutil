@@ -154,8 +154,9 @@ public class LineReader implements DataInput, DataOutput {
      * @throws IOException if the file coult not be accessed.
      */
     public LineReader(File file, String mode) throws IOException {
-        if (!file.canRead()) {
-            throw new IOException("Cannot read the file '" + file + "'");
+        if (mode != null && mode.contains("w") && !file.exists()) {
+            log.trace("Creating file '" + file + "'");
+            file.createNewFile();
         }
         if (mode == null) {
             log.debug("Mode == null, defaulting to read-only");
