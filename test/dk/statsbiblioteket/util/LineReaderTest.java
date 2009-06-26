@@ -39,6 +39,8 @@ public class LineReaderTest extends TestCase {
     private static final int LINES = 376;
     File logfile = new File("test/data",
                             "website-performance-info.log.2007-04-01");
+    private File TMPFOLDER = new File(
+            System.getProperty("java.io.tmpdir"), "linereadertest");
 
     public LineReaderTest(String name) {
         super(name);
@@ -47,6 +49,10 @@ public class LineReaderTest extends TestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        if (TMPFOLDER.exists()) {
+            Files.delete(TMPFOLDER);
+        }
+        TMPFOLDER.mkdirs();
     }
 
     @Override
@@ -862,5 +868,91 @@ public class LineReaderTest extends TestCase {
         assertEquals(String.format(
                 "The query '%s' should have the correct position", query),
                      expectedPos, reader.binaryLineSearch(null, query));
+    }
+
+    public void testPerformanceSmall() throws Exception {
+        testBSPerformance(new File(TMPFOLDER, "small"), 100, 1000);
+    }
+    public void disabledtestPerformanceMediumCorpusManyLookups() throws Exception {
+        testBSPerformance(new File(TMPFOLDER, "small"), 100000, 100000);
+    }
+    public void disabledtestPerformanceMediumCorpusEternalLookups() throws Exception {
+        testBSPerformance(new File(TMPFOLDER, "small"),
+                          100000, Integer.MAX_VALUE);
+    }
+
+    public static void testBSPerformance(File location, int terms, int runs)
+                                                              throws Exception {
+        System.out.println(String.format(
+                "testPerformance('%s', %d runs) called",location, runs));
+        createTS(terms, location);
+        LineReader ts = new LineReader(location, "r");
+        int digits = Integer.toString(terms).length();
+
+        Random random = new Random(87);
+        Profiler profiler = new Profiler(runs);
+        profiler.setBpsSpan(10000);
+        int feedback = Math.max(1, runs / 100);
+        for (int i = 0 ; i < runs ; i++) {
+            int test = random.nextInt(terms);
+            //noinspection DuplicateStringLiteralInspection
+            String term = "term_" + leader(test, digits);
+            ts.binaryLineSearch(termLocator, term);
+            profiler.beat();
+            if (i % feedback == 0) {
+                System.out.println(String.format(
+                        "Executed %d/%d lookups. Average lookups/second: %d. "
+                        + "ETA: %s",
+                        i, runs, (int)profiler.getBps(true),
+                        profiler.getETAAsString(true)));
+            }
+        }
+        System.out.println(String.format(
+                "Executed %d lookups in %s. Average lookups/second: %s",
+                runs, profiler.getSpendTime(), profiler.getBps(false)));
+        ts.close();
+    }
+
+    public static void createTS(int terms, File location) throws Exception {
+        System.out.println(String.format(
+                "Creating sample term stats with %d terms at '%s'",
+                terms, location));
+        int digits = Integer.toString(terms).length();
+        Profiler profiler = new Profiler();
+        LineReader ts = new LineReader(location, "rw");
+        for (int i = 0 ; i < terms ; i++) {
+            //noinspection DuplicateStringLiteralInspection
+            ts.write("term_" + leader(i, digits) + " " + (i + 2) + "\n");
+        }
+        ts.close();
+        System.out.println("Finished creating sample term stats with " + terms
+                           + " terms in " + profiler.getSpendTime());
+    }
+
+    private static String leader(int num, int digits) {
+        String result = Integer.toString(num);
+        if (result.length() > digits) {
+            throw new IllegalArgumentException(String.format(
+                    "The number %d already has more than %d digits",
+                    num, digits));
+        }
+        while (result.length() < digits) {
+            result = "0" + result;
+        }
+        return result;
+    }
+
+    private static Comparator<String> termLocator = new Comparator<String>() {
+        // o1 will always be the search value, o2 is the line
+        public int compare(String o1, String o2) {
+            return o1.compareTo(extractTermStringWithEscapes(o2));
+        }
+    };
+    private static String extractTermStringWithEscapes(String line) {
+        // No explicit check for existence of delimiter as we don't care whether
+        // a "No DELIMITER found or an ArrayIndexOutOfBounds is thrown
+        // The same goes for the Integer.parseInt-call. In all three cases, we
+        // can infer what happened.
+        return line.substring(0, line.lastIndexOf(" "));
     }
 }

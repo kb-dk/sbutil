@@ -65,7 +65,7 @@ public class LineReader implements DataInput, DataOutput {
     protected static final int BUFFER_SIZE = 8192; // TODO: Performance-tweak this
 
     private RandomAccessFile input;
-//    private FileInputStream input;
+    //    private FileInputStream input;
     /**
      * The channel that controls reads.
      */
@@ -77,7 +77,7 @@ public class LineReader implements DataInput, DataOutput {
     private boolean inOpen = false;
 
     private RandomAccessFile output;
-//    private FileOutputStream output;
+    //    private FileOutputStream output;
     /**
      * The channel that controls writes.
      */
@@ -226,8 +226,8 @@ public class LineReader implements DataInput, DataOutput {
         if (position > length()) {
             //noinspection DuplicateStringLiteralInspection
             throw new EOFException("Cannot set position " + position
-                                  + " as the file size is only "
-                                  + length() + " bytes");
+                                   + " as the file size is only "
+                                   + length() + " bytes");
         }
         if (position < 0) {
             throw new IllegalArgumentException("The position cannot "
@@ -464,21 +464,21 @@ public class LineReader implements DataInput, DataOutput {
     public int readInt() throws IOException {
         readFully(readBuf, 0, 4);
         return   (readBuf[0] & 0xFF) << 24
-               | (readBuf[1] & 0xFF) << 16
-               | (readBuf[2] & 0xFF) <<  8
-               |  readBuf[3];
+                 | (readBuf[1] & 0xFF) << 16
+                 | (readBuf[2] & 0xFF) <<  8
+                 |  readBuf[3];
     }
 
     public long readLong() throws IOException {
         readFully(readBuf, 0, 8);
         return   (long)(readBuf[0] & 0xFF) << 56
-               | (long)(readBuf[1] & 0xFF) << 48
-               | (long)(readBuf[2] & 0xFF) << 40
-               | (long)(readBuf[3] & 0xFF) << 32
-               | (long)(readBuf[4] & 0xFF) << 24
-               | (long)(readBuf[5] & 0xFF) << 16
-               | (long)(readBuf[6] & 0xFF) <<  8
-               | readBuf[7];
+                 | (long)(readBuf[1] & 0xFF) << 48
+                 | (long)(readBuf[2] & 0xFF) << 40
+                 | (long)(readBuf[3] & 0xFF) << 32
+                 | (long)(readBuf[4] & 0xFF) << 24
+                 | (long)(readBuf[5] & 0xFF) << 16
+                 | (long)(readBuf[6] & 0xFF) <<  8
+                 | readBuf[7];
     }
 
     public float readFloat() throws IOException {
@@ -492,23 +492,12 @@ public class LineReader implements DataInput, DataOutput {
     public byte readByte() throws IOException {
         //log.trace("readByte entered");
         checkInputFile();
-        if (eof()) {
-            throw new EOFException(String.format(
-                    "EOF reached in readByte for file '%s' at position %d",
-                    file, position));
-        }
         checkBuffer();
+        // TODO: Check for EOF?
         byte b = buffer.get();
         position++;
         if (position >= bufferStart + bufferSize) {
             invalidateBuffer();
-        }
-        if (eof()) {
-            if (log.isTraceEnabled()) {
-                log.trace("EOF observed in readByte for file \"" + file
-                          + "\" at position " + position);
-            }
-            closeNoReset();
         }
         return b;
     }
@@ -529,20 +518,13 @@ public class LineReader implements DataInput, DataOutput {
     public String readLine() throws IOException {
 //        log.trace("readLine entered");
         lineBuffer.reset();
-        if (eof()) {
-            throw new EOFException("EOF reached before any characters could be "
-                                   + "read");
-        }
         while (true) {
-            if (eof()) {
-                //noinspection DuplicateStringLiteralInspection
-                log.trace("Reached EOF while reading line after "
-                          + lineBuffer.size() + " bytes");
-                break;
-            }
             byte next = readByte();
             if (next == 0x0A) {
-                log.trace("Read " + lineBuffer.size() + " bytes in readLine");
+                if (log.isTraceEnabled()) {
+                    log.trace("Read " + lineBuffer.size()
+                              + " bytes in readLine");
+                }
                 break;
             }
             lineBuffer.write(next);
@@ -663,7 +645,7 @@ public class LineReader implements DataInput, DataOutput {
                           + ", offset=" + offset
                           + ", length=" + length
                           + ", writeLength=" + writeLength
-                          + ", bufferStart=" + bufferStart 
+                          + ", bufferStart=" + bufferStart
                           + ", buffer.position()=" + buffer.position()
                           + ", position=" + position);
             }
@@ -716,7 +698,7 @@ public class LineReader implements DataInput, DataOutput {
         outBytes[2] = (byte)(0xff & v >>  8);
         outBytes[3] = (byte)(0xff & v);
         write(outBytes, 0, 4);
-     }
+    }
 
     public void writeLong(long v) throws IOException {
         outBytes[0] = (byte)(0xff & v >> 56);
@@ -784,7 +766,7 @@ public class LineReader implements DataInput, DataOutput {
      * @throws IOException if reads of the underlying file failed.
      */
     public long binaryLineSearch(Comparator<String> comparator, String query)
-                                                            throws IOException {
+            throws IOException {
         long low = 0;
         long high = length()-1;
 
