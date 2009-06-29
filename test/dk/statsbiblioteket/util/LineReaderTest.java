@@ -157,6 +157,13 @@ public class LineReaderTest extends TestCase {
         }
         assertEquals("The amount of read bytes should match the file size",
                      fileSize, counter);
+        try {
+            lr.readByte();
+            fail("Reading past the file length should throw an exception");
+        } catch (EOFException e) {
+            // Expected
+        }
+        lr.close();
     }
 
     public void testReadByte() throws Exception {
@@ -887,6 +894,7 @@ public class LineReaderTest extends TestCase {
                 "testPerformance('%s', %d runs) called",location, runs));
         createTS(terms, location);
         LineReader ts = new LineReader(location, "r");
+        ts.setBufferSize(200);
         int digits = Integer.toString(terms).length();
 
         Random random = new Random(87);

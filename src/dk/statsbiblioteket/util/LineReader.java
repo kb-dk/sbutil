@@ -431,14 +431,19 @@ public class LineReader implements DataInput, DataOutput {
         return position >= length();
     }
 
+
+    public int read() throws IOException {
+        try {
+            return readByte() & 0xFF;
+        } catch (EOFException e) {
+            return -1;
+        }
+    }
+
     /* ***************************** Readers ***********************************
      * These conform to the {@link DataInput} interface. JavaDocs are only     *
      * added where the behaviour is not as would be expected.                  *
      ************************************************************************ */
-
-    public int read() throws IOException {
-        return readByte() & 0xFF;
-    }
 
     public boolean readBoolean() throws IOException {
         return readByte() != 0;
@@ -493,7 +498,9 @@ public class LineReader implements DataInput, DataOutput {
         //log.trace("readByte entered");
         checkInputFile();
         checkBuffer();
-        // TODO: Check for EOF?
+        if (eof()) {
+            throw new EOFException("Attempted to read past EOF");
+        }
         byte b = buffer.get();
         position++;
         if (position >= bufferStart + bufferSize) {
@@ -518,8 +525,14 @@ public class LineReader implements DataInput, DataOutput {
     public String readLine() throws IOException {
 //        log.trace("readLine entered");
         lineBuffer.reset();
+        byte next;
         while (true) {
-            byte next = readByte();
+            try {
+                next = readByte();
+            } catch (EOFException e) {
+                log.trace("Reached EOF in readLine()");
+                break;
+            }
             if (next == 0x0A) {
                 if (log.isTraceEnabled()) {
                     log.trace("Read " + lineBuffer.size()
@@ -756,6 +769,18 @@ public class LineReader implements DataInput, DataOutput {
      * </p><p>
      * Searching for an empty line is not supported. Escaping on line breaks is
      * the responsibility of the user.
+     * </p><p>
+     * Recommendation: Call {@link #setBufferSize(int)} with an amount
+     * corresponding to the line-length. Keep in mind that binary searching
+     * often result in a lot of lookups around the same position at the end
+     * of the search, choosing the average length of a single line as the
+     * buffer size is probably too small. If the lines are short (< 20 chars),
+     * use a value such as 400. If the lines are long (~100 chars), go for
+     * 1000 or 2000. If the lines are very long (1000+), consider 4000 or 8000.
+     * These are soft guidelines as the best values are also dependend of the
+     * characteristica of the underlying storage: SSDs will normally benefit the
+     * most from relatively small values, while conventional harddisks are
+     * better off with larger values as the minimize seeks.
      * @param comparator used for the binary search. If the comparator is null,
      *                   the default String.compareTo is used.
      *                   The comparator will be used with compare(query, line).
