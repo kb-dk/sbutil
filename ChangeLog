@@ -1,8 +1,94 @@
-2009-05-28 11:40  mke
+2009-08-03 11:30  mke
 
-	* [r200]
-	  build.xml, ChangeLog, NEWS:
+	* [r214] build.xml, ChangeLog, NEWS:
 
+	  Release SBUtil 0.4.6
+
+2009-06-29 14:00  toke
+
+	* [r213] src/dk/statsbiblioteket/util/LineReader.java,
+	  test/dk/statsbiblioteket/util/LineReaderTest.java:
+	  
+	  Bugfix: Inserted extra checks to LineReader code to make it
+	  handle EOF on readByte. The LineReader now passes the unit-tests
+
+2009-06-26 14:19  toke
+
+	* [r212] src/dk/statsbiblioteket/util/LineReader.java,
+	  test/dk/statsbiblioteket/util/LineReaderTest.java:
+	  
+	  Enhancement: Removed supposedly non-needed code from LineReader.
+	  Misses one unit-test though, so it's not production ready
+
+2009-06-26 11:06  mke
+
+	* [r210] build.xml:
+	  
+	  Bump version to 0.4.6-beta1
+
+2009-06-24 08:08  toke
+
+	* [r209] src/dk/statsbiblioteket/util/LineReader.java:
+	  
+	  Enhancement: The LineReader required an existing file on write.
+	  This limitation has been removed so that the LineReader creates a
+	  file is none is existing when a write-mode is requested
+
+2009-06-23 12:09  toke
+
+	* [r208] src/dk/statsbiblioteket/util/LineReader.java,
+	  test/dk/statsbiblioteket/util/LineReaderTest.java:
+	  
+	  Enhancement: The LineReader binarySearch now uses a single
+	  new-line as delimiter
+
+2009-06-23 11:45  toke
+
+	* [r207] src/dk/statsbiblioteket/util/LineReader.java:
+	  
+	  Bugfix: The binarySearch for LineReader was not public
+
+2009-06-23 11:44  toke
+
+	* [r206] src/dk/statsbiblioteket/util/LineReader.java:
+	  
+	  Bugfix: The binarySearch for LineReader now passes UTF-8 unit
+	  test
+
+2009-06-23 09:05  toke
+
+	* [r205] src/dk/statsbiblioteket/util/LineReader.java,
+	  test/dk/statsbiblioteket/util/LineReaderTest.java:
+	  
+	  Bugfix: Slight change to the binarySearch in LineReader to handle
+	  UTF-8
+
+2009-06-23 08:33  toke
+
+	* [r204] src/dk/statsbiblioteket/util/LineReader.java,
+	  test/dk/statsbiblioteket/util/LineReaderTest.java:
+	  
+	  Bugfix: Made the binary search for the LineReader work
+	  significantly better (only supports single char UTF-8 for now)
+
+2009-06-22 15:02  toke
+
+	* [r203] src/dk/statsbiblioteket/util/LineReader.java,
+	  test/dk/statsbiblioteket/util/LineReaderTest.java:
+	  
+	  More work on the LineReader binary search
+
+2009-06-22 14:42  toke
+
+	* [r202] src/dk/statsbiblioteket/util/LineReader.java,
+	  test/dk/statsbiblioteket/util/LineReaderTest.java:
+	  
+	  Started work on a line-based binary search for the LineReader
+
+2009-05-28 11:37  mke
+
+	* [r200] ChangeLog, NEWS, build.xml:
+	  
 	  Release SBUtil 0.4.5
 
 2009-05-28 11:36  mke
