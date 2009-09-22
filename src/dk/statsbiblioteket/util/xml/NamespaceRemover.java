@@ -48,8 +48,10 @@ class NamespaceRemover extends Reader {
 //    private static Log log = LogFactory.getLog(NamespaceRemover.class);
     private Reader parent;
 
-    private enum MODE {plain, cdata, comment}
-    private MODE mode = MODE.plain;
+    private enum Mode {
+        PLAIN, CDATA, COMMENT
+    }
+    private Mode mode = Mode.PLAIN;
     private CircularCharBuffer in =
             new CircularCharBuffer(100, Integer.MAX_VALUE);
     private CircularCharBuffer out =
@@ -156,10 +158,10 @@ class NamespaceRemover extends Reader {
                 return;
             }
             switch (mode) {
-                case plain: {
+                case PLAIN: {
                     // CDATA
                     if (inStartsWith(CDATA_START)) {
-                        mode = MODE.cdata;
+                        mode = Mode.CDATA;
                         for (int i = 0 ; i < CDATA_START.length() ; i++) {
                             out.put((char)in.read());
                         }
@@ -167,7 +169,7 @@ class NamespaceRemover extends Reader {
                     }
                     // Comment
                     if (inStartsWith(COMMENT_START)) {
-                        mode = MODE.comment;
+                        mode = Mode.COMMENT;
                         for (int i = 0 ; i < COMMENT_START.length() ; i++) {
                             out.put((char)in.read());
                         }
@@ -182,9 +184,9 @@ class NamespaceRemover extends Reader {
                     out.put((char)in.read());
                     break;
                 }
-                case cdata: { // Finish CDATA: Look for "]]>"
+                case CDATA: { // Finish CDATA: Look for "]]>"
                     if (inStartsWith(CDATA_END)) {
-                        mode = MODE.plain;
+                        mode = Mode.PLAIN;
                         for (int i = 0 ; i < CDATA_END.length() ; i++) {
                             out.put((char)in.read());
                         }
@@ -193,9 +195,9 @@ class NamespaceRemover extends Reader {
                     out.put((char)in.read());
                     break;
                 }
-                case comment: { // Finish Comment: Look for "-->"
+                case COMMENT: { // Finish Comment: Look for "-->"
                     if (inStartsWith(COMMENT_END)) {
-                        mode = MODE.plain;
+                        mode = Mode.PLAIN;
                         for (int i = 0 ; i < COMMENT_END.length() ; i++) {
                             out.put((char)in.read());
                         }
