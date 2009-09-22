@@ -25,6 +25,8 @@ import dk.statsbiblioteket.util.reader.CircularCharBuffer;
 import java.io.Reader;
 import java.io.IOException;
 import java.nio.CharBuffer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A Java 1-5 compatible Reader which removes namespace declaration from XML.
@@ -52,6 +54,15 @@ class NamespaceRemover extends Reader {
             new CircularCharBuffer(100, Integer.MAX_VALUE);
     private CircularCharBuffer out =
             new CircularCharBuffer(100, Integer.MAX_VALUE);
+
+    private final Matcher declarationMatcher =
+            Pattern.compile("xmlns(\\:.+)? *\\= *\".*\"").matcher("");
+
+    private final Matcher defaultDeclarationMatcher =
+            Pattern.compile("xmlns *\\= *\".*\"").matcher("");
+
+    private final Matcher prefixMatcher =
+            Pattern.compile("[a-zA-Z]+\\:([a-zA-Z]+)").matcher("");
 
     public NamespaceRemover(Reader parent) {
         this.parent = parent;
@@ -214,18 +225,19 @@ class NamespaceRemover extends Reader {
         removeNamespace(new String(cbuf), out);
     }
 
-    protected static void removeNamespace(String tag, CircularCharBuffer out) {
-        tag = tag.replaceAll("xmlns(\\:.+)? *\\= *\".*\"", "");
-        tag = tag.replaceAll("xmlns *\\= *\".*\"", "");
+    protected void removeNamespace(String tag, CircularCharBuffer out) {
+        tag = declarationMatcher.reset(tag).replaceAll("");
+        tag = defaultDeclarationMatcher.reset(tag).replaceAll("");
         int first = tag.indexOf('"');
         int next = tag.indexOf('"', first + 1);
         if (first != -1 && next > first) {
-            out.put(tag.substring(0, first).replaceAll(
-                    "[a-zA-Z]+\\:([a-zA-Z]+)", "$1"));
+            out.put(
+                 prefixMatcher.reset(tag.substring(0, first)).replaceAll("$1"));
             out.put(tag.substring(first, next + 1));
             removeNamespace(tag.substring(next + 1), out);
         } else {
-            out.put(tag.replaceAll("[a-zA-Z]+\\:([a-zA-Z]+)", "$1"));
+            out.put(
+                 prefixMatcher.reset(tag).replaceAll("$1"));
         }
     }
 

@@ -61,9 +61,11 @@ public class NamespaceRemoverTest extends TestCase {
                 {"</foo >", "</bar:foo >" },
                 {"</ foo >" , "</ bar:foo >" }
         };
+
+        NamespaceRemover remover = new NamespaceRemover(new StringReader(""));
         for (String[] test: TESTS) {
             CircularCharBuffer out = new CircularCharBuffer(100, 100);
-            NamespaceRemover.removeNamespace(test[1], out);
+            remover.removeNamespace(test[1], out);
             assertEquals("The input '" + test[1] + " should process correctly",
                          test[0], out.toString());
         }
