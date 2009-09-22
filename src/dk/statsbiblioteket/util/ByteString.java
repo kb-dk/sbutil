@@ -2,12 +2,23 @@ package dk.statsbiblioteket.util;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 
-/** Utillity class for working with bytes, bytearrays, and strings. */
+import java.io.IOException;
+
+/**
+ * Utillity class for working with bytes, bytearrays, and strings.
+ */
 @QAInfo(level = QAInfo.Level.NORMAL,
-        state = QAInfo.State.QA_OK,
-        author = "kfc",
-        reviewers = {"abr"})
+        state = QAInfo.State.IN_DEVELOPMENT,
+        author = "kfc, mke",
+        reviewers = {"abr, mke"})
 public class ByteString {
+    /**
+     * The hexidecimal characters in numeric order from {@code 0-f}
+     */
+    public static final char[] HEX_DIGITS =
+            {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                'a', 'b', 'c', 'd', 'e', 'f'};
+
     /** The number of bits in a nibble (used for shifting). */
     private static final byte BITS_IN_NIBBLE = 4;
     /** A bitmask for a nibble (used for "and'ing" out the bits. */
@@ -18,24 +29,42 @@ public class ByteString {
     }
 
     /**
-     * Converts a byte array to a hexstring.
+     * Converts a byte array to a hex-string.
      *
      * @param ba the bytearray to be converted
-     * @return ba converted to a hexstring
+     * @return ba the byte array to convert to a hex-string
      */
     public static String toHex(final byte[] ba) {
-        char[] hexdigit = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                'a', 'b', 'c', 'd', 'e', 'f'};
-
-        int baLen = ba.length;
-        StringBuffer sb = new StringBuffer(baLen * 2);
-
-        for (int i = 0; i < baLen; i++) {
-            sb.append(hexdigit[(ba[i] >> BITS_IN_NIBBLE) & BITMASK_FOR_NIBBLE]);
-            sb.append(hexdigit[ba[i] & BITMASK_FOR_NIBBLE]);
+        StringBuilder sb = new StringBuilder(ba.length * 2);
+        try {
+            toHex(sb, ba);
+        } catch (IOException e) {
+            throw new RuntimeException(
+                    "Unexpected IOException while appending to StringBuilder");
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Converts a byte array to a hex-string and write the result to an
+     * {@code Appendable} (such as a {@code StringBuilder}).
+     *
+     * @param buf the appendable to write to
+     * @param ba the byte array to convert to a hex-string
+     * @return always returns {@code buf}
+     * @throws IOException upon errors writing to {@code buf}
+     */
+    public static Appendable toHex(Appendable buf, byte[] ba)
+                                                            throws IOException {
+        int baLen = ba.length;
+        for (int i = 0; i < baLen; i++) {
+            buf.append(
+                    HEX_DIGITS[(ba[i] >> BITS_IN_NIBBLE) & BITMASK_FOR_NIBBLE]);
+            buf.append(HEX_DIGITS[ba[i] & BITMASK_FOR_NIBBLE]);
+        }
+
+        return buf;
     }
 
 
