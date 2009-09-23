@@ -116,4 +116,28 @@ public class StringsTest extends TestCase {
         r = new StringReader("1");
         assertEquals("1", Strings.flush(r));
     }
+
+    public void testAsCharSequence() {
+        char[] chars = new char[]{'f', 'o', 'o', 'b', 'a', 'r'};        
+        assertEquals("foobar", Strings.asCharSequence(chars).toString());
+        assertEquals("foo",
+                     Strings.asCharSequence(chars).subSequence(0, 3).toString());
+        assertEquals(6, Strings.asCharSequence(chars).length());
+    }
+
+    public void testIndexOf() {
+        // Zero based indexOf
+        assertEquals(1, Strings.indexOf('o', "foo"));
+        assertEquals(3, Strings.indexOf('b', "foobar"));
+        assertEquals(5, Strings.indexOf('r', "foobar"));
+        assertEquals(0, Strings.indexOf('b', "b"));
+        assertEquals(2, Strings.indexOf('r', "bar"));
+        assertEquals(-1, Strings.indexOf('r', "aaaaa"));
+
+        // indexOF with offset
+        assertEquals(1, Strings.indexOf('o', 1, "foo"));
+        assertEquals(3, Strings.indexOf('b', 1, "foobarb"));
+        assertEquals(6, Strings.indexOf('b', 4, "foobarb"));
+        assertEquals(-1, Strings.indexOf('b', 4, "b"));
+    }
 }

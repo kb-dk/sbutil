@@ -26,6 +26,7 @@ import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.*;
 import java.util.Collection;
+import java.util.Arrays;
 import java.nio.CharBuffer;
 
 /**
@@ -209,5 +210,70 @@ public class Strings {
      */
     public static String flushLocal(InputStream in) {
         return flushLocal(new InputStreamReader(in));
+    }
+
+    /**
+     * Wrap a {@code char} array as a {@link CharSequence} without doing any
+     * memory- allocations or copying.
+     * <p/>
+     * Note that since the original array underneath the returned character
+     * sequence is exactly {@code chars} any changes made to {@code chars}
+     * will be reflected in the returned character sequence as well.
+     *
+     * @param chars the character array to wrap
+     * @return {@code chars} wrapped as a {@link CharSequence}
+     */
+    public static CharSequence asCharSequence(final char[] chars) {
+        return new CharSequence() {
+
+            public int length() {
+                return chars.length;
+            }
+
+            public char charAt(int index) {
+                // Note: This will indeed throw an exception of the type
+                // required by this method's contract
+                return chars[index];
+            }
+
+            public CharSequence subSequence(int start, int end) {
+                return asCharSequence(Arrays.copyOfRange(chars, start, end));
+            }
+
+            public String toString() {
+                return new String(chars);
+            }
+        };
+    }
+
+    /**
+     * Finds the first index of the occurence of {@code c} in {@code chars}
+     * or returns -1.
+     * @param c the character to look for
+     * @param chars the character sequence to search in
+     * @return the index for which {@code chars.charAt(i) == c} or -1 if
+     *         {@code c} doesn't exist in {@code chars}
+     *
+     */
+    public static int indexOf(char c, CharSequence chars) {
+        return indexOf(c, 0, chars);
+    }
+
+    /**
+     * Finds the first index of the occurence of {@code c} in {@code chars}
+     * or returns -1.
+     * @param c the character to look for
+     * @param chars the character sequence to search in
+     * @return the index for which {@code chars.charAt(i) == c} or -1 if
+     *         {@code c} doesn't exist in {@code chars}
+     *
+     */
+    public static int indexOf(char c, int offset, CharSequence chars) {
+        for (int i = offset; i < chars.length(); i++) {
+            if (c == chars.charAt(i)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

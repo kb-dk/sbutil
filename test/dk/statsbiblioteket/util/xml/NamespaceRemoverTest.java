@@ -84,4 +84,20 @@ public class NamespaceRemoverTest extends TestCase {
         String actual = Strings.flush(sanitized);
         assertEquals("Namespaces should be removed", expected, actual);
     }
+
+    public void testReplaceReaderMethods() {
+        String orig ="foo:bar foo:attr=\"hooray\"";
+        NamespaceRemover ns = new NamespaceRemover(null); 
+
+        assertEquals("bar attr=\"hooray\"", ns.transform(orig));
+    }
+
+    public void testSetSource() {
+        String orig1 ="<foo:bar/>";
+        String orig2 ="<bazoo:baroo/>";
+        NamespaceRemover ns = new NamespaceRemover(new StringReader(orig1));
+        assertEquals("<bar/>", Strings.flushLocal(ns));
+        assertEquals("<baroo/>", Strings.flushLocal(
+                                        ns.setSource(new StringReader(orig2))));
+    }
 }

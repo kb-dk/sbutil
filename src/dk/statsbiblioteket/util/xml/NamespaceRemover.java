@@ -21,6 +21,9 @@ package dk.statsbiblioteket.util.xml;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 import dk.statsbiblioteket.util.reader.CircularCharBuffer;
+import dk.statsbiblioteket.util.reader.ReplaceReader;
+import dk.statsbiblioteket.util.reader.CharSequenceReader;
+import dk.statsbiblioteket.util.Strings;
 
 import java.io.Reader;
 import java.io.IOException;
@@ -44,17 +47,16 @@ import java.util.regex.Pattern;
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
-class NamespaceRemover extends Reader {
+class NamespaceRemover extends ReplaceReader {
 //    private static Log log = LogFactory.getLog(NamespaceRemover.class);
-    private Reader parent;
 
     private enum Mode {
         PLAIN, CDATA, COMMENT
     }
     private Mode mode = Mode.PLAIN;
-    private CircularCharBuffer in =
+    private CircularCharBuffer inBuf =
             new CircularCharBuffer(100, Integer.MAX_VALUE);
-    private CircularCharBuffer out =
+    private CircularCharBuffer outBuf =
             new CircularCharBuffer(100, Integer.MAX_VALUE);
 
     private final Matcher declarationMatcher =
@@ -66,31 +68,84 @@ class NamespaceRemover extends Reader {
     private final Matcher prefixMatcher =
             Pattern.compile("[a-zA-Z]+\\:([a-zA-Z]+)").matcher("");
 
-    public NamespaceRemover(Reader parent) {
-        this.parent = parent;
+    public NamespaceRemover(Reader in) {
+        super(in);
+    }
+
+    public String transform(CharSequence s) {
+        CircularCharBuffer buf = new CircularCharBuffer(
+                                               s.length(), Integer.MAX_VALUE);
+        removeNamespace(s, buf);
+        return buf.toString();
+    }
+
+    @Override
+    public String transform(String s) {
+        return transform((CharSequence) s);
+    }
+
+    @Override
+    public char[] transformToChars(char c) {
+        return new char[]{c};
+    }
+
+    @Override
+    public char[] transformToChars(char[] chars) {
+        CircularCharBuffer buf = new CircularCharBuffer(
+                                               chars.length, Integer.MAX_VALUE);
+        removeNamespace(Strings.asCharSequence(chars), buf);
+        return buf.takeAll();
+    }
+
+    @Override
+    public char[] transformToCharsAllowInplace(char[] chars) {
+        return transformToChars(chars);
+    }
+
+    @Override
+    public NamespaceRemover setSource(Reader in) {
+        mode = Mode.PLAIN;
+        inBuf.clear();
+        outBuf.clear();
+        this.in = in;
+        return this;
+    }
+
+    @Override
+    public NamespaceRemover setSource(CircularCharBuffer in) {
+        mode = Mode.PLAIN;
+        inBuf.clear();
+        outBuf.clear();
+        this.in = new CharSequenceReader(in);
+        return this;
     }
 
     @Override
     public int read() throws IOException {
         ensureLength(1);
-        return out.read();
+        return outBuf.read();
     }
 
     @Override
     public int read(char cbuf[], int off, int len) throws IOException {
         ensureLength(len);
-        return out.read(cbuf, off, len);
+        return outBuf.read(cbuf, off, len);
+    }
+
+    public int read(CircularCharBuffer cbuf, int len) throws IOException {
+        ensureLength(len);
+        return outBuf.read(cbuf, len);
     }
 
     @Override
     public int read(char cbuf[]) throws IOException {
         ensureLength(cbuf.length);
-        return out.read(cbuf, 0, cbuf.length);
+        return outBuf.read(cbuf, 0, cbuf.length);
     }
 
     @Override
     public boolean ready() throws IOException {
-        return !out.isEmpty() || parent.ready();
+        return !outBuf.isEmpty() || in.ready();
     }
 
     @Override
@@ -101,7 +156,7 @@ class NamespaceRemover extends Reader {
     @Override
     public int read(CharBuffer target) throws IOException {
         ensureLength(100); // No lengthy reflection on this number
-        return out.read(target);
+        return outBuf.read(target);
     }
 
     @Override
@@ -125,16 +180,23 @@ class NamespaceRemover extends Reader {
 
     @Override
     public void reset() throws IOException {
-        out.clear();
-        parent.reset();
+        outBuf.clear();
+        in.reset();
     }
 
     @Override
     public void close() throws IOException {
-        if (parent != null) {
-            parent.close();
+        if (in != null) {
+            in.close();
         }
-        out.clear();
+        outBuf.clear();
+    }
+
+    @SuppressWarnings({"CloneDoesntCallSuperClone",
+            "CloneDoesntDeclareCloneNotSupportedException"})
+    @Override
+    public Object clone() {
+        return new NamespaceRemover(null);
     }
 
     private static final String CDATA_START =   "<![CDATA[";
@@ -152,9 +214,9 @@ class NamespaceRemover extends Reader {
      * @throws IOException if an I/O error occured in the parent Reader.
      */
     private void ensureLength(int length) throws IOException {
-        while (out.size() < length) {
+        while (outBuf.size() < length) {
             ensureInLength(LONGEST);
-            if (in.isEmpty()) {
+            if (inBuf.isEmpty()) {
                 return;
             }
             switch (mode) {
@@ -163,7 +225,7 @@ class NamespaceRemover extends Reader {
                     if (inStartsWith(CDATA_START)) {
                         mode = Mode.CDATA;
                         for (int i = 0 ; i < CDATA_START.length() ; i++) {
-                            out.put((char)in.read());
+                            outBuf.put((char) inBuf.read());
                         }
                         continue;
                     }
@@ -171,7 +233,7 @@ class NamespaceRemover extends Reader {
                     if (inStartsWith(COMMENT_START)) {
                         mode = Mode.COMMENT;
                         for (int i = 0 ; i < COMMENT_START.length() ; i++) {
-                            out.put((char)in.read());
+                            outBuf.put((char) inBuf.read());
                         }
                         continue;
                     }
@@ -181,29 +243,29 @@ class NamespaceRemover extends Reader {
                         continue;
                     }
                     // skip one char ahead
-                    out.put((char)in.read());
+                    outBuf.put((char) inBuf.read());
                     break;
                 }
                 case CDATA: { // Finish CDATA: Look for "]]>"
                     if (inStartsWith(CDATA_END)) {
                         mode = Mode.PLAIN;
                         for (int i = 0 ; i < CDATA_END.length() ; i++) {
-                            out.put((char)in.read());
+                            outBuf.put((char) inBuf.read());
                         }
                         continue;
                     }
-                    out.put((char)in.read());
+                    outBuf.put((char) inBuf.read());
                     break;
                 }
                 case COMMENT: { // Finish Comment: Look for "-->"
                     if (inStartsWith(COMMENT_END)) {
                         mode = Mode.PLAIN;
                         for (int i = 0 ; i < COMMENT_END.length() ; i++) {
-                            out.put((char)in.read());
+                            outBuf.put((char) inBuf.read());
                         }
                         continue;
                     }
-                    out.put((char)in.read());
+                    outBuf.put((char) inBuf.read());
                     break;
                 }
                 default: throw new IllegalStateException(String.format(
@@ -212,31 +274,31 @@ class NamespaceRemover extends Reader {
         }
     }
 
-    // Guarantees that at least one character is copied from in to out
+    // Guarantees that at least one character is copied from inBuf to outBuf
     private void handleTag() throws IOException {
         ensureInLength(2);
-        if (in.length() < 2 || in.charAt(1) == '!' || !ensureEnd(TAG_END)) {
-            out.put((char)in.read()); // No tag-end found
+        if (inBuf.length() < 2 || inBuf.charAt(1) == '!' || !ensureEnd(TAG_END)) {
+            outBuf.put((char) inBuf.read()); // No tag-end found
             return;
         }
         // We now have <baz:foo xmlns="..." xmlns:bar="..." zoo="...">
         //          or </baz:foo>
         // Extract the tag
-        char[] cbuf = new char[in.indexOf(TAG_END) + TAG_END.length()];
-        in.read(cbuf, 0, cbuf.length);
-        removeNamespace(new String(cbuf), out);
+        char[] cbuf = new char[inBuf.indexOf(TAG_END) + TAG_END.length()];
+        inBuf.read(cbuf, 0, cbuf.length);
+        removeNamespace(new String(cbuf), outBuf);
     }
 
-    protected void removeNamespace(String tag, CircularCharBuffer out) {
+    protected void removeNamespace(CharSequence tag, CircularCharBuffer out) {
         tag = declarationMatcher.reset(tag).replaceAll("");
         tag = defaultDeclarationMatcher.reset(tag).replaceAll("");
-        int first = tag.indexOf('"');
-        int next = tag.indexOf('"', first + 1);
+        int first = Strings.indexOf('"', tag);
+        int next = Strings.indexOf('"', first + 1, tag);
         if (first != -1 && next > first) {
             out.put(
-                 prefixMatcher.reset(tag.substring(0, first)).replaceAll("$1"));
-            out.put(tag.substring(first, next + 1));
-            removeNamespace(tag.substring(next + 1), out);
+                 prefixMatcher.reset(tag.subSequence(0, first)).replaceAll("$1"));
+            out.put(tag.subSequence(first, next + 1));
+            removeNamespace(tag.subSequence(next + 1, tag.length()), out);
         } else {
             out.put(
                  prefixMatcher.reset(tag).replaceAll("$1"));
@@ -254,11 +316,11 @@ class NamespaceRemover extends Reader {
     private boolean ensureEnd(String endStr) throws IOException {
         int pos = 0;
         do {
-            if (in.indexOf(endStr, pos) != -1) {
+            if (inBuf.indexOf(endStr, pos) != -1) {
                 return true;
             }
-            pos = in.size();
-        } while (ensureInLength(in.size() * 2 + endStr.length()) != -1);
+            pos = inBuf.size();
+        } while (ensureInLength(inBuf.size() * 2 + endStr.length()) != -1);
         return false;
     }
 
@@ -269,11 +331,11 @@ class NamespaceRemover extends Reader {
      * @return true if the in buffer starts with the given match.
      */
     private boolean inStartsWith(String match) {
-        if (in.size() < match.length()) {
+        if (inBuf.size() < match.length()) {
             return false;
         }
         for (int i = 0 ; i < match.length() ; i++) {
-            if (match.charAt(i) != in.charAt(i)) {
+            if (match.charAt(i) != inBuf.charAt(i)) {
                 return false;
             }
         }
@@ -290,12 +352,12 @@ class NamespaceRemover extends Reader {
      */
     private int ensureInLength(int length) throws IOException {
         int count = 0;
-        while (in.size() < length) {
-            int next = parent.read();
+        while (inBuf.size() < length) {
+            int next = in.read();
             if (next == -1) {
                 return count == 0 ? -1 : count;
             }
-            in.put((char)next);
+            inBuf.put((char)next);
             count++;
         }
         return count;
