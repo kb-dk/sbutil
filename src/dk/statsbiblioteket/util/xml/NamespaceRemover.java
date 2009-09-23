@@ -32,7 +32,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * A Java 1-5 compatible Reader which removes namespace declaration from XML.
+ * A Java 1.5 compatible Reader which removes namespace declaration from XML.
+ * If you are looking for namespace agnostic XSLT transformations use the
+ * static methods supplied on the on the {@link XSLT} class, eg.
+ * {@link XSLT#transform(java.net.URL, String, boolean)}.
  * </p><p>
  * The reader looks for the pattern "<.*>".
  * For each match, all elements matching "xmlns:?[a-z]*=\".*\"" are removed.
@@ -47,7 +50,7 @@ import java.util.regex.Pattern;
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
-class NamespaceRemover extends ReplaceReader {
+public class NamespaceRemover extends ReplaceReader {
 //    private static Log log = LogFactory.getLog(NamespaceRemover.class);
 
     private enum Mode {
