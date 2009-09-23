@@ -25,8 +25,12 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
+import org.xml.sax.XMLFilter;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.XMLReaderFactory;
 
 import javax.xml.transform.*;
+import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
@@ -280,17 +284,33 @@ public class XSLT {
         if (!ignoreXMLNamespaces) {
             transform(xslt, new StringReader(in), sw, parameters);
         } else {
-            Document dom = DOM.stringToDOM(in);
-            transform(getLocalTransformer(xslt, parameters), dom, sw);
+            // Slowest
+            //Reader noNamespace = removeNamespaces(new StringReader(in));
+            //transform(getLocalTransformer(xslt, parameters), noNamespace, sw);
 
-            /*
-            Reader noNamespace = removeNamespaces(new StringReader(in));
-            transform(getLocalTransformer(xslt, parameters), noNamespace, sw);
-              */
-        /*
+            // Slow
+            //Document dom = DOM.stringToDOM(in);
+            //transform(getLocalTransformer(xslt, parameters), dom, sw);
+
+            // Roughly 30% faster than DOM-base NS stripping
+            /*try {
+                XMLFilter filter = new ParsingNamespaceRemover(
+                        XMLReaderFactory.createXMLReader());
+                Source source =
+                   new SAXSource(filter, new InputSource(new StringReader(in)));
+
+                getLocalTransformer(xslt, parameters).transform(
+                        source, new StreamResult(sw));
+            } catch (SAXException e) {
+                // The Java runtime doesn't provide an XMLReader,
+                // so we are doomed
+                throw new RuntimeException(
+                        "Failed to load default XMLReader implementation", e);
+            }*/
+
+            // More than twice as fast as DOM base NS stripping
             Reader noNamespace = new NamespaceRemover(new StringReader(in));
-            transform(getLocalTransformer(xslt, parameters), noNamespace, sw);
-            */
+            transform(getLocalTransformer(xslt, parameters), noNamespace, sw);            
         }
         return sw.toString();
     }
