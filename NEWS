@@ -1,4 +1,29 @@
 =========================
+2009-09-24: SB Util 0.4.7
+=========================
+
+ * Include a new Bytes utility class, for now only containing a single
+   method toHex(byte[]) that returns a hex-string representation of a
+   byte array. Very useful for creating strings from md5 checksums (see
+   the Checksums class)
+
+ * Include a new Reader class in the xml package, NamespaceRemover, that
+   strips XML namespacing from a stream. The NamespaceRemover class is a
+   subclass of the ReplaceReader class from the reader package
+
+ * Roughly 2x speedups of namespace ignoring XSLT transformations when using
+   the XSLT.transform() methods (this is achieved by using the new
+   NamespaceRemover mentioned above)
+
+ * New functionality in the Strings class:
+
+   - asCharSequence(char[]) wraps a char array as a
+     CharSequence in a no-copy manner
+
+   - indexOf(char, CharSequence) like the normal String method, but works on
+     any CharSequence
+
+=========================
 2009-08-03: SB Util 0.4.6
 =========================
 

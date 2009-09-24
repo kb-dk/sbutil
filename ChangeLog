@@ -1,8 +1,111 @@
-2009-08-03 11:30  mke
+2009-09-24 07:52  mke
 
-	* [r214] build.xml, ChangeLog, NEWS:
+	* [r226] src/dk/statsbiblioteket/util/Checksums.java:
+	  
+	  Javadoc updates and code style improvements
 
-	  Release SBUtil 0.4.6
+2009-09-24 07:47  mke
+
+	* [r225] test/dk/statsbiblioteket/util/BytesTest.java:
+	  
+	  Test: Implement some unit tests for the Bytes.toHex() method
+
+2009-09-24 06:53  mke
+
+	* [r224] build.xml, sbutil.iml, sbutil.ipr,
+	  test/dk/statsbiblioteket/util/BytesTest.java:
+	  
+	  Test: Add test stub class for the Bytes utility module and add
+	  BytesTest to the list of tests to run from Ant
+
+2009-09-23 11:46  mke
+
+	* [r223] src/dk/statsbiblioteket/util/xml/NamespaceRemover.java:
+	  
+	  Make NamespaceRemover public.
+	  
+	  Javadoc updates for NamespaceRemover
+
+2009-09-23 11:42  mke
+
+	* [r222]
+	  src/dk/statsbiblioteket/util/xml/ParsingNamespaceRemover.java,
+	  src/dk/statsbiblioteket/util/xml/XSLT.java:
+	  
+	  Performance: Make the XSLT.transform() twice as fast in the case
+	  of namspace ignoring transformations. Normal namespace aware
+	  transformations are not affected.This is achieved tby using the
+	  NamespaceRemover reader instead of a DOM-parsing to strip
+	  namespaces.
+	  
+	  Deprecation: ParsingNamespaceRemover was slow and not very useful
+	  in the light of NamespaceRemover
+
+2009-09-23 11:22  mke
+
+	* [r221] src/dk/statsbiblioteket/util/Strings.java,
+	  src/dk/statsbiblioteket/util/xml/NamespaceRemover.java,
+	  test/dk/statsbiblioteket/util/StringsTest.java,
+	  test/dk/statsbiblioteket/util/xml/NamespaceRemoverTest.java:
+	  
+	  New functionality:
+	  * Add method Strings.asCharSequence(char[]) wrapping a char array
+	  as a CharSequence without any new allocations or memory copying
+	  
+	  * Add method Strings.indexOf(char, CharSequence) and
+	  Strings.indexOf(char, int offset, CharSequence) mirroring the
+	  same
+	  methods on the String class
+	  
+	  * Make NamespaceRemove in the xml package subclass ReplaceReader
+	  
+	  * Add unit tests for all of the above
+
+2009-09-22 11:50  mke
+
+	* [r220] src/dk/statsbiblioteket/util/ByteString.java[DEL],
+	  src/dk/statsbiblioteket/util/xml/NamespaceRemover.java:
+	  
+	  Code style: Rename the MODE enum to Mode and rename its members
+	  to ALLCAPS - to be in style with normal enum conventions
+
+2009-09-22 11:40  mke
+
+	* [r219] src/dk/statsbiblioteket/util/Bytes.java[CPY]:
+	  
+	  Rename ByteString to Bytes
+
+2009-09-22 11:38  mke
+
+	* [r218] src/dk/statsbiblioteket/util/ByteString.java:
+	  
+	  Implement a version of ByteString.toHex() that takes an
+	  Appendable as argument.
+	  
+	  Don't allocate a constant array for all hex characters on each
+	  invocation of toHex()
+
+2009-09-22 11:26  mke
+
+	* [r217] src/dk/statsbiblioteket/util/xml/NamespaceRemover.java,
+	  test/dk/statsbiblioteket/util/xml/NamespaceRemoverTest.java:
+	  
+	  Optimize NamespaceRemover to not compile its three regular
+	  expressions over and over again.
+
+2009-09-03 14:33  abr
+
+	* [r216] sbutil.iml, sbutil.ipr,
+	  src/dk/statsbiblioteket/util/ByteString.java,
+	  src/dk/statsbiblioteket/util/DocumentUtils.java:
+	  
+	  Added ByteString and DocumentUtils
+
+2009-08-03 09:39  mke
+
+	* [r214] ChangeLog, NEWS, build.xml:
+	  
+	  Make LineReader.binaryLineSearch() package private
 
 2009-06-29 14:00  toke
 
