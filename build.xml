@@ -202,6 +202,7 @@
             <formatter type="${test.formatter}" usefile="${test.usefile}" />
             
             <!-- add tests here -->
+            <test name="dk.statsbiblioteket.util.BytesTest" />
             <test name="dk.statsbiblioteket.util.CachedCollatorTest" />
             <test name="dk.statsbiblioteket.util.ChecksumsTest" />
             <test name="dk.statsbiblioteket.util.FilesTest" />
