@@ -351,16 +351,8 @@ public class XSLT {
         if (!ignoreXMLNamespaces) {
             transform(xslt, in, sw, parameters);
         } else {
-            InputSource is = new InputSource();
-            is.setCharacterStream(in);
-            Document dom;
-            try {
-                dom = DOM.stringToDOM(Strings.flush(in));
-            } catch (IOException e) {
-                throw new TransformerException(
-                        "Unable to convert Reader to String", e);
-            }
-            transform(getLocalTransformer(xslt, parameters), dom, sw);
+            transform(getLocalTransformer(
+                    xslt, parameters), new NamespaceRemover(in), sw);
         }
         return sw.toString();
     }
@@ -408,9 +400,10 @@ public class XSLT {
         if (!ignoreXMLNamespaces) {
             transform(xslt, new ByteArrayInputStream(in), out, parameters);
         } else {
-            Document dom;
-            dom = DOM.streamToDOM(new ByteArrayInputStream(in));
-            transform(getLocalTransformer(xslt, parameters), dom, out);
+            Writer writer = new OutputStreamWriter(out);
+            Reader reader = new NamespaceRemover(
+                       new InputStreamReader(new ByteArrayInputStream(in)));
+            transform(getLocalTransformer(xslt, parameters), reader, writer);
         }
         return out;
     }
@@ -458,9 +451,9 @@ public class XSLT {
         if (!ignoreXMLNamespaces) {
             transform(getLocalTransformer(xslt, parameters), in, out);
         } else {
-            Document dom;
-            dom = DOM.streamToDOM(in);
-            transform(getLocalTransformer(xslt, parameters), dom, out);
+            Writer writer = new OutputStreamWriter(out);
+            Reader reader = new NamespaceRemover(new InputStreamReader(in));
+            transform(getLocalTransformer(xslt, parameters), reader, writer);
         }
         return out;
     }
@@ -580,7 +573,7 @@ public class XSLT {
                 Thread.currentThread().getContextClassLoader().getResource(
                         "dk/statsbiblioteket/util/xml/namespace_remover.xslt");
     }
-    static ByteArrayOutputStream removeNamespaces(InputStream in) throws
+    /*static ByteArrayOutputStream removeNamespaces(InputStream in) throws
                                                           TransformerException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         transform(NAMESPACE_XSLT, in, out, null);
@@ -591,5 +584,5 @@ public class XSLT {
         StringWriter sw = new StringWriter();
         transform(NAMESPACE_XSLT, in, sw, null);
         return new StringReader(sw.toString());
-    }
+    }*/
 }
