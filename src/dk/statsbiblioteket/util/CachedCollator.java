@@ -35,10 +35,10 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.Comparator;
 import java.text.Collator;
 import java.text.CollationKey;
+import java.text.RuleBasedCollator;
+import java.text.ParseException;
 import java.io.StringWriter;
 import java.io.IOException;
 
@@ -64,7 +64,7 @@ import org.apache.log4j.Logger;
  * used for the cache. Note that the given characters are not required to be
  * sorted, but should appear in order of popularity.
  */
-@QAInfo(state=QAInfo.State.IN_DEVELOPMENT,
+@QAInfo(state=QAInfo.State.QA_NEEDED,
         level=QAInfo.Level.NORMAL,
         author="te",
         comment="getCollationKey is poorly implemented due to the CollationKey"
@@ -81,7 +81,7 @@ public class CachedCollator extends Collator {
     /**
      * The Locale for the collator.
      */
-    private Locale locale;
+//    private Locale locale;
     /**
      * The fall-back collator that is used when the cache does not contain the
      * relevant characters.
@@ -99,8 +99,8 @@ public class CachedCollator extends Collator {
      * Create a cached collator with the characters from 0x20 to 0xFF
      * as the most common characters. It is recommended to use the constructor
      * {@link #CachedCollator(Locale, String)} instead, in order to achieve
-     * maximum speed-up.
-     * @param locale     the wanted locale for the Collator.
+     * maximum speed-up and valid comparisons.
+     * @param locale the wanted locale for the Collator.
      */
     public CachedCollator(Locale locale) {
         log.debug("Creating default character collator for locale '" + locale
@@ -123,6 +123,70 @@ public class CachedCollator extends Collator {
         log.debug("Creating collator for locale '" + locale
                   + "' with most common characters '" + mostCommon + "'");
         subCollator = Collator.getInstance(locale);
+        buildCache(mostCommon);
+    }
+
+    /**
+     * Create a cached collator with the given character statistics.
+     * @param locale     the wanted locale for the Collator.
+     * @param mostCommon the most common characters for the given locale in the
+     *                   setting where the collator is used. It can contain any
+     *                   number of characters.
+     *                   See the class documentation for details.
+     *                   Duplicate characters are removed.
+     *                   Example: "eaoi 0ntr1"...
+     * @param spaceFirst if true, the generated Collator is modified to sort
+     *                   spaces before other characters: {"a b", "aa"}.
+     */
+    public CachedCollator(Locale locale, String mostCommon, boolean spaceFirst){
+        subCollator = Collator.getInstance(locale);
+        if (spaceFirst) {
+            subCollator = fixCollator(subCollator, false);
+        }
+        buildCache(mostCommon);
+    }
+
+    /**
+     * Create a cached collator with the given character statistics. This uses
+     * the characters from 0x20 to 0xFF as the most common characters. It is
+     * recommended to use {@link #CachedCollator(Locale, String)} instead, in
+     * order to achieve maximum speed-up and valid comparisons.
+     * @param locale     the wanted locale for the Collator.
+     * @param spaceFirst if true, the generated Collator is modified to sort
+     *                   spaces before other characters: {"a b", "aa"}.
+     */
+    public CachedCollator(Locale locale, boolean spaceFirst){
+        subCollator = Collator.getInstance(locale);
+        if (spaceFirst) {
+            subCollator = fixCollator(subCollator, false);
+        }
+        buildCache(getBasicChars());
+    }
+
+    /**
+     * Create a cached collator with the characters from 0x20 to 0xFF
+     * as the most common characters. It is recommended to use the constructor
+     * {@link #CachedCollator(Collator, String)} instead, in order to achieve
+     * maximum speed-up and valid comparisons.
+     * @param collator the inner Collator that the cache is wrapped around.
+     */
+    public CachedCollator(Collator collator) {
+        subCollator = collator;
+        buildCache(getBasicChars());
+    }
+
+    /**
+     * Create a cached collator with the given character statistics.
+     * @param collator   the inner Collator that the cache is wrapped around.
+     * @param mostCommon the most common characters for the given collator in
+     *                   the setting where the cached collator is used. It can
+     *                   contain any number of characters.
+     *                   See the class documentation for details.
+     *                   Duplicate characters are removed.
+     *                   Example: "eaoi 0ntr1"...
+     */
+    public CachedCollator(Collator collator, String mostCommon) {
+        subCollator = collator;
         buildCache(mostCommon);
     }
 
@@ -193,6 +257,7 @@ public class CachedCollator extends Collator {
         }
     }
 
+    @Override
     public int compare(String source, String target) {
         if (source == null) {
             return target == null ? 0 : 1;
@@ -212,14 +277,17 @@ public class CachedCollator extends Collator {
         }
         return source.length()- target.length();
     }
+    @Override
     public int compare(Object source, Object target) {
         return compare((String)source, (String)target);
     }
 
+    @Override
     public CollationKey getCollationKey(String source) {
         return subCollator.getCollationKey(source);
     }
 
+    @Override
     public int hashCode() {
         return subCollator.hashCode();
     }
@@ -241,4 +309,31 @@ public class CachedCollator extends Collator {
         }
         return sw.toString();
     }
+
+    private static Collator fixCollator(Collator collator, boolean check) {
+        if (!(collator instanceof RuleBasedCollator)) {
+            log.warn(String.format(
+                    "fixCollator expected a RuleBasedCollator but got %s. "
+                    + "Unable to update Collator", collator.getClass()));
+            return collator;
+        }
+        String rules = ((RuleBasedCollator)collator).getRules();
+        if (check && rules.indexOf("<' '<'\u005f'") == -1) {
+            log.debug("fixCollator: The received Collator already sorts spaces"
+                      + " first");
+            return collator;
+        }
+        try {
+            RuleBasedCollator newCollator = new RuleBasedCollator(
+                    rules.replace("<'\u005f'", "<' '<'\u005f'"));
+            log.trace("Successfully updated Collator to prioritize spaces "
+                      + "before other characters");
+            return newCollator;
+        } catch (ParseException e) {
+            throw new RuntimeException(
+                    "ParseException while parsing\n" + rules, e);
+        }
+    }
+
+
 }

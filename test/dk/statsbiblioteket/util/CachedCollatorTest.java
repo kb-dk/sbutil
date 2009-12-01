@@ -34,23 +34,18 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import junit.framework.TestCase;
 
-/**
- * CachedCollator Tester.
- *
- * @author <Authors name>
- * @since <pre>10/26/2007</pre>
- * @version 1.0
- */
 @SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class CachedCollatorTest extends TestCase {
     public CachedCollatorTest(String name) {
         super(name);
     }
 
+    @Override
     public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
     }
@@ -329,5 +324,22 @@ public class CachedCollatorTest extends TestCase {
                      "Drøbel".compareTo("Drillenisse") > 0);
         assertTrue("i and ø should be sorted correctly with collator",
                      dkCollator.compare("Drøbel", "Drillenisse") > 0);
+    }
+
+    public void testSpaceSort() throws Exception {
+        assertTrue("Standard compareTo should sort space first",
+                   "a b".compareTo("ab") < 0);
+
+        Collator sansSpaceStandard = Collator.getInstance(new Locale("da"));
+        assertTrue("Standard Collator should sort space last",
+                   sansSpaceStandard.compare("a b", "ab") > 0);
+
+        Collator sansSpace = new CachedCollator(new Locale("da"), "");
+        assertTrue("None-space-modified CachedCollator should sort space last",
+                   sansSpace.compare("a b", "ab") > 0);
+
+        Collator space = new CachedCollator(new Locale("da"), dk, true);
+        assertTrue("Space-modified Collator should sort space first",
+                   space.compare("a b", "aa") < 0);
     }
 }
