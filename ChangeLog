@@ -1,3 +1,50 @@
+2009-12-02 11:20  mkamstrup
+
+	* [r233] build.xml, ChangeLog, NEWS:
+
+	  Release SB Util 0.4.8
+
+2009-12-02 10:00  mkamstrup
+
+	* [r233] sbutil.iml, sbutil.ipr,
+	  test/dk/statsbiblioteket/util/xml/XSLTTest.java:
+	  
+	  Out comment an obsolete test case
+
+2009-12-02 08:43  toke-sb
+
+	* [r232] src/dk/statsbiblioteket/util/CachedCollator.java:
+	  
+	  Usability: Added predefined commonChars to the CachedCollator
+
+2009-12-02 08:13  toke-sb
+
+	* [r231] test/dk/statsbiblioteket/util/CachedCollatorTest.java:
+	  
+	  Testing: CachedCollator fix for sorting Strings with spaces is
+	  now tested
+
+2009-12-01 15:36  toke-sb
+
+	* [r230] src/dk/statsbiblioteket/util/CachedCollator.java,
+	  test/dk/statsbiblioteket/util/CachedCollatorTest.java:
+	  
+	  Feature: Added constructors to CachedCollator as well as fix for
+	  sorting Strings with spaces
+
+2009-09-25 10:03  mke
+
+	* [r229] src/dk/statsbiblioteket/util/xml/XSLT.java:
+	  
+	  Bugfix: The new fast path for namespace ignoring XSLT
+	  transformations was not always used
+
+2009-09-24 11:07  mke
+
+	* [r227] ChangeLog, NEWS, build.xml:
+	  
+	  Release SB Util 0.4.7
+
 2009-09-24 07:52  mke
 
 	* [r226] src/dk/statsbiblioteket/util/Checksums.java:
@@ -13,7 +60,7 @@
 2009-09-24 06:53  mke
 
 	* [r224] build.xml, sbutil.iml, sbutil.ipr,
-	  test/dk/statsbiblioteket/util/BytesTest.java:
+	  test/dk/statsbiblioteket/util/BytesTest.java[ADD]:
 	  
 	  Test: Add test stub class for the Bytes utility module and add
 	  BytesTest to the list of tests to run from Ant
@@ -96,8 +143,8 @@
 2009-09-03 14:33  abr
 
 	* [r216] sbutil.iml, sbutil.ipr,
-	  src/dk/statsbiblioteket/util/ByteString.java,
-	  src/dk/statsbiblioteket/util/DocumentUtils.java:
+	  src/dk/statsbiblioteket/util/ByteString.java[ADD],
+	  src/dk/statsbiblioteket/util/DocumentUtils.java[ADD]:
 	  
 	  Added ByteString and DocumentUtils
 
@@ -205,8 +252,8 @@
 2009-05-28 10:46  mke
 
 	* [r198] src/dk/statsbiblioteket/util/console/Formatter.java,
-	  src/dk/statsbiblioteket/util/console/Table.java,
-	  test/dk/statsbiblioteket/util/console/TableTest.java:
+	  src/dk/statsbiblioteket/util/console/Table.java[ADD],
+	  test/dk/statsbiblioteket/util/console/TableTest.java[ADD]:
 	  
 	  Import the Layout class from Summa into the console package and
 	  call it Table. It can be used to print formatted tabular layouts
@@ -245,10 +292,10 @@
 2009-05-27 13:06  mke
 
 	* [r194] src/dk/statsbiblioteket/util/xml/DOM.java,
-	  src/dk/statsbiblioteket/util/xml/DefaultNamespaceContext.java,
-	  src/dk/statsbiblioteket/util/xml/XPathSelector.java,
-	  src/dk/statsbiblioteket/util/xml/XPathSelectorImpl.java,
-	  test/dk/statsbiblioteket/util/xml/XPathSelectorImplTest.java:
+	  src/dk/statsbiblioteket/util/xml/DefaultNamespaceContext.java[ADD],
+	  src/dk/statsbiblioteket/util/xml/XPathSelector.java[ADD],
+	  src/dk/statsbiblioteket/util/xml/XPathSelectorImpl.java[ADD],
+	  test/dk/statsbiblioteket/util/xml/XPathSelectorImplTest.java[ADD]:
 	  
 	  Add a namespace aware version of the XPath utilities. This
 	  involves
@@ -340,21 +387,22 @@
 
 2009-03-23 13:17  toke
 
-	* [r181] lib/commons-logging-1.1.1-javadoc.jar,
-	  lib/commons-logging-1.1.1-sources.jar,
-	  lib/commons-logging-1.1.1.jar, lib/commons-logging-1.1.jar[DEL],
-	  sbutil.iml, sbutil.ipr:
+	* [r181] lib/commons-logging-1.1.1-javadoc.jar[ADD],
+	  lib/commons-logging-1.1.1-sources.jar[ADD],
+	  lib/commons-logging-1.1.1.jar[ADD],
+	  lib/commons-logging-1.1.jar[DEL], sbutil.iml, sbutil.ipr:
 	  
 	  Update: Changed to commons-logging 1.1.1 as it is more
 	  Maven-compatible
 
 2009-03-19 14:45  toke
 
-	* [r180] src/dk/statsbiblioteket/util/xml/NamespaceRemover.java,
+	* [r180]
+	  src/dk/statsbiblioteket/util/xml/NamespaceRemover.java[ADD],
 	  src/dk/statsbiblioteket/util/xml/XSLT.java,
 	  test/data/xml/namespace_input.xml,
 	  test/data/xml/namespace_removed.xml[CPY],
-	  test/dk/statsbiblioteket/util/xml/NamespaceRemoverTest.java,
+	  test/dk/statsbiblioteket/util/xml/NamespaceRemoverTest.java[ADD],
 	  test/dk/statsbiblioteket/util/xml/XSLTTest.java:
 	  
 	  Added first version of a non-DOM-parsing namespace remover. Right
@@ -400,7 +448,7 @@
 
 	* [r174] src/dk/statsbiblioteket/util/xml/NamespaceRemover.java,
 	  src/dk/statsbiblioteket/util/xml/XSLT.java,
-	  src/dk/statsbiblioteket/util/xml/namespace_remover.xslt,
+	  src/dk/statsbiblioteket/util/xml/namespace_remover.xslt[ADD],
 	  test/data/xml/namespace_input.xml,
 	  test/dk/statsbiblioteket/util/xml/XSLTTest.java:
 	  
@@ -430,10 +478,10 @@
 
 	* [r167] src/dk/statsbiblioteket/util/xml/LegacyXSLT.java[DEL],
 	  src/dk/statsbiblioteket/util/xml/XSLT.java,
-	  test/data/xml/namespace_expected_correct.xml,
-	  test/data/xml/namespace_expected_faulty.xml,
-	  test/data/xml/namespace_input.xml,
-	  test/data/xml/namespace_transform.xslt,
+	  test/data/xml/namespace_expected_correct.xml[ADD],
+	  test/data/xml/namespace_expected_faulty.xml[ADD],
+	  test/data/xml/namespace_input.xml[ADD],
+	  test/data/xml/namespace_transform.xslt[ADD],
 	  test/dk/statsbiblioteket/util/xml/XSLTTest.java:
 	  
 	  Refactoring: Moved the legacy.handling of badly namespaces
@@ -458,8 +506,8 @@
 2009-03-18 12:39  toke
 
 	* [r165] build.xml,
-	  src/dk/statsbiblioteket/util/xml/LegacyXSLT.java,
-	  src/dk/statsbiblioteket/util/xml/NamespaceRemover.java,
+	  src/dk/statsbiblioteket/util/xml/LegacyXSLT.java[ADD],
+	  src/dk/statsbiblioteket/util/xml/NamespaceRemover.java[ADD],
 	  src/dk/statsbiblioteket/util/xml/XSLT.java:
 	  
 	  Added legacy-handling class LegacyXSLT that ensures that
@@ -529,7 +577,7 @@
 
 2009-03-16 14:18  mke
 
-	* [r148] ChangeLog:
+	* [r148] ChangeLog[ADD]:
 	  
 	  Release sbutil-0.4.0
 	  
@@ -639,7 +687,7 @@
 
 2009-03-16 11:14  mke
 
-	* [r137] NEWS, src/dk/statsbiblioteket/util/xml/DOM.java:
+	* [r137] NEWS[ADD], src/dk/statsbiblioteket/util/xml/DOM.java:
 	  
 	  Allow controlling the cache size of the compiled xpath
 	  expressions via a system property, sbutil.xpath.cache. Default
@@ -650,11 +698,12 @@
 2009-03-16 10:59  toke
 
 	* [r136] sbutil.ipr, src/dk/statsbiblioteket/util/xml/XSLT.java,
-	  test/data/xml, test/data/xml/expected1.xml,
-	  test/data/xml/expected2.xml, test/data/xml/trivial_input.xml,
-	  test/data/xml/trivial_transform1.xslt,
-	  test/data/xml/trivial_transform2.xslt,
-	  test/dk/statsbiblioteket/util/xml/XSLTTest.java:
+	  test/data/xml[ADD], test/data/xml/expected1.xml[ADD],
+	  test/data/xml/expected2.xml[ADD],
+	  test/data/xml/trivial_input.xml[ADD],
+	  test/data/xml/trivial_transform1.xslt[ADD],
+	  test/data/xml/trivial_transform2.xslt[ADD],
+	  test/dk/statsbiblioteket/util/xml/XSLTTest.java[ADD]:
 	  
 	  Unit-test: threaded calls to XSLT.transform
 
@@ -726,7 +775,7 @@
 	  src/dk/statsbiblioteket/util/reader/ReplaceFactory.java,
 	  src/dk/statsbiblioteket/util/xml/XMLUtil.java,
 	  test/dk/statsbiblioteket/util/StringsTest.java,
-	  test/dk/statsbiblioteket/util/xml/XMLUtilTest.java:
+	  test/dk/statsbiblioteket/util/xml/XMLUtilTest.java[ADD]:
 	  
 	  Add convenience method to ReplaceFactory taking a variable number
 	  of strings defining the rule map
@@ -742,10 +791,10 @@
 2009-03-13 12:15  mke
 
 	* [r130] src/dk/statsbiblioteket/util/xml/DOM.java,
-	  src/dk/statsbiblioteket/util/xml/LRUCache.java,
+	  src/dk/statsbiblioteket/util/xml/LRUCache.java[ADD],
 	  test/dk/statsbiblioteket/util/rpc/LocalConnectionManagerTest.java[DEL],
-	  test/dk/statsbiblioteket/util/xml,
-	  test/dk/statsbiblioteket/util/xml/DOMSelectTest.java:
+	  test/dk/statsbiblioteket/util/xml[ADD],
+	  test/dk/statsbiblioteket/util/xml/DOMSelectTest.java[ADD]:
 	  
 	  Tweak API of xml.DOM to be more uniform and simple and introduce
 	  a collection of convenience methods
@@ -765,10 +814,10 @@
 
 2009-03-12 15:59  toke
 
-	* [r128] src/dk/statsbiblioteket/util/xml,
-	  src/dk/statsbiblioteket/util/xml/DOM.java,
-	  src/dk/statsbiblioteket/util/xml/XMLUtil.java,
-	  src/dk/statsbiblioteket/util/xml/XSLT.java:
+	* [r128] src/dk/statsbiblioteket/util/xml[ADD],
+	  src/dk/statsbiblioteket/util/xml/DOM.java[ADD],
+	  src/dk/statsbiblioteket/util/xml/XMLUtil.java[ADD],
+	  src/dk/statsbiblioteket/util/xml/XSLT.java[ADD]:
 	  
 	  Initial version of XML-helpers. Needs unit-testing and some
 	  methods moved from XmlOperations in webcommons
@@ -788,7 +837,7 @@
 	  src/dk/statsbiblioteket/util/reader/StringReplacer.java[CPY],
 	  src/dk/statsbiblioteket/util/reader/TextTransformer.java[CPY],
 	  src/dk/statsbiblioteket/util/rpc/ConnectionManager.java,
-	  src/dk/statsbiblioteket/util/rpc/StaticConnectionFactory.java,
+	  src/dk/statsbiblioteket/util/rpc/StaticConnectionFactory.java[ADD],
 	  test/dk/statsbiblioteket/util/LineReaderTest.java,
 	  test/dk/statsbiblioteket/util/ProfilerTest.java,
 	  test/dk/statsbiblioteket/util/reader[CPY],
@@ -852,10 +901,10 @@
 2009-01-27 01:26  toke
 
 	* [r93] sbutil.iml, sbutil.ipr,
-	  src/dk/statsbiblioteket/util/CircularCharBuffer.java,
-	  src/dk/statsbiblioteket/util/ReplaceReader.java,
-	  test/dk/statsbiblioteket/util/CircularCharBufferTest.java,
-	  test/dk/statsbiblioteket/util/ReplaceReaderTest.java:
+	  src/dk/statsbiblioteket/util/CircularCharBuffer.java[ADD],
+	  src/dk/statsbiblioteket/util/ReplaceReader.java[ADD],
+	  test/dk/statsbiblioteket/util/CircularCharBufferTest.java[ADD],
+	  test/dk/statsbiblioteket/util/ReplaceReaderTest.java[ADD]:
 	  
 	  Added ReplaceReader, the helper-class CircularCharBuffer and
 	  Unit-tests
@@ -868,14 +917,14 @@
 
 2008-12-04 10:09  mke
 
-	* [r89] scripts/sshbg:
+	* [r89] scripts/sshbg[ADD]:
 	  
 	  Initial import of the sshbg script - used to background a ssh job
 	  with correctly set user environment
 
 2008-10-23 14:21  mke
 
-	* [r88] scripts/fiendish:
+	* [r88] scripts/fiendish[ADD]:
 	  
 	  Initial import of the `fiendish' script to daemonize shell
 	  commands
@@ -890,8 +939,8 @@
 
 	* [r85] sbutil.ipr,
 	  src/dk/statsbiblioteket/util/watch/FolderWatcher.java,
-	  src/dk/statsbiblioteket/util/watch/RecursiveFolderWatcher.java,
-	  test/dk/statsbiblioteket/util/watch/RecursiveFolderWatcherTest.java:
+	  src/dk/statsbiblioteket/util/watch/RecursiveFolderWatcher.java[ADD],
+	  test/dk/statsbiblioteket/util/watch/RecursiveFolderWatcherTest.java[ADD]:
 	  
 	  Implement a RecursiveFolderWatcher that can monitor a directory
 	  structure for changes to a configurable depth.
@@ -965,9 +1014,10 @@
 
 2008-08-28 09:03  mke
 
-	* [r75] src/dk/statsbiblioteket/util/FilePermissionException.java,
+	* [r75]
+	  src/dk/statsbiblioteket/util/FilePermissionException.java[ADD],
 	  src/dk/statsbiblioteket/util/Files.java,
-	  src/dk/statsbiblioteket/util/InvalidFileTypeException.java,
+	  src/dk/statsbiblioteket/util/InvalidFileTypeException.java[ADD],
 	  test/dk/statsbiblioteket/util/FilesTest.java:
 	  
 	  Commit base work for atomic impl of Files.move(). TE to complete
@@ -1226,8 +1276,8 @@
 2008-01-18 11:05  mke
 
 	* [r40] build.xml,
-	  src/dk/statsbiblioteket/util/console/ProcessRunner.java,
-	  test/dk/statsbiblioteket/util/console/ProcessRunnerTest.java:
+	  src/dk/statsbiblioteket/util/console/ProcessRunner.java[ADD],
+	  test/dk/statsbiblioteket/util/console/ProcessRunnerTest.java[ADD]:
 	  
 	  Rename NativeRunner to ProcessRunner
 
@@ -1235,7 +1285,7 @@
 
 	* [r39] build.xml,
 	  src/dk/statsbiblioteket/util/NativeExecution[DEL],
-	  src/dk/statsbiblioteket/util/console/NativeRunner.java,
+	  src/dk/statsbiblioteket/util/console/NativeRunner.java[ADD],
 	  test/dk/statsbiblioteket/util/NativeExecution[DEL],
 	  test/dk/statsbiblioteket/util/console/NativeRunnerTest.java[CPY]:
 	  
@@ -1286,8 +1336,8 @@
 
 	* [r33] src/dk/statsbiblioteket/util/rpc/ConnectionManager.java,
 	  test/dk/statsbiblioteket/util/rpc/ConnectionManagerTestCase.java[CPY],
-	  test/dk/statsbiblioteket/util/rpc/LocalConnectionManagerTest.java,
-	  test/dk/statsbiblioteket/util/rpc/RMIConnectionManagerTest.java,
+	  test/dk/statsbiblioteket/util/rpc/LocalConnectionManagerTest.java[ADD],
+	  test/dk/statsbiblioteket/util/rpc/RMIConnectionManagerTest.java[ADD],
 	  test/dk/statsbiblioteket/util/rpc/TestRemoteIFaceImpl.java:
 	  
 	  Make the ConnectionManager.close() method interrupt its
@@ -1325,19 +1375,19 @@
 
 2008-01-15 09:07  abr
 
-	* [r27] src/dk/statsbiblioteket/util/NativeExecution,
-	  src/dk/statsbiblioteket/util/NativeExecution/NativeRunner.java,
-	  test/dk/statsbiblioteket/util/NativeExecution,
-	  test/dk/statsbiblioteket/util/NativeExecution/NativeRunnerTest.java:
+	* [r27] src/dk/statsbiblioteket/util/NativeExecution[ADD],
+	  src/dk/statsbiblioteket/util/NativeExecution/NativeRunner.java[ADD],
+	  test/dk/statsbiblioteket/util/NativeExecution[ADD],
+	  test/dk/statsbiblioteket/util/NativeExecution/NativeRunnerTest.java[ADD]:
 	  
 	  Added and reworked the NativeRunner provided byte TE.
 
 2008-01-14 15:42  mke
 
 	* [r26]
-	  test/dk/statsbiblioteket/util/rpc/RelayedIFaceConsumer.java,
-	  test/dk/statsbiblioteket/util/rpc/TestRelayIFace.java,
-	  test/dk/statsbiblioteket/util/rpc/TestRelayIFaceImpl.java,
+	  test/dk/statsbiblioteket/util/rpc/RelayedIFaceConsumer.java[ADD],
+	  test/dk/statsbiblioteket/util/rpc/TestRelayIFace.java[ADD],
+	  test/dk/statsbiblioteket/util/rpc/TestRelayIFaceImpl.java[ADD],
 	  test/dk/statsbiblioteket/util/rpc/TestRemoteIFaceImpl.java:
 	  
 	  Include a test that shows that it is possible to relay RMI
@@ -1421,15 +1471,15 @@
 2008-01-02 14:05  mke
 
 	* [r17] sbutil.ipr,
-	  src/dk/statsbiblioteket/util/rpc/ConnectionContext.java,
-	  src/dk/statsbiblioteket/util/rpc/ConnectionFactory.java,
-	  src/dk/statsbiblioteket/util/rpc/ConnectionManager.java,
-	  src/dk/statsbiblioteket/util/rpc/RMIConnectionFactory.java,
-	  test/dk/statsbiblioteket/util/rpc/ConnectionManagerTest.java,
-	  test/dk/statsbiblioteket/util/rpc/TestConnectionFactory.java,
-	  test/dk/statsbiblioteket/util/rpc/TestIFace.java,
-	  test/dk/statsbiblioteket/util/rpc/TestRemoteIFace.java,
-	  test/dk/statsbiblioteket/util/rpc/TestRemoteIFaceImpl.java,
+	  src/dk/statsbiblioteket/util/rpc/ConnectionContext.java[ADD],
+	  src/dk/statsbiblioteket/util/rpc/ConnectionFactory.java[ADD],
+	  src/dk/statsbiblioteket/util/rpc/ConnectionManager.java[ADD],
+	  src/dk/statsbiblioteket/util/rpc/RMIConnectionFactory.java[ADD],
+	  test/dk/statsbiblioteket/util/rpc/ConnectionManagerTest.java[ADD],
+	  test/dk/statsbiblioteket/util/rpc/TestConnectionFactory.java[ADD],
+	  test/dk/statsbiblioteket/util/rpc/TestIFace.java[ADD],
+	  test/dk/statsbiblioteket/util/rpc/TestRemoteIFace.java[ADD],
+	  test/dk/statsbiblioteket/util/rpc/TestRemoteIFaceImpl.java[ADD],
 	  test/log4j.xml:
 	  
 	  Initial stab at a generic RPC framework and stateless connection
@@ -1483,12 +1533,12 @@
 
 2007-12-19 11:53  mke
 
-	* [r10] src/dk/statsbiblioteket/util/console,
-	  src/dk/statsbiblioteket/util/console/Color.java,
-	  src/dk/statsbiblioteket/util/console/Formatter.java,
-	  src/dk/statsbiblioteket/util/console/Hint.java,
-	  test/dk/statsbiblioteket/util/console,
-	  test/dk/statsbiblioteket/util/console/FormatterTest.java:
+	* [r10] src/dk/statsbiblioteket/util/console[ADD],
+	  src/dk/statsbiblioteket/util/console/Color.java[ADD],
+	  src/dk/statsbiblioteket/util/console/Formatter.java[ADD],
+	  src/dk/statsbiblioteket/util/console/Hint.java[ADD],
+	  test/dk/statsbiblioteket/util/console[ADD],
+	  test/dk/statsbiblioteket/util/console/FormatterTest.java[ADD]:
 	  
 	  Import dk.statsbiblioteket.util.console a new utility for
 	  coloured output to a console (with test suite)
@@ -1515,89 +1565,93 @@
 
 2007-12-04 14:19  mke
 
-	* [r3] .classpath, .cvsignore, .project, .settings,
-	  .settings/org.eclipse.jdt.core.prefs,
-	  .settings/org.eclipse.jdt.ui.prefs, COPYING, LOGGING,
-	  MAINTAINERS, POLICY, README, build.xml, config, config/log4j.xml,
-	  lib, lib/ant-changelog.xsl, lib/commons-cli-1.1.jar,
-	  lib/commons-cli_license.txt, lib/commons-logging-1.1.jar,
-	  lib/commons-logging_license.txt, lib/junit-4.1.jar,
-	  lib/junit_license-cpl-v10.html, lib/log4j-1.2.14.jar,
-	  lib/log4j_license.txt, lib/xstream-1.2.2.jar,
-	  lib/xstream-license.txt, sbutil.iml, sbutil.ipr, scripts,
-	  scripts/template.sh, src, src/dk, src/dk/statsbiblioteket,
-	  src/dk/statsbiblioteket/util,
-	  src/dk/statsbiblioteket/util/CachedCollator.java,
-	  src/dk/statsbiblioteket/util/Checksums.java,
-	  src/dk/statsbiblioteket/util/DigestException.java,
-	  src/dk/statsbiblioteket/util/FileAlreadyExistsException.java,
-	  src/dk/statsbiblioteket/util/Files.java,
-	  src/dk/statsbiblioteket/util/InvalidPropertiesException.java,
-	  src/dk/statsbiblioteket/util/LineReader.java,
-	  src/dk/statsbiblioteket/util/Logs.java,
-	  src/dk/statsbiblioteket/util/Profiler.java,
-	  src/dk/statsbiblioteket/util/Projects.java,
-	  src/dk/statsbiblioteket/util/Streams.java,
-	  src/dk/statsbiblioteket/util/Strings.java,
-	  src/dk/statsbiblioteket/util/XProperties.java,
-	  src/dk/statsbiblioteket/util/Zips.java,
-	  src/dk/statsbiblioteket/util/caching,
-	  src/dk/statsbiblioteket/util/files,
-	  src/dk/statsbiblioteket/util/i18n,
-	  src/dk/statsbiblioteket/util/i18n/BundleCache.java,
-	  src/dk/statsbiblioteket/util/i18n/EmptyResourceBundle.java,
-	  src/dk/statsbiblioteket/util/i18n/EscapeUTF8Stream.java,
-	  src/dk/statsbiblioteket/util/i18n/Translator.java,
-	  src/dk/statsbiblioteket/util/qa,
-	  src/dk/statsbiblioteket/util/qa/BasicReport.java,
-	  src/dk/statsbiblioteket/util/qa/DynamicClassLoader.java,
-	  src/dk/statsbiblioteket/util/qa/HTMLReport.java,
-	  src/dk/statsbiblioteket/util/qa/PackageScanner.java,
-	  src/dk/statsbiblioteket/util/qa/PackageScannerDriver.java,
-	  src/dk/statsbiblioteket/util/qa/QAInfo.java,
-	  src/dk/statsbiblioteket/util/qa/Report.java,
-	  src/dk/statsbiblioteket/util/qa/ReportElement.java,
-	  src/dk/statsbiblioteket/util/rpc,
-	  src/dk/statsbiblioteket/util/rpc/methods,
-	  src/dk/statsbiblioteket/util/watch,
-	  src/dk/statsbiblioteket/util/watch/CurrentListener.java,
-	  src/dk/statsbiblioteket/util/watch/CurrentWatcher.java,
-	  src/dk/statsbiblioteket/util/watch/FolderEvent.java,
-	  src/dk/statsbiblioteket/util/watch/FolderListener.java,
-	  src/dk/statsbiblioteket/util/watch/FolderWatcher.java,
-	  src/dk/statsbiblioteket/util/watch/Observable.java, test,
-	  test/data, test/data/website-performance-info.log.2007-04-01,
-	  test/data/website-performance-info.log.2007-04-05,
-	  test/data/website-performance-info.log.2007-04-09, test/dk,
-	  test/dk/statsbiblioteket, test/dk/statsbiblioteket/util,
-	  test/dk/statsbiblioteket/util/CachedCollatorTest.java,
-	  test/dk/statsbiblioteket/util/ChecksumsTest.java,
-	  test/dk/statsbiblioteket/util/FilesTest.java,
-	  test/dk/statsbiblioteket/util/I18nTest.java,
-	  test/dk/statsbiblioteket/util/LineReaderTest.java,
-	  test/dk/statsbiblioteket/util/LogsTest.java,
-	  test/dk/statsbiblioteket/util/ProfilerTest.java,
-	  test/dk/statsbiblioteket/util/ProjectsTest.java,
-	  test/dk/statsbiblioteket/util/StreamsTest.java,
-	  test/dk/statsbiblioteket/util/StringsTest.java,
-	  test/dk/statsbiblioteket/util/XPropertiesTest.java,
-	  test/dk/statsbiblioteket/util/ZipsTest.java,
-	  test/dk/statsbiblioteket/util/files,
-	  test/dk/statsbiblioteket/util/i18n,
-	  test/dk/statsbiblioteket/util/i18n/EscapeUTF8StreamTest.java,
-	  test/dk/statsbiblioteket/util/qa,
-	  test/dk/statsbiblioteket/util/qa/PackageScannerTest.java,
-	  test/dk/statsbiblioteket/util/rpc,
-	  test/dk/statsbiblioteket/util/watch,
-	  test/dk/statsbiblioteket/util/watch/FolderWatcherTest.java,
-	  test/log4j.xml, test/messages.properties,
-	  test/messages_da.properties:
+	* [r3] .classpath[ADD], .cvsignore[ADD], .project[ADD],
+	  .settings[ADD], .settings/org.eclipse.jdt.core.prefs[ADD],
+	  .settings/org.eclipse.jdt.ui.prefs[ADD], COPYING[ADD],
+	  LOGGING[ADD], MAINTAINERS[ADD], POLICY[ADD], README[ADD],
+	  build.xml[ADD], config[ADD], config/log4j.xml[ADD], lib[ADD],
+	  lib/ant-changelog.xsl[ADD], lib/commons-cli-1.1.jar[ADD],
+	  lib/commons-cli_license.txt[ADD],
+	  lib/commons-logging-1.1.jar[ADD],
+	  lib/commons-logging_license.txt[ADD], lib/junit-4.1.jar[ADD],
+	  lib/junit_license-cpl-v10.html[ADD], lib/log4j-1.2.14.jar[ADD],
+	  lib/log4j_license.txt[ADD], lib/xstream-1.2.2.jar[ADD],
+	  lib/xstream-license.txt[ADD], sbutil.iml[ADD], sbutil.ipr[ADD],
+	  scripts[ADD], scripts/template.sh[ADD], src[ADD], src/dk[ADD],
+	  src/dk/statsbiblioteket[ADD], src/dk/statsbiblioteket/util[ADD],
+	  src/dk/statsbiblioteket/util/CachedCollator.java[ADD],
+	  src/dk/statsbiblioteket/util/Checksums.java[ADD],
+	  src/dk/statsbiblioteket/util/DigestException.java[ADD],
+	  src/dk/statsbiblioteket/util/FileAlreadyExistsException.java[ADD],
+	  src/dk/statsbiblioteket/util/Files.java[ADD],
+	  src/dk/statsbiblioteket/util/InvalidPropertiesException.java[ADD],
+	  src/dk/statsbiblioteket/util/LineReader.java[ADD],
+	  src/dk/statsbiblioteket/util/Logs.java[ADD],
+	  src/dk/statsbiblioteket/util/Profiler.java[ADD],
+	  src/dk/statsbiblioteket/util/Projects.java[ADD],
+	  src/dk/statsbiblioteket/util/Streams.java[ADD],
+	  src/dk/statsbiblioteket/util/Strings.java[ADD],
+	  src/dk/statsbiblioteket/util/XProperties.java[ADD],
+	  src/dk/statsbiblioteket/util/Zips.java[ADD],
+	  src/dk/statsbiblioteket/util/caching[ADD],
+	  src/dk/statsbiblioteket/util/files[ADD],
+	  src/dk/statsbiblioteket/util/i18n[ADD],
+	  src/dk/statsbiblioteket/util/i18n/BundleCache.java[ADD],
+	  src/dk/statsbiblioteket/util/i18n/EmptyResourceBundle.java[ADD],
+	  src/dk/statsbiblioteket/util/i18n/EscapeUTF8Stream.java[ADD],
+	  src/dk/statsbiblioteket/util/i18n/Translator.java[ADD],
+	  src/dk/statsbiblioteket/util/qa[ADD],
+	  src/dk/statsbiblioteket/util/qa/BasicReport.java[ADD],
+	  src/dk/statsbiblioteket/util/qa/DynamicClassLoader.java[ADD],
+	  src/dk/statsbiblioteket/util/qa/HTMLReport.java[ADD],
+	  src/dk/statsbiblioteket/util/qa/PackageScanner.java[ADD],
+	  src/dk/statsbiblioteket/util/qa/PackageScannerDriver.java[ADD],
+	  src/dk/statsbiblioteket/util/qa/QAInfo.java[ADD],
+	  src/dk/statsbiblioteket/util/qa/Report.java[ADD],
+	  src/dk/statsbiblioteket/util/qa/ReportElement.java[ADD],
+	  src/dk/statsbiblioteket/util/rpc[ADD],
+	  src/dk/statsbiblioteket/util/rpc/methods[ADD],
+	  src/dk/statsbiblioteket/util/watch[ADD],
+	  src/dk/statsbiblioteket/util/watch/CurrentListener.java[ADD],
+	  src/dk/statsbiblioteket/util/watch/CurrentWatcher.java[ADD],
+	  src/dk/statsbiblioteket/util/watch/FolderEvent.java[ADD],
+	  src/dk/statsbiblioteket/util/watch/FolderListener.java[ADD],
+	  src/dk/statsbiblioteket/util/watch/FolderWatcher.java[ADD],
+	  src/dk/statsbiblioteket/util/watch/Observable.java[ADD],
+	  test[ADD], test/data[ADD],
+	  test/data/website-performance-info.log.2007-04-01[ADD],
+	  test/data/website-performance-info.log.2007-04-05[ADD],
+	  test/data/website-performance-info.log.2007-04-09[ADD],
+	  test/dk[ADD], test/dk/statsbiblioteket[ADD],
+	  test/dk/statsbiblioteket/util[ADD],
+	  test/dk/statsbiblioteket/util/CachedCollatorTest.java[ADD],
+	  test/dk/statsbiblioteket/util/ChecksumsTest.java[ADD],
+	  test/dk/statsbiblioteket/util/FilesTest.java[ADD],
+	  test/dk/statsbiblioteket/util/I18nTest.java[ADD],
+	  test/dk/statsbiblioteket/util/LineReaderTest.java[ADD],
+	  test/dk/statsbiblioteket/util/LogsTest.java[ADD],
+	  test/dk/statsbiblioteket/util/ProfilerTest.java[ADD],
+	  test/dk/statsbiblioteket/util/ProjectsTest.java[ADD],
+	  test/dk/statsbiblioteket/util/StreamsTest.java[ADD],
+	  test/dk/statsbiblioteket/util/StringsTest.java[ADD],
+	  test/dk/statsbiblioteket/util/XPropertiesTest.java[ADD],
+	  test/dk/statsbiblioteket/util/ZipsTest.java[ADD],
+	  test/dk/statsbiblioteket/util/files[ADD],
+	  test/dk/statsbiblioteket/util/i18n[ADD],
+	  test/dk/statsbiblioteket/util/i18n/EscapeUTF8StreamTest.java[ADD],
+	  test/dk/statsbiblioteket/util/qa[ADD],
+	  test/dk/statsbiblioteket/util/qa/PackageScannerTest.java[ADD],
+	  test/dk/statsbiblioteket/util/rpc[ADD],
+	  test/dk/statsbiblioteket/util/watch[ADD],
+	  test/dk/statsbiblioteket/util/watch/FolderWatcherTest.java[ADD],
+	  test/log4j.xml[ADD], test/messages.properties[ADD],
+	  test/messages_da.properties[ADD]:
 	  
 	  Import sbutil codebase
 
 2007-12-04 13:36  mke
 
-	* [r1] .:
+	* [r1] .[ADD]:
 	  
 	  Create trunk
 

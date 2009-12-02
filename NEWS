@@ -2,6 +2,26 @@
 2009-09-24: SB Util 0.4.7
 =========================
 
+ * Optimization: The namespace ignoring fast path was not always enabled
+                 in the XSLT module
+
+ * Bugfix/feature : The CachedCollator did not sort as expected on strings
+                    containing whitespaces. Whitespaces where simply stripped
+                    from the string under comparisons. Fx. this would be an
+                    ordering:
+                      - dinocar
+                      - dino monster
+                      - dinosaur
+                    Some languages prefer to honor the space and sort like:
+                      - dino monster
+                      - dinocar
+                      - dinosaur
+                    CachedCollator now supports both sort styles
+
+=========================
+2009-09-24: SB Util 0.4.7
+=========================
+
  * Include a new Bytes utility class, for now only containing a single
    method toHex(byte[]) that returns a hex-string representation of a
    byte array. Very useful for creating strings from md5 checksums (see
