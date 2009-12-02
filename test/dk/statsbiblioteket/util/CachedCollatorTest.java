@@ -334,12 +334,24 @@ public class CachedCollatorTest extends TestCase {
         assertTrue("Standard Collator should sort space last",
                    sansSpaceStandard.compare("a b", "ab") > 0);
 
+        assertTrue("Standard Collator should ignore space space",
+                   sansSpaceStandard.compare("a b", "abc") < 0);
+
         Collator sansSpace = new CachedCollator(new Locale("da"), "");
         assertTrue("None-space-modified CachedCollator should sort space last",
                    sansSpace.compare("a b", "ab") > 0);
 
-        Collator space = new CachedCollator(new Locale("da"), dk, true);
+        Collator space = new CachedCollator(new Locale("da"), true);
         assertTrue("Space-modified Collator should sort space first",
-                   space.compare("a b", "aa") < 0);
+                   space.compare("a b", "ab") < 0);
+
+        assertTrue("Space-modified Collator should sort space first II",
+                   space.compare("a b", "abc") < 0);
+
+        assertTrue("Space-modified Collator should sort space first III",
+                   space.compare(" a", "a") < 0);
+
+        assertTrue("Space-modified Collator should sort space first IV",
+                   space.compare("a ", "a") > 0);
     }
 }
