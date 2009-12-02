@@ -307,10 +307,10 @@ public class XSLTTest extends TestCase {
                            + " namespace-ignoring transformation/second");
     }
 
-    public void testNamespaceRemove() throws Exception {
+    /*public void testNamespaceRemove() throws Exception {
         String input = Files.loadString(new File(XSLTTest.getURL(
                 "data/xml/namespace_input.xml").getFile()));
         System.out.println(XSLT.removeNamespaces(
                 new StringBufferInputStream(input)).toString("utf-8"));
-    }
+    }*/
 }
