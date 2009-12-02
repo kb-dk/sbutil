@@ -71,6 +71,48 @@ import org.apache.log4j.Logger;
                 + "class being final")
 public class CachedCollator extends Collator {
     private static Logger log = Logger.getLogger(CachedCollator.class);
+
+    /**
+     * ASCII-chars that are not special characters and not letters. It should be
+     * safe to use these as commonChars as they are normally compared 1:1.
+     * Normally it is advisable to extend this range with safe letters for the
+     * wanted locale.
+     */
+    public static final String COMMON_NON_LETTER =
+            " !\"#$%&'()*+,-./0123456789:;<=>?[\\]^_{|}~@";
+
+    /**
+     * ASCII-chars a-z and A-Z>. Depending on local rules for sorting, these
+     * might not be safe to use as commonChars (e.g. "aa" comes after "ab" in
+     * some standard danish sorts). Normally this will be used together with
+     * {@link #COMMON_NON_LETTER} and other characters.
+     */
+    public static final String COMMON_AZ =
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    /**
+     * The danish letters æ, ø and å. For danish sorting, these are safe to use
+     * as commonChars, together with {@link #COMMON_NON_LETTER} and
+     * {@link #COMMON_AZ}.
+     */
+    public static final String COMMON_DK_SPECIFIC = "æøåÆØÅ";
+
+    /**
+     * Most commonly used characters from the corpus at Statsbiblioteket.
+     * If the local sorting rules are danish and if "aa" comes before "ab",
+     * these should be safe (and recommended) to use as commonChars.
+     * These chars are a "complete" list, meaning that they can be used directly
+     * as commonChars, without the need of extending.
+     */
+    public static final String COMMON_SUMMA_EXTRACTED =
+            "eaoi 0ntr1s24cl93857hd6pgum.bfv:xwykj_z/-qASPCXIUø"
+            + "NEGæ$>é#Väåö&ü^áāLó~–íãT*@ıç%čâèBM|š—FYêDúàūžñRð"
+            + "·Oć−ôë,łβα°±HşīîJõKZQēśδ†ṣōïěğăńýřûė→ìþ×µμγ§ßο∼"
+            + "£ò▿ưκđσơλùειżτę­νπąρœ¤őηǩĸºφ≥ςĭωί³⋅≤иũňţθό∞ή™υź"
+            + "еаέ…²ªW€≈ψ¢нт•↑ľ¾ύχ₂ώр‰űάÿ¹о½ẽ‐ųζů;л'‡ξĩ√⁰¼ﬁĝȩ←"
+            + "вп的ŭɛс∈〉〈=дб″÷书ĉǧм∑ŕ‚₃↓⁺зуŏťя图♭⩾∫к∂ĕﬂϕď≃ч∇₁⩽"
+            + "ŝℓ∥馆₀ˉ∩≡≅ц∷ǀ˜≠∧ġ∆ф了 г⊥ņ⁻¬ĵ↔ḥ₄?ыхṉй∗";
+
     /**
      * If a CachedCollator is created without char statistics, it looks for
      * the resource CHARSTATS. If the resource can be fetched, the content is
