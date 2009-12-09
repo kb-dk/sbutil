@@ -130,12 +130,12 @@ public class CachedCollator extends Collator {
      */
     private Collator subCollator;
     /**
-     * Mappings for cached characters. If this is null, the subCollator is
-     * always used. The character values map to sort- positions > 0 and < 65536.
+     * Mappings for cached characters. The character values map to
+     * sort-positions > 0 and < 65536.
      * A sort-position of 0 indicates that the character is not among the first
      * 65535 most common characters with Java char-value below 65536.
      */
-    private int[] cachedPositions;
+    private final int[] cachedPositions = new int[65535];
 
     /**
      * Create a cached collator with the characters from 0x20 to 0xFF
@@ -272,7 +272,7 @@ public class CachedCollator extends Collator {
         }
 
         // Split in low and high value characters.
-        cachedPositions = new int[highest+1];
+//        cachedPositions = new int[highest+1];
         int position = 0;
         for (String cString: sorted) {
             if (cString.length() != 1) {
@@ -291,30 +291,38 @@ public class CachedCollator extends Collator {
     }
 
     protected int getPosition(char c) {
-        try {
-            return cachedPositions[c];
-        } catch(IndexOutOfBoundsException e) {
-            // Should not occur that often with well-initialized collator
-            return 0;
-        }
+         // Holds the full char range so no boundary check is needed
+        return cachedPositions[c];
     }
 
     @Override
-    public int compare(String source, String target) {
+    public int compare(final String source, final String target) {
         if (source == null) {
             return target == null ? 0 : 1;
         } else if (target == null) {
             return -1;
         }
-        int length = Math.min(source.length(), target.length());
+        final int length = Math.min(source.length(), target.length());
         for (int i = 0 ; i < length ; i++) {
-            int sPos = getPosition(source.charAt(i));
-            int tPos = getPosition(target.charAt(i));
-            if (sPos == 0 || tPos == 0) {
+            try {
+                final int sPos = cachedPositions[source.charAt(i)];
+                final int tPos = cachedPositions[target.charAt(i)];
+                if (sPos == 0 || tPos == 0) {
+                    return subCollator.compare(source, target);
+                }
+                if (sPos != tPos) {
+                    return sPos - tPos;
+                }
+            } catch (IndexOutOfBoundsException e) { // Non-handled char
+                log.debug(String.format(
+                        "Got an IndexOutOfBoundsException, which should not be "
+                        + "possible as cachedPositions should hold entries for "
+                        + "all possible char valued. The length of "
+                        + "cachedPositions is %d, source.charAt(%d) == '%s', "
+                        + "target.charAt(%d) == '%s'",
+                        cachedPositions.length, i, source.charAt(i), i,
+                        source.charAt(i)), e);
                 return subCollator.compare(source, target);
-            }
-            if (sPos != tPos) {
-                return sPos - tPos;
             }
         }
         return source.length()- target.length();
