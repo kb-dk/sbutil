@@ -10,7 +10,9 @@ import javax.xml.namespace.QName;
 import javax.xml.namespace.NamespaceContext;
 
 /**
- *
+ * Thread-safe (but not thread-efficient) implementation of XPathSelector.
+ * The main method is {@link #selectObject} which is synchronized. Making a
+ * ThreadLocal cache of XPathExpressions might be the ticket here.
  */
 public class XPathSelectorImpl implements XPathSelector {
 
@@ -28,10 +30,9 @@ public class XPathSelectorImpl implements XPathSelector {
 
     public XPathSelectorImpl(NamespaceContext nsContext, int cacheSize) {
         this.nsContext = nsContext;
-        this.cache = new LRUCache<String,XPathExpression>(cacheSize);
+        this.cache = new LRUCache<String, XPathExpression>(cacheSize);
     }
 
-    @Override
     public Integer selectInteger(Node node, String xpath, Integer defaultValue){
         String strVal = selectString(node, xpath);
         if (strVal == null || "".equals(strVal)) {
@@ -41,12 +42,10 @@ public class XPathSelectorImpl implements XPathSelector {
     }
 
 
-    @Override
     public Integer selectInteger(Node node, String xpath) {
         return selectInteger(node, xpath,  null);
     }
 
-    @Override
     public Double selectDouble(Node node, String xpath, Double defaultValue) {
         Double d = (Double)selectObject(node, xpath, XPathConstants.NUMBER);
         if(d == null || d.equals(Double.NaN)) {
@@ -56,12 +55,10 @@ public class XPathSelectorImpl implements XPathSelector {
     }
 
 
-    @Override
     public Double selectDouble (Node node, String xpath) {
         return selectDouble(node, xpath, null);
     }
 
-    @Override
     public Boolean selectBoolean(Node node, String xpath, Boolean defaultValue){
         if (defaultValue == null || Boolean.TRUE.equals(defaultValue)) {
             // Using QName.BOOLEAN will always return false if it is not found
@@ -78,12 +75,10 @@ public class XPathSelectorImpl implements XPathSelector {
         }
     }
 
-    @Override
     public Boolean selectBoolean(Node node, String xpath) {
         return selectBoolean(node, xpath, false);
     }
 
-    @Override
     public String selectString(Node node, String xpath, String defaultValue) {
         if ("".equals(defaultValue)) {
             // By default the XPath engine will return an empty string
@@ -101,22 +96,21 @@ public class XPathSelectorImpl implements XPathSelector {
         return (String)selectObject(node, xpath, XPathConstants.STRING);
     }
 
-    @Override
     public String selectString(Node node, String xpath) {
         return selectString(node, xpath, "");
     }
 
-    @Override
     public NodeList selectNodeList(Node dom, String xpath) {
         return (NodeList) selectObject(dom, xpath, XPathConstants.NODESET);
     }
 
-    @Override
     public Node selectNode(Node dom, String xpath) {
         return (Node) selectObject(dom, xpath, XPathConstants.NODE);
     }
 
-    private Object selectObject(Node dom, String xpath, QName returnType) {
+    // TODO: Optimize this for multiple threads
+    private synchronized Object selectObject(
+            Node dom, String xpath, QName returnType) {
         Object retval = null;
 
         try {
