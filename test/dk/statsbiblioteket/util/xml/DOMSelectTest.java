@@ -5,6 +5,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.Random;
+
 import static dk.statsbiblioteket.util.xml.DOM.*;
 
 /**
@@ -99,5 +101,45 @@ public class DOMSelectTest extends TestCase {
         NodeList expected = dom.getFirstChild().getChildNodes(); 
         assertSame(expected.getLength(), l.getLength());
         assertEquals(8, l.getLength());
+    }
+
+    public void threadTest(final boolean blowCache) throws Exception {
+        Thread[] threads = new Thread[20];
+        final Random random = new Random();
+
+        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new Thread(new Runnable() {
+                public void run() {
+                    for (int j = 0; j < 50; j++) {
+                        testSelectBoolean();
+                        testSelectDouble();
+                        testSelectInteger();
+                        testSelectNode();
+                        testSelectNodeList();
+                        testSelectString();
+
+                        if (blowCache) {
+                            for (int k = 0; k < 50; k++) {
+                                String bleh = selectString(
+                                        dom, "/body/a" + random.nextInt(),
+                                        "bleh, no such node");
+                                assertEquals("bleh, no such node", bleh);
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        for (Thread t : threads) t.start();
+        for (Thread t : threads) t.join();
+    }
+
+    public void testThreadsBlowCache() throws Exception {
+        threadTest(true);
+    }
+
+    public void testThreadsWithCache() throws Exception {
+        threadTest(false);
     }
 }
