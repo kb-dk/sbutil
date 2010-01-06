@@ -5,6 +5,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Random;
 
 import static dk.statsbiblioteket.util.xml.DOM.*;
@@ -105,10 +108,13 @@ public class DOMSelectTest extends TestCase {
 
     public void threadTest(final boolean blowCache) throws Exception {
         Thread[] threads = new Thread[20];
+        final List<Throwable> errors =
+                Collections.synchronizedList(new LinkedList<Throwable>());
         final Random random = new Random();
 
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new Thread(new Runnable() {
+                @Override
                 public void run() {
                     for (int j = 0; j < 50; j++) {
                         testSelectBoolean();
@@ -129,10 +135,23 @@ public class DOMSelectTest extends TestCase {
                     }
                 }
             });
+            threads[i].setUncaughtExceptionHandler(
+                    new Thread.UncaughtExceptionHandler(){
+                        @Override
+                        public void uncaughtException(Thread thread,
+                                                      Throwable throwable) {
+                            errors.add(throwable);
+                        }
+                    });
         }
 
         for (Thread t : threads) t.start();
         for (Thread t : threads) t.join();
+
+        if (errors.size() > 0) {
+            for (Throwable t : errors) t.printStackTrace();
+            fail("Uncaught exceptions in threads");
+        }
     }
 
     public void testThreadsBlowCache() throws Exception {
