@@ -116,7 +116,7 @@ public class XPathSelectorImpl implements XPathSelector {
         return (Node) selectObject(dom, xpath, XPathConstants.NODE);
     }
 
-    private Object selectObject(Node dom, String xpath, QName returnType) {
+    protected Object selectObject(Node dom, String xpath, QName returnType) {
         Object retval = null;
 
         try {

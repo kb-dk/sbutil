@@ -42,7 +42,8 @@ import java.io.StringReader;
 import java.io.InputStream;
 
 /**
- * Helpers for doing DOM parsing and manipulations.
+ * Helpers for doing DOM parsing and manipulations. The methods are thread-safe
+ * and allows for parallel execution of the same xpath.
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
@@ -53,8 +54,8 @@ public class DOM {
     public static final String XML_HEADER =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
-    private static final XPathSelectorImpl selector =
-                                              new XPathSelectorImpl(null, 50);
+    private static final SynchronousXPathSelector selector =
+                                         new SynchronousXPathSelector(null, 50);
 
     /**
      * Extracts all textual and CDATA content from the given node and its
