@@ -1,0 +1,307 @@
+<?xml version="1.0"?>
+<project default="all" name="sbutil" basedir=".">
+
+    <property name="project.name" value="sbutil" />
+    <property name="project.version.variant" value=""/>
+    <property name="project.version" value="0.4.8${project.version.variant}" />
+    <property name="builder" value="mke" />
+    <property name="release" value="${project.name}-${project.version}" />
+
+    <!-- Build deps -->
+    <property name="sbutil.compiler.version" value="1.6"/>
+    <property name="sbutil.ant.version" value="1.7.0"/>
+
+	<!-- Persistent files and directories -->
+    <property name="src.dir" value="${basedir}/src"/>
+    <property name="lib.dir" value="${basedir}/lib"/>
+    <property name="config.dir" value="${basedir}/config"/>
+    <property name="scripts.dir" value="${basedir}/scripts"/>
+    <property name="test.src.dir" value="${basedir}/test"/>
+    <property name="xstream.license" value="${lib.dir}/xstream-license.txt"/>
+    <property name="commons.cli.license" value="${lib.dir}/commons-cli_license.txt"/>
+    <property name="commons.logging.license" value="${lib.dir}/commons-logging_license.txt"/>
+    <property name="log4j.license" value="${lib.dir}/log4j_license.txt"/>
+    <property name="license.file" value="COPYING" />
+        
+    <!-- Temporary files and directories-->
+    <property name="build.dir" value="${basedir}/classes"/>
+    <property name="test.build.dir" value="${basedir}/classes_test"/>
+    <property name="dist.dir" value="${basedir}/dist"/>
+    <property name="doc.dir" value="${basedir}/doc"/>                
+    <property name="tmp.dir" value="${basedir}/tmp"/>
+    <property name="qa-scan.jar" value="${dist.dir}/qaScan-${project.version}.jar"/>
+    <property name="release.src.zip" value="${dist.dir}/${project.name}-${project.version}-src.zip"/>
+    <property name="release.apidocs.zip" value="${dist.dir}/${project.name}-${project.version}-apidocs.zip"/>
+
+    <!-- The libs are used for unit testing only -->
+    <property name="log4j.version" value="1.2.14" />
+    <property name="commons-logging.version" value="1.1.1" />
+    <property name="junit.version" value="4.1" />
+    
+    <!-- Helper libs that will be inlined in the release jar -->
+    <property name="xstream.version" value="1.2.2" />
+	<property name="xstream.jar" value="${lib.dir}/xstream-${xstream.version}.jar" />
+        
+    <!-- Other properties -->
+    <property name="compiler" value="modern"/>
+    <tstamp>
+        <format property="build.time" pattern="MM/dd/yyyy HH:mm"/>
+    </tstamp>
+
+    <path id="base.path">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar"/>
+        </fileset>        
+    </path>
+    
+    <path id="test.base.path">
+        <path refid="base.path" />
+        <pathelement location="${build.dir}" />
+        <pathelement location="${test.build.dir}" />
+        <pathelement location="${test.src.dir}" />
+    </path>
+    
+    <property name="base" refid="base.path"/>
+    <property name="test.base" refid="test.base.path"/>
+    
+    
+    <!--
+        TARGETS
+    -->
+
+    <!-- Ensure we have correct Java and Ant versions -->
+    <target name="depends">
+        <echo message="Checking Java compiler version is ${sbutil.compiler.version}"/>
+        <condition property="hasJava">
+            <equals arg1="${sbutil.compiler.version}" arg2="${java.specification.version}"/>
+        </condition>
+        <fail message="Currently Summa only compiles with Java ${sbutil.compiler.version}. Found Java ${java.specification.version}"
+              unless="hasJava"/>
+        
+        <echo message="Checking Ant version is atleast ${sbutil.ant.version}"/>
+        <condition property="hasAnt">
+            <antversion atleast="${sbutil.ant.version}"/>
+        </condition>
+        <fail message="Currently Summa only compiles with Ant ${sbutil.ant.version}. Found Ant ${ant.version}"
+              unless="hasAnt"/>
+    </target>
+
+    <target name="prepare" depends="depends">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${test.build.dir}"/>
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${doc.dir}"/>
+        <unzip src="${xstream.jar}" dest="${build.dir}"/>
+        <delete dir="${build.dir}/META-INF"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+        <delete dir="${test.build.dir}"/>
+        <delete dir="${dist.dir}"/>
+        <delete dir="${doc.dir}"/>
+        <delete dir="${tmp.dir}"/>
+    </target>
+    
+    <target name="compile" depends="prepare">
+        <javac srcdir="${src.dir}" destdir="${build.dir}" encoding="UTF-8"
+               compiler="${compiler}" optimize="on" debug="on" >
+            <compilerarg value="-Xlint:unchecked"/>
+            <classpath  refid="base.path" />
+        </javac>
+    </target>
+
+    <target name="doc" depends="compile">
+        <javadoc
+                packagenames="dk.statsbiblioteket.util.*"
+                destdir="${doc.dir}"
+                author="true"
+                version="true"
+                access="protected"
+                windowtitle="Statsbiblioteket Utility Module"
+                additionalparam="-breakiterator">
+            <packageset dir="${src.dir}">
+                <include name="dk/statsbiblioteket/util/**"/>
+            </packageset>
+            <classpath refid="base.path"/>
+        </javadoc>
+        <property name="prefix" value="${release}"/>
+        <zip destfile="${release.apidocs.zip}">
+            <zipfileset prefix="${prefix}/doc" dir="${doc.dir}"/>
+            <zipfileset prefix="${prefix}" file="README"/>
+            <zipfileset prefix="${prefix}" file="MAINTAINERS"/>
+            <zipfileset prefix="${prefix}" file="POLICY"/>
+            <zipfileset prefix="${prefix}" file="COPYING"/>
+            <zipfileset prefix="${prefix}" file="ChangeLog"/>
+            <zipfileset prefix="${prefix}" file="NEWS"/>
+        </zip>
+    </target>
+
+    <target name="jar" depends="compile">
+        <copy todir="${build.dir}">
+            <fileset dir="${src.dir}">
+                <include name="**/*.xslt"/>
+            </fileset>
+        </copy>
+        <jar basedir="${build.dir}" compress="true" jarfile="${release}.jar"/>
+    </target>
+
+    <target name="release" depends="clean, jar, doc, .qa-scan.release, .src.zip">
+        <!-- TODO: Insert build num and date like this:
+        <replaceregexp file="rep.test" match="\$Id[^\$]*\$" replace="Hello - ${build.time}"/>
+        -->
+        <property name="prefix" value="${release}"/>
+        <zip destfile="${dist.dir}/${release}.zip">
+            <zipfileset prefix="${prefix}" file="${release}.jar"/>
+            <zipfileset prefix="${prefix}" file="README"/>
+            <zipfileset prefix="${prefix}" file="MAINTAINERS"/>
+            <zipfileset prefix="${prefix}" file="POLICY"/>
+            <zipfileset prefix="${prefix}" file="COPYING"/>
+            <zipfileset prefix="${prefix}" file="ChangeLog"/>
+            <zipfileset prefix="${prefix}" file="NEWS"/>
+            <zipfileset prefix="${prefix}/doc" includes="**/*" dir="${doc.dir}"/>
+            <zipfileset prefix="${prefix}" file="${xstream.license}"/>
+            <zipfileset prefix="${prefix}" file="${qa-scan.jar}"/>
+            <zipfileset prefix="${prefix}" file="${release.src.zip}"/>
+            <zipfileset prefix="${prefix}" file="${release.apidocs.zip}"/>
+        </zip>
+    </target>
+
+    <!-- Depends on the 'jar' target to make
+         sure that we copy over any needed XSLTs-->
+    <target name="compile-test" depends="jar">
+        <javac srcdir="${test.src.dir}" destdir="${test.build.dir}" encoding="UTF-8"
+               compiler="${compiler}" optimize="on" debug="on">
+            <compilerarg value="-Xlint:unchecked"/>
+            <classpath  refid="test.base.path" />
+        </javac>
+    </target>
+
+    <target name="test">
+        <property name="test.formatter" value="plain"/>
+        <property name="test.usefile" value="false"/>
+        <antcall target=".test.run"/>
+    </target>
+
+    <target name="test.xml">
+        <property name="test.formatter" value="xml"/>
+        <property name="test.usefile" value="true"/>
+        <antcall target=".test.run"/>
+    </target>
+
+    <!-- Only run this target indirectly via the test or test.xml targets
+         It needs the test.formatter and test.usefile properties to be set -->
+    <target name=".test.run" depends="compile-test">
+        <!-- We need to fork the JVM and set the java.class.path property
+             to be able to pick resources from the classpath up (like
+             resource bundles). JUnit will override the classpath. -->
+        <junit printsummary="withOutAndErr" haltonfailure="yes"
+               haltonerror="yes" fork="yes" maxmemory="512m">
+            <sysproperty key="java.class.path" value="${test.base}"/>
+            <classpath refid="test.base.path" />            
+            <formatter type="${test.formatter}" usefile="${test.usefile}" />
+            
+            <!-- add tests here -->
+            <test name="dk.statsbiblioteket.util.BytesTest" />
+            <test name="dk.statsbiblioteket.util.CachedCollatorTest" />
+            <test name="dk.statsbiblioteket.util.ChecksumsTest" />
+            <test name="dk.statsbiblioteket.util.FilesTest" />
+            <test name="dk.statsbiblioteket.util.I18nTest" />
+            <test name="dk.statsbiblioteket.util.i18n.EscapeUTF8StreamTest" />
+            <!-- LineReader tests temporarily disabled. See bug 1183:
+                 https://gforge.statsbiblioteket.dk/tracker/index.php?func=detail&aid=1183&group_id=9&atid=137-->
+            <test name="dk.statsbiblioteket.util.LineReaderTest" />
+            <test name="dk.statsbiblioteket.util.LogsTest" />
+            <test name="dk.statsbiblioteket.util.ProfilerTest" />
+            <test name="dk.statsbiblioteket.util.StreamsTest" />
+            <test name="dk.statsbiblioteket.util.StringsTest" />
+            <test name="dk.statsbiblioteket.util.XPropertiesTest" />
+            <test name="dk.statsbiblioteket.util.ZipsTest" />
+            <test name="dk.statsbiblioteket.util.watch.FolderWatcherTest" />
+            <test name="dk.statsbiblioteket.util.watch.RecursiveFolderWatcherTest" />
+            <test name="dk.statsbiblioteket.util.qa.PackageScannerTest" />
+            <test name="dk.statsbiblioteket.util.console.FormatterTest" />
+            <test name="dk.statsbiblioteket.util.console.ProcessRunnerTest" />
+            <test name="dk.statsbiblioteket.util.reader.BaselineReplacerTest" />
+            <test name="dk.statsbiblioteket.util.reader.CharSequenceReaderTest" />
+            <test name="dk.statsbiblioteket.util.reader.CircularCharBufferTest" />
+            <test name="dk.statsbiblioteket.util.reader.ReplaceFactoryTest" />
+            <test name="dk.statsbiblioteket.util.reader.ReplacerTest" />
+            <test name="dk.statsbiblioteket.util.reader.StringReplacerTest" />
+            <test name="dk.statsbiblioteket.util.rpc.RMIConnectionManagerTest" />
+            <test name="dk.statsbiblioteket.util.rpc.StaticConnectionManagerTest" />
+            <test name="dk.statsbiblioteket.util.xml.DOMSelectTest" />
+            <test name="dk.statsbiblioteket.util.xml.XPathSelectorImplTest" />
+            <test name="dk.statsbiblioteket.util.xml.XMLUtilTest" />
+            <test name="dk.statsbiblioteket.util.xml.XSLTTest" />
+        </junit>
+    </target>
+
+    <target name=".qa-scan.release" depends="compile">
+        <property name="qa-scan.dir" value="${tmp.dir}/qaScan-${project.version}"/>
+        <property name="commons.cli.version" value="1.1"/>
+        <property name="commons.logging.version" value="1.1.1"/>
+        <property name="log4j.version" value="1.2.14"/>
+        <property name="commons.cli.jar" value="${lib.dir}/commons-cli-${commons.cli.version}.jar"/>
+        <property name="commons.logging.jar" value="${lib.dir}/commons-logging-${commons.logging.version}.jar"/>
+        <property name="log4j.jar" value="${lib.dir}/log4j-${log4j.version}.jar"/>
+
+        <mkdir dir="${qa-scan.dir}"/>
+        <unzip src="${commons.cli.jar}" dest="${qa-scan.dir}"/>
+        <unzip src="${commons.logging.jar}" dest="${qa-scan.dir}"/>
+        <unzip src="${log4j.jar}" dest="${qa-scan.dir}"/>
+        <copy todir="${qa-scan.dir}">
+            <fileset dir="${build.dir}" includes="dk/**/*"/>
+            <fileset dir="${build.dir}" includes="com/**/*"/>
+            <fileset dir="${config.dir}" includes="log4j.xml"/>
+            <fileset dir="${basedir}" file="${xstream.license}"/>
+            <fileset dir="${basedir}" file="${commons.cli.license}"/>
+            <fileset dir="${basedir}" file="${commons.logging.license}"/>
+            <fileset dir="${basedir}" file="${log4j.license}"/>
+        </copy>
+        <delete dir="${qa-scan.dir}/META-INF"/>
+
+        <jar basedir="${qa-scan.dir}" compress="true" jarfile="${qa-scan.jar}">
+            <manifest>
+                <attribute name="Build-By" value="mke"/>
+                <attribute name="Main-Class"
+                           value="dk.statsbiblioteket.util.qa.PackageScannerDriver"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name=".src.zip" depends="prepare">        
+        <property name="prefix" value="${release}"/>
+        <zip destfile="${release.src.zip}">           
+            <zipfileset prefix="${prefix}/src" dir="${src.dir}"/>
+            <zipfileset prefix="${prefix}/lib" dir="${lib.dir}"/>
+            <zipfileset prefix="${prefix}/test" dir="${test.src.dir}"/>
+            <zipfileset prefix="${prefix}/config" dir="${config.dir}"/>
+            <zipfileset prefix="${prefix}/scripts" dir="${scripts.dir}"/>
+            <zipfileset prefix="${prefix}" file="build.xml"/>
+            <zipfileset prefix="${prefix}" file="LOGGING"/>
+            <zipfileset prefix="${prefix}" file="README"/>
+            <zipfileset prefix="${prefix}" file="MAINTAINERS"/>
+            <zipfileset prefix="${prefix}" file="POLICY"/>
+            <zipfileset prefix="${prefix}" file="COPYING"/>
+            <zipfileset prefix="${prefix}" file="ChangeLog"/>
+            <zipfileset prefix="${prefix}" file="NEWS"/>
+            <zipfileset prefix="${prefix}" file="sbutil.iml"/>
+            <zipfileset prefix="${prefix}" file="sbutil.ipr"/>
+        </zip>
+    </target>
+    
+    <target name=".qa.report" depends=".qa-scan.release">
+        <java fork="true" jar="${qa-scan.jar}" output="${user.dir}/qa-report.html">
+            <arg value="-s"/>
+            <arg value="http://hera/cgi-bin/viewcvs.cgi/sbutil/src/"/>
+            <arg value="-p"/>
+            <arg value="dk.statsbiblioteket.util"/>
+            <arg value="-n"/>
+            <arg value="SB Util"/>
+            <arg value="${basedir}/classes"/>
+        </java>
+    </target>
+	
+    <target name="all" depends="release"/>
+</project>

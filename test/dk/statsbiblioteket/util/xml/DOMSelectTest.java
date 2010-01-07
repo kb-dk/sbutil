@@ -1,10 +1,13 @@
 package dk.statsbiblioteket.util.xml;
 
+import dk.statsbiblioteket.util.Files;
+import dk.statsbiblioteket.util.Strings;
 import junit.framework.TestCase;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,6 +28,11 @@ public class DOMSelectTest extends TestCase {
         "  <string>foobar</string>"+
         "  <integer>27</integer>"+
         "</body>";
+    static final String BIG_XML;
+    static {
+        BIG_XML = Strings.flushLocal(
+                    ClassLoader.getSystemResourceAsStream("data/big.xml"));
+    }
 
     Document dom;
 
