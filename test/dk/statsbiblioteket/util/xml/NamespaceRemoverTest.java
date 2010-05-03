@@ -85,6 +85,14 @@ public class NamespaceRemoverTest extends TestCase {
         assertEquals("Namespaces should be removed", expected, actual);
     }
 
+    public void testSpecificProblem() throws Exception {
+        Reader in = new InputStreamReader(new FileInputStream(new File(
+                XSLTTest.getURL("data/xml/specific_problem.xml").getFile())));
+        Reader sanitized = new NamespaceRemover(in);
+        String actual = Strings.flush(sanitized);
+        System.out.println(actual);
+    }
+
     public void testReplaceReaderMethods() {
         String orig ="foo:bar foo:attr=\"hooray\"";
         NamespaceRemover ns = new NamespaceRemover(null); 

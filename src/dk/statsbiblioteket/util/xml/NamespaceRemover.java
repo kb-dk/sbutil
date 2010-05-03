@@ -68,8 +68,9 @@ public class NamespaceRemover extends ReplaceReader {
     private final Matcher defaultDeclarationMatcher =
             Pattern.compile("xmlns *\\= *\".*\"").matcher("");
 
+    // Should be http://www.w3.org/TR/REC-xml/#NT-Name but we cheat
     private final Matcher prefixMatcher =
-            Pattern.compile("[a-zA-Z]+\\:([a-zA-Z]+)").matcher("");
+            Pattern.compile("[a-zA-Z_\\.\\-0-9]+\\:([a-zA-Z_\\.\\-0-9]+)").matcher("");
 
     public NamespaceRemover(Reader in) {
         super(in);
