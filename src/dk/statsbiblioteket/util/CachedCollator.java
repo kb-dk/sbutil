@@ -303,7 +303,11 @@ public class CachedCollator extends Collator {
             return -1;
         }
         final int length = Math.min(source.length(), target.length());
-        for (int i = 0 ; i < length ; i++) {
+        /*
+         Only to length-2 as "foobar" and "foö" should sort "foö", "foobar" as
+         o vs. ö is secondary difference
+         */
+        for (int i = 0 ; i < length-1 ; i++) {
             try {
                 final int sPos = cachedPositions[source.charAt(i)];
                 final int tPos = cachedPositions[target.charAt(i)];
@@ -325,7 +329,8 @@ public class CachedCollator extends Collator {
                 return subCollator.compare(source, target);
             }
         }
-        return source.length()- target.length();
+        return subCollator.compare(source, target);
+//        return source.length()- target.length();
     }
     @Override
     public int compare(Object source, Object target) {

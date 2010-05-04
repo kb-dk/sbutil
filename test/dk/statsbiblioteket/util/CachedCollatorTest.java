@@ -354,4 +354,27 @@ public class CachedCollatorTest extends TestCase {
         assertTrue("Space-modified Collator should sort space first IV",
                    space.compare("a ", "a") > 0);
     }
+
+    public void testCollatorEquivalence() throws Exception {
+        Locale DA = new Locale("da");
+        System.out.println(Collator.getInstance(DA).compare("ur", "úr"));
+        assertTrue("The strings 'ur' and 'ú' should be sorted with 'ú' "
+                   + "first by normal collator",
+                   Collator.getInstance(DA).compare("ur", "ú") > 0);
+        assertTrue("The strings 'ur' and 'úr' should be sorted with 'ur' "
+                   + "first by normal collator",
+                   Collator.getInstance(DA).compare("ur", "úr") < 0);
+        assertTrue("The strings 'ur' and 'ú' should be sorted with 'ú' "
+                   + "first by cached collator",
+                   new CachedCollator(Collator.getInstance(DA)).
+                       compare("ur", "ú") > 0);
+        assertTrue("The strings 'u r' and 'ú r' should be sorted with 'ú r' "
+                   + "last by cached collator",
+                   new CachedCollator(Collator.getInstance(DA)).
+                       compare("u r", "ú r") < 0);
+        assertTrue("The strings 'ur' and 'U' should be sorted with 'U' "
+                   + "first by cached collator",
+                   new CachedCollator(Collator.getInstance(DA)).
+                       compare("ur", "U") > 0);
+    }
 }
