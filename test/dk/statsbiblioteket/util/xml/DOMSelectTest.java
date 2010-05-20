@@ -1,13 +1,11 @@
 package dk.statsbiblioteket.util.xml;
 
-import dk.statsbiblioteket.util.Files;
 import dk.statsbiblioteket.util.Strings;
 import junit.framework.TestCase;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,8 +20,11 @@ public class DOMSelectTest extends TestCase {
 
     static final String SIMPLE_XML =
         DOM.XML_HEADER +
-        "<body>"+
+        "<body version=\"1.0\" xmlns=\"http://statsbiblioteket.dk/2010/Body\">"+
         "  <double>1.1234</double>"+
+        "  <sub>" +
+        "    <inner>is</inner>" +
+        "  </sub>" +
         "  <boolean>true</boolean>"+
         "  <string>foobar</string>"+
         "  <integer>27</integer>"+
@@ -36,6 +37,7 @@ public class DOMSelectTest extends TestCase {
 
     Document dom;
 
+    @Override
     public void setUp() {
         clearXPathCache();
         dom = stringToDOM(SIMPLE_XML);
@@ -108,10 +110,19 @@ public class DOMSelectTest extends TestCase {
         assertEquals(0, l.getLength());
 
         // We use /body/node() because /body/* doesn't select the text nodes
-        l = selectNodeList(dom, "/body/node()");
+            l = selectNodeList(dom, "/body/node()");
         NodeList expected = dom.getFirstChild().getChildNodes(); 
         assertSame(expected.getLength(), l.getLength());
-        assertEquals(8, l.getLength());
+        assertEquals(10, l.getLength());
+        boolean subExist = false;
+        for(int i=0; i<expected.getLength(); i++) {
+            if(expected.item(i).getNodeName().equals("sub")) {
+                subExist = true;
+            }
+        }
+        if(!subExist) {
+            fail("'sub' isn't found");
+        }
     }
 
     public void threadTest(final boolean blowCache) throws Exception {
@@ -162,6 +173,7 @@ public class DOMSelectTest extends TestCase {
         }
     }
 
+    // TODO not stable, reason should be found.
     public void testThreadsBlowCache() throws Exception {
         threadTest(true);
     }
