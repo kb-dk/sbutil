@@ -15,7 +15,7 @@ public class XPathSelectorImplTest extends TestCase {
         DOM.XML_HEADER +
         "<body xmlns=\"http://example.com/default\" xmlns:ex=\"http://example.com/ex\">"+
         "  <ex:double>1.1234</ex:double>"+
-        "  <ex:boolean>true</ex:boolean>"+
+        "  <ex:boolean att1=\"true\" att=\"false\">true</ex:boolean>"+
         "  <string>foobar</string>"+
         "  <integer>27</integer>"+
         "</body>";
@@ -23,6 +23,7 @@ public class XPathSelectorImplTest extends TestCase {
     Document dom;
     XPathSelector selector;
 
+    @Override
     public void setUp() {
         selector = DOM.createXPathSelector("ex", "http://example.com/ex",
                                            "foo", "http://example.com/default");
@@ -64,6 +65,25 @@ public class XPathSelectorImplTest extends TestCase {
 
         b = selector.selectBoolean(dom, "/foo:body/ex:boolean");
         assertEquals(Boolean.TRUE, b);
+
+        // Test of XPathSelectImpl simplification 
+        b = selector.selectBoolean(dom, "/foo:body/ex:boolean/@att", false);
+        assertEquals(Boolean.FALSE, b);
+
+        b = selector.selectBoolean(dom, "/foo:body/ex:boolean/@att", true);
+        assertEquals(Boolean.FALSE, b);
+
+        b = selector.selectBoolean(dom, "/foo:body/ex:boolean/@att1", false);
+        assertEquals(Boolean.TRUE, b);
+
+        b = selector.selectBoolean(dom, "/foo:body/ex:boolean/@att1", true);
+        assertEquals(Boolean.TRUE, b);
+
+        b = selector.selectBoolean(dom, "/foo:body/ex:boolean/@nonExisting", true);
+        assertEquals(Boolean.TRUE, b);
+
+        b = selector.selectBoolean(dom, "/foo:body/ex:boolean/@nonExisting", false);
+        assertEquals(Boolean.FALSE, b);
     }
 
     public void testSelectString() {
