@@ -1,4 +1,25 @@
 =========================
+2010-05-20: SB Util 0.5.0
+=========================
+
+ * Bugfix: Fixed XPathSelectorImpl.selectBoolean error when selecting a 
+ 	 				 'false' value, when default value also was 'false'. This fix
+					 simplified selectBoolean greatly.
+					 Test cases updated.
+
+=========================
+2010-xx-xx: SB Util 0.4.9
+=========================
+
+ * Missing
+
+=========================
+2009-xx-xx: SB Util 0.4.8
+=========================
+
+ * Missing
+
+=========================
 2009-09-24: SB Util 0.4.7
 =========================
 
