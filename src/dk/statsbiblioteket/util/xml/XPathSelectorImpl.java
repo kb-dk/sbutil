@@ -63,19 +63,11 @@ public class XPathSelectorImpl implements XPathSelector {
 
     @Override
     public Boolean selectBoolean(Node node, String xpath, Boolean defaultValue){
-        if (defaultValue == null || Boolean.TRUE.equals(defaultValue)) {
-            // Using QName.BOOLEAN will always return false if it is not found
-            // therefore we must try and look it up as a string
-            String tmp = selectString(node, xpath, null);
+        String tmp = selectString(node, xpath, null);
             if (tmp == null) {
                 return defaultValue;
             }
-            return Boolean.parseBoolean(tmp);
-        } else {
-            // The defaultValue is false so we can always just return what
-            // we take from the XPath expression
-            return (Boolean)selectObject(node, xpath, XPathConstants.BOOLEAN);
-        }
+        return Boolean.parseBoolean(tmp);
     }
 
     @Override
