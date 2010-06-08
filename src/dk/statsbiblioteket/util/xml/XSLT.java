@@ -20,21 +20,29 @@
 package dk.statsbiblioteket.util.xml;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import dk.statsbiblioteket.util.Strings;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLFilter;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.XMLReaderFactory;
 
-import javax.xml.transform.*;
-import javax.xml.transform.sax.SAXSource;
+import javax.xml.transform.ErrorListener;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.Map;
@@ -119,17 +127,18 @@ public class XSLT {
     private static ErrorListener getErrorListener() {
         if (ERRORLISTENER == null) {
             ERRORLISTENER = new ErrorListener() {
+                @Override
                 public void warning(TransformerException exception)
                                                    throws TransformerException {
                     warnlog.debug("A transformer warning occured", exception);
                 }
-
+                @Override
                 public void error(TransformerException exception)
                                                    throws TransformerException {
                     throw new TransformerException(
                             "A Transformer error occured", exception);
                 }
-
+                @Override
                 public void fatalError(TransformerException exception)
                                                    throws TransformerException {
                     throw new TransformerException(
