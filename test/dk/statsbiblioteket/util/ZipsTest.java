@@ -48,7 +48,6 @@ public class ZipsTest extends TestCase {
     }
     
     public void tearDown () {
-        
     } 
 
     /**
@@ -56,6 +55,7 @@ public class ZipsTest extends TestCase {
      */
     public void testZipDir () throws Exception {
         Zips.zip(inputDir, outputFile + "-DIR.zip", true);
+        new File(outputFile + "-DIR.zip").delete();
     }
     
     /**
@@ -63,6 +63,7 @@ public class ZipsTest extends TestCase {
      */
     public void testZipFile () throws Exception {
         Zips.zip (inputFile, outputFile + "-FILE.zip", true);
+        new File(outputFile + "-FILE.zip").delete();
     }
     
     /**
@@ -78,7 +79,7 @@ public class ZipsTest extends TestCase {
         } catch (FileAlreadyExistsException e) {
             gotException = true;
         }
-        
+        new File(outputFile + ".zip").delete();
         assertTrue("Overwriting with overwrite=false should throw a FileAlreadyExistsException", gotException);
     }
 
@@ -164,7 +165,7 @@ public class ZipsTest extends TestCase {
             System.out.println("");
         }
 
-        // TODO: Proper clean-up?
+        new File(zipFile.toString()).delete();
     }
 
     private void assertPermissionsEquals(String message, String file,
