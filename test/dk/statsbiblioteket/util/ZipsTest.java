@@ -22,11 +22,10 @@
  */
 package dk.statsbiblioteket.util;
 
-import dk.statsbiblioteket.util.FileAlreadyExistsException;
-import dk.statsbiblioteket.util.Zips;
 import junit.framework.TestCase;
 
-import java.io.*;
+import java.io.File;
+import java.io.StringWriter;
 import java.util.Arrays;
 
 /**
@@ -38,8 +37,10 @@ public class ZipsTest extends TestCase {
     String inputFile; // test input file
     String tmpDir; // tmp dir for the sbutil installation
     String outputFile; // test output zip file
+    String dataDir; // the data dir for test
     
     public void setUp () {
+        dataDir = "test/data/xml/";
         inputDir = System.getProperty ("user.dir") + File.separator + "classes";
         inputFile = System.getProperty ("user.dir") + File.separator + "README";
         tmpDir = System.getProperty ("user.dir") + File.separator + "tmp";
@@ -54,7 +55,7 @@ public class ZipsTest extends TestCase {
      * Test if we can zip a directory with errors
      */
     public void testZipDir () throws Exception {
-        Zips.zip (inputDir, outputFile + "-DIR.zip", true);
+        Zips.zip(inputDir, outputFile + "-DIR.zip", true);
     }
     
     /**
@@ -228,5 +229,20 @@ public class ZipsTest extends TestCase {
         } catch (NullPointerException e) {
             // Expected
         }
+    }
+
+    public void testGetZipEntry() throws Exception {
+        String nameSpaceFile = "xml/namespace_input.xml";
+        File zipFile = new File(outputFile + "-DIR.zip");
+        Zips.zip(dataDir, zipFile.getAbsolutePath(), true);
+
+
+        byte[] b = Zips.getZipEntry(zipFile, "non_exsiting_file");
+        assertNull(b);            
+        b = Zips.getZipEntry(zipFile, nameSpaceFile);
+        assertNotNull(b.length);
+        assertTrue(b.length > 0);
+
+        zipFile.delete();
     }
 }

@@ -40,15 +40,20 @@ import java.util.zip.GZIPOutputStream;
 public class Zips {
 
     /**
-     * Zips a file, or recursicvely zip a folder, and write the resulting zip file to a given location.
-     * This method will create all parent folders necessary for storing the output file.
-     * @param path file or folder to zip
-     * @param outputFilename name of the output zip file
-     * @param overwrite whether or not to overwrite if the <code>outputFilename</code> already exists
-     * @throws IOException
-     * @throws FileAlreadyExistsException Thrown if <code>overwrite</code> is <code>true</code> and <code>outputFilename</code> already exists.
+     * Zips a file, or recursively zip a folder, and write the resulting zip
+     * file to a given location.
+     * This method will create all parent folders necessary for storing the
+     * output file.
+     * @param path File or folder to zip.
+     * @param outputFilename Name of the output zip file.
+     * @param overwrite Whether or not to overwrite if the
+     * <code>outputFilename</code> already exists.
+     * @throws IOException if error occur while handling files.
+     * @throws FileAlreadyExistsException Thrown if <code>overwrite</code> is
+     * <code>true</code> and <code>outputFilename</code> already exists.
      */
-    public static void zip (String path, String outputFilename, boolean overwrite) throws IOException {    
+    public static void zip(String path, String outputFilename,
+                                         boolean overwrite) throws IOException {
         File outFile =  new File (outputFilename);
         if (!overwrite) {
             if (outFile.exists()) {
@@ -57,7 +62,11 @@ public class Zips {
         }
 
         // Ensure parent dir exists
-        outFile.getParentFile().mkdirs();
+        if(!outFile.getParentFile().exists() &&
+                                            !outFile.getParentFile().mkdirs()) {
+            throw new IOException("Error creating '" + outFile.getParentFile()
+                                  + "'");
+        }
 
         //validate();
 
@@ -77,17 +86,23 @@ public class Zips {
 
     /**
      * Unzip a zip file to a target directory.
-     * @param zipFilename path to the zip file to extract
-     * @param outputDir directory to place output in
-     * @param overwrite overwrite files
-     * @throws FileAlreadyExistsException if trying to overwrite a file and overwrite==False
-     * @throws IOException
-     * @throws dk.statsbiblioteket.util.FileAlreadyExistsException if <code>overwrite</code> is <code>true</code> and <code>outpuDir</code> contains a file that would be overwritten by the extraction of the input zip file.
+     * @param zipFilename Path to the zip file to extract.
+     * @param outputDir Directory to place output in.
+     * @param overwrite Overwrite files.
+     * @throws IOException If error occur when handling files. 
+     * @throws FileAlreadyExistsException If <code>overwrite</code> is
+     * <code>true</code> and <code>outpuDir</code> contains a file that would be
+     * overwritten by the extraction of the input zip file.
      */
-    public static void unzip (String zipFilename, String outputDir, boolean overwrite) throws IOException {
-        new File(outputDir).mkdirs();
+    public static void unzip(String zipFilename, String outputDir,
+                                         boolean overwrite) throws IOException {
+        File outputFileDir = new File(outputDir);
+        if(!outputFileDir.exists() && !outputFileDir.mkdirs()) {
+            throw new IOException("Error creating output directory '"
+                                  + outputDir + "'");
+        }
 
-        BufferedOutputStream dest = null;
+        BufferedOutputStream dest;
         FileInputStream fis = new FileInputStream(zipFilename);
         ZipInputStream zis = new ZipInputStream(new BufferedInputStream(fis));
         ZipEntry entry;
@@ -97,17 +112,17 @@ public class Zips {
             String newFile = outputDir + File.separator + entry.getName();
 
             if (!overwrite) {
-                if (new File (newFile).exists()) {
+                if (new File(newFile).exists()) {
                     throw new FileAlreadyExistsException(newFile);
                 }
             }
 
             // Create parent dir
-            new File (newFile).getParentFile().mkdirs();
+            new File(newFile).getParentFile().mkdirs();
 
             if (newFile.endsWith(File.separator)) {
                 // this is a directory entry
-                new File (newFile).mkdir();
+                new File(newFile).mkdir();
                 continue;
             }
 
@@ -124,7 +139,19 @@ public class Zips {
 
     }
 
-    private static void addToZip (String parentPath, String filename, ZipOutputStream zipStream) throws IOException {
+    /**
+     * Add file to ZIP output stream.
+     * Note: If filename is a directory this is treated as a directory and the
+     * folder is added recursively.
+     * @param parentPath The path to the directory containing the file.
+     * @param filename The filename inside the parentPath to add to output
+     * stream.
+     * @param zipStream The ZIP output stream.
+     * @throws IOException Thrown if error handling the input file or output
+     * ZIP stream.
+     */
+    private static void addToZip(String parentPath, String filename,
+                                 ZipOutputStream zipStream) throws IOException {
         File file = new File(filename);
 
         if (file.isDirectory()) {
@@ -136,7 +163,9 @@ public class Zips {
             if (parentPath.equals("")) {
                 zipStream.putNextEntry(new ZipEntry(file.getName()));
             } else {
-                zipStream.putNextEntry(new ZipEntry(parentPath + File.separator + file.getName()));
+                zipStream.putNextEntry(new ZipEntry(parentPath
+                                                    + File.separator
+                                                    + file.getName()));
             }
             
 
@@ -148,14 +177,27 @@ public class Zips {
         }
     }
 
-    private static void addFolderToZip (String parentPath, String filename, ZipOutputStream zipStream) throws IOException {
+    /**
+     * Add a folder recursively to the file.
+     * Note if path given is a file, this file will be added alone.
+     * @param parentPath The path to the directory containing the folder, which
+     * should be added to the ZIP output stream.
+     * @param filename The folder inside the parentPath to add to output stream.
+     * @param zipStream The ZIP output stream.
+     * @throws IOException Thrown if error handling the input file or output
+     * ZIP stream.
+     */
+    private static void addFolderToZip(String parentPath, String filename,
+                                 ZipOutputStream zipStream) throws IOException {
         File folder = new File(filename);
 
         for (String child : folder.list()) {
             if (parentPath.equals("")) {
-                addToZip(folder.getName(), filename + File.separator + child, zipStream);
+                addToZip(folder.getName(), filename + File.separator
+                                            + child, zipStream);
             } else {
-                addToZip(parentPath + File.separator + folder.getName(), filename + File.separator + child, zipStream);
+                addToZip(parentPath + File.separator + folder.getName(),
+                         filename + File.separator + child, zipStream);
             }
         }
 
@@ -164,13 +206,14 @@ public class Zips {
     /**
      * GZip the contents of a byte array and return a new byte array containing
      * the compressed data.
-     * @param data the data to compress
-     * @return the gzip compressed data
+     * @param data The data to compress.
+     * @return the gzip compressed data.
      */
-    public static byte[] gunzipBuffer (byte[] data) {
+    public static byte[] gunzipBuffer(byte[] data) {
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(data));
+            GZIPInputStream in = new GZIPInputStream(
+                    new ByteArrayInputStream(data));
             byte[] buf = new byte[2048];
             while (true) {
                 int size = in.read(buf);
@@ -188,10 +231,10 @@ public class Zips {
 
     /**
      * Unzip a gzip compressed byte array of data.
-     * @param data the compressed data to gunzip
-     * @return the uncompressed data
+     * @param data The compressed data to gzip.
+     * @return The uncompressed data.
      */
-    public static byte[] gzipBuffer (byte[] data) {
+    public static byte[] gzipBuffer(byte[] data) {
         try {
             ByteArrayOutputStream buf = new ByteArrayOutputStream();
             GZIPOutputStream zip = new GZIPOutputStream(buf);
@@ -202,6 +245,36 @@ public class Zips {
             throw new RuntimeException ("IOException while gunzipping buffer."
                                         + " This should never happen", e);
         }
+    }
+
+    /**
+     * Read the (unzipped) contents of a single zip entry within a zip file.
+     *
+     * @param zipFile Zip file to read from.
+     * @param entryName Name of entry withing the zip file.
+     * @return A byte array with the unpacked data, or null if the entry is
+     *         not found within the zip file.
+     * @throws IOException if there is an error reading the zip file.
+     */
+    public static byte[] getZipEntry(File zipFile, String entryName)
+                                                            throws IOException {
+        ZipInputStream zip = new ZipInputStream(new FileInputStream(zipFile));
+        ByteArrayOutputStream out = new ByteArrayOutputStream ();
+        byte[] buf = new byte[2048];
+        int count;
+
+        ZipEntry entry;
+        while ((entry = zip.getNextEntry()) != null) {
+            if (entry.getName().equals(entryName)) {
+                while ((count = zip.read(buf, 0, buf.length)) != -1) {
+                    out.write(buf, 0, count);
+                }
+                return out.toByteArray();
+            } else {
+                zip.closeEntry();
+            }
+        }
+        return null;
     }
 
 }
