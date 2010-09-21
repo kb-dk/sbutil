@@ -18,24 +18,28 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 package dk.statsbiblioteket.util.qa;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Documented;
 
 /**
- * Annotation containing all information relavant to extracting QA reports
+ * Annotation containing all information relevant to extracting QA reports.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 public @interface QAInfo {
-    public static final String JAVADOCS_NEEDED = "Javadocs needed";
-    public static final String UNFINISHED_CODE = "Unfinished code";
-    public static final String FAULTY_CODE =     "Faulty code";
-    public static final String MESSY_CODE =      "Messy code";
+    /** Java doc needed. */
+    String JAVADOCS_NEEDED = "Javadocs needed";
+    /** Code not finished. */
+    String UNFINISHED_CODE = "Unfinished code";
+    /** Code isn't working properly. */
+    String FAULTY_CODE = "Faulty code";
+    /** Code is messy. */
+    String MESSY_CODE = "Messy code";
 
 
     /**
@@ -104,7 +108,6 @@ public @interface QAInfo {
      * The current revision of the annotated element. Mostly for use on classes.
      * It is suggested to use the CVS {@code Id} keyword for CVS controlled
      * repositories.
-     * @return  a free form string describing the revision
      */
     String revision() default "";
 
@@ -115,37 +118,32 @@ public @interface QAInfo {
     String deadline() default "";
 
     /**
-     * <p>Developers responsible for revieving this class or method.</p>
-     * 
+     * <p>Developers responsible for reviewing this class or method.</p>
+     *
      * <p>Fx <code>{"mke", "te"}</code>  - use same convention as
      * {@link #author}.</p>
      *
      * <p>It is advised to keep a list of all reviewers here, with the last
      * one in the list being the last person to review the code. This way it
      * will be easy to construct a simple audit trail for the code.</p>
-     *
-     * @return the login of the developers responsible for reviewing this item
      */
-    String[] reviewers() default {};  // Note use of array
+    String[] reviewers() default { }; // Note use of array
 
     /**
-     * A freeform comment that can be included in QA reports
+     * A freeform comment that can be included in QA reports.
      * @return
      */
     String comment() default "";
 
     /**
-     * The {@link Level} of the annotated element
+     * The {@link Level} of the annotated element.
      * @return
      */
     Level level() default Level.UNDEFINED;
 
     /**
-     * The {@link State} of the annotated element
+     * The {@link State} of the annotated element.
      * @return
      */
     State state() default State.UNDEFINED;
-
-
-
 }

@@ -18,14 +18,10 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 package dk.statsbiblioteket.util.qa;
 
-import java.lang.reflect.Member;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 
 /**
@@ -39,25 +35,37 @@ import java.lang.reflect.AnnotatedElement;
 @QAInfo(state = QAInfo.State.QA_NEEDED,
         level = QAInfo.Level.NORMAL)
 public class ReportElement {
-
+    /** Element type. */
     private ElementType type;
+    /** The QA info about the element. */
     private QAInfo qaInfo;
+    /** The name of the element. */
     private String name;
+    /** The parent element. */
     private String parent;
+    /** The file name. */
     private String filename;
+    /** The base source directory. */
     private String baseSourceDir;
+    /** The data. */
     private String data;
 
+    /** Element types. */
     public enum ElementType {
+        /** Undefined element. */
         UNDEFINED,
+        /** Class element. */
         CLASS,
+        /** Method element. */
         METHOD,
+        /** Field element. */
         FIELD,
+        /** Error element. */
         ERROR
     };
 
     /**
-     * Create a new ReportElement
+     * Create a new ReportElement.
      * @param type The type of element this is
      * @param name name within parent or full name for classes
      * @param parent the class containing this element or null for classes
@@ -66,8 +74,9 @@ public class ReportElement {
      * @param qaInfo the annotation on the element, this argument is allowed to
      *               be null
      */
-    public ReportElement (ElementType type, String name, String parent,
-                          String baseSourceDir, String filename, QAInfo qaInfo) {
+    public ReportElement(final ElementType type, final String name,
+                         final String parent, final String baseSourceDir,
+                         final String filename, final QAInfo qaInfo) {
         this.type = type != null ? type : ElementType.UNDEFINED;
         this.name = name;
         this.parent = parent;
@@ -80,21 +89,30 @@ public class ReportElement {
     /**
      * Beware this method is allowed to return null in case no annotation
      * is present.
-     * @return the annotation or null if none is present
+     * @return The annotation or null if none is present.
      */
-    public QAInfo getQAInfo () {
-        return qaInfo; 
+    public final QAInfo getQAInfo() {
+        return qaInfo;
     }
 
-    public ElementType getType () {
+    /**
+     * @return The element type.
+     */
+    public final ElementType getType() {
         return type;
     }
 
-    public String getShortName () {
+    /**
+     * @return The short name.
+     */
+    public final String getShortName() {
         return name.substring(name.lastIndexOf(".") + 1);
     }
 
-    public String getName () {
+    /**
+     * @return The name concatenated with the parent.
+     */
+    public final String getName() {
         if (parent != null) {
             return parent + "#" + name;
         }
@@ -105,33 +123,41 @@ public class ReportElement {
     /**
      * The name of the class containing this element or {@code null} in case
      * this the element is a class itself.
-     * @return
+     * @return The parent.
      */
-    public String getParent () {
+    public final String getParent() {
         return parent;
     }
 
-    public String getBaseDir () {
+    /**
+     * @return The base directory.
+     */
+    public final String getBaseDir() {
         return baseSourceDir;
     }
 
     /**
      * The file containing the source code for this element.
-     * @return
+     * @return The file containing the source code for this element.
      */
-    public String getFilename () {
+    public final String getFilename() {
         return filename;
     }
 
-    public String toString () {
-        String res = "<" + type + "> " + getName() + "\n";        
+    /**
+     * @return A String representation of this object.
+     */
+    @Override
+    public final String toString() {
+        String res = "<" + type + "> " + getName() + "\n";
 
         res += "\tfile: " + filename;
 
         if (qaInfo == null) {
             res += "\n\tNo QAInfo";
         } else {
-            res += "\n\t" + qaInfo.toString().replace(", ", ",\n\t\t").replace("(", "(\n\t\t");
+            res += "\n\t" + qaInfo.toString().replace(", ", ",\n\t\t")
+                        .replace("(", "(\n\t\t");
         }
 
         if (data != null) {
@@ -147,19 +173,18 @@ public class ReportElement {
      * <p>The additional data is displayed at the discretion of the
      * {@link Report} displaying the report elements.</p>
      *
-     * @param s The string to add
+     * @param s The string to add.
      */
-    public void setData(String s) {
+    public final void setData(final String s) {
         data = s;
     }
 
     /**
      * Get additional data, possibly {@code null}, for this element.
      * @see #setData
-     * @return a string representation of the data
+     * @return A string representation of the data
      */
-    public String getData () {
+    public final String getData() {
         return data;
     }
-
 }

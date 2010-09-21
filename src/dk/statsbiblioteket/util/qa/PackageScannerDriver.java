@@ -18,24 +18,34 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 package dk.statsbiblioteket.util.qa;
 
-import org.apache.commons.cli.*;
-
-import java.util.List;
-import java.io.File;
-
 import dk.statsbiblioteket.util.Files;
+
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 
 /**
  *
  */
-public class PackageScannerDriver {
+public final class PackageScannerDriver {
+    /** Private constructor, to make sure there are no object of this kind. */
+    private PackageScannerDriver() { };
 
-
-    private static void printHelp (Options options) {
+    /**
+     * Print help.
+     * @param options The options give to print this help message.
+     */
+    private static void printHelp(final Options options) {
         String usage = "java -jar qaScan.jar [options] <files|directories>";
 
         String msg =
@@ -49,9 +59,12 @@ public class PackageScannerDriver {
     }
 
     /**
-     *
+     * @param args The command line arguments.
+     * @throws IOException If command line arguments can't be passed or there
+     * is an error reading class files.
      */
-    public static void main (String[] args) throws Exception {
+    @SuppressWarnings("deprecation")
+    public static void main(final String[] args) throws IOException {
         Report report;
         CommandLine cli = null;
         String reportType, projectName, baseSrcDir, targetPackage;
@@ -62,23 +75,27 @@ public class PackageScannerDriver {
         Options options = new Options();
         options.addOption("h", "help", false, "Print help message and exit");
         options.addOption("n", "name", true, "Project name, default 'Unknown'");
-        options.addOption("o", "output", true, "Type of output, 'plain' or 'html', default is html");
-        options.addOption("p", "package", true, "Only scan a particular package in input dirs, use dotted package notation to refine selections");
-        options.addOption("s", "source-dir", true, "Base source dir to use in report, can be a URL. "
-                                                 + "@FILE@ and @MODULE@ will be escaped");
+        options.addOption("o", "output", true,
+                          "Type of output, 'plain' or 'html', default is html");
+        options.addOption("p", "package", true,
+                "Only scan a particular package in input dirs, use dotted "
+                + "package notation to refine selections");
+        options.addOption("s", "source-dir", true,
+                "Base source dir to use in report, can be a URL. "
+                + "@FILE@ and @MODULE@ will be escaped");
 
         // Parse and validate command line
         try {
             cli = cliParser.parse(options, args);
             targets = cli.getArgs();
-            if (args.length == 0 ||
-                targets.length == 0 ||
-                cli.hasOption("help")) {
-                throw new ParseException("Not enough arguments, no input files");
+            if (args.length == 0 || targets.length == 0
+                || cli.hasOption("help")) {
+                throw new ParseException(
+                                        "Not enough arguments, no input files");
             }
         } catch (ParseException e) {
             printHelp(options);
-            System.exit (1);
+            System.exit(1);
         }
 
         // Extract information from command line
@@ -91,7 +108,7 @@ public class PackageScannerDriver {
         baseSrcDir = cli.getOptionValue("source-dir") != null ?
               cli.getOptionValue("source-dir") : System.getProperty("user.dir");
 
-        targetPackage = cli.getOptionValue("package")!= null ?
+        targetPackage = cli.getOptionValue("package") != null ?
                                              cli.getOptionValue("package") : "";
         targetPackage = targetPackage.replace(".", File.separator);
 
@@ -99,13 +116,13 @@ public class PackageScannerDriver {
         if ("plain".equals(reportType)) {
             report = new BasicReport();
         } else {
-            report = new HTMLReport (projectName, System.out, baseSrcDir);
+            report = new HTMLReport(projectName, System.out, baseSrcDir);
         }
 
         // Do actual scanning of provided targets
         for (String target : targets) {
             PackageScanner scanner;
-            File f = new File (target);
+            File f = new File(target);
 
             if (f.isDirectory()) {
                 scanner = new PackageScanner(report, f, targetPackage);
@@ -118,7 +135,5 @@ public class PackageScannerDriver {
 
         // Cloce the report before we exit
         report.end();
-
     }
-
 }

@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 package dk.statsbiblioteket.util.qa;
 
@@ -26,7 +26,7 @@ import java.io.OutputStream;
 
 /**
  * Output handler for the {@link PackageScanner}. The default output goes
- * to {@link System#out} but this can be changed with {@link #setOutputStream}. 
+ * to {@link System#out} but this can be changed with {@link #setOutputStream}.
  * @see HTMLReport
  */
 @QAInfo(state = QAInfo.State.QA_NEEDED,
@@ -39,17 +39,17 @@ public interface Report {
      * no {@link QAInfo} annotation is present on the element.
      * @param element element to add
      */
-    public void add (ReportElement element);
+    void add(ReportElement element);
 
     /**
      * Make sure the report is properly ended. No more elements will
      * be added beyond this point.
      */
-    public void end ();
+    void end();
 
     /**
      * Set the stream to use for output. Default is {@link System#out}.
      * @param out output stream to print the report to
      */
-    public void setOutputStream (OutputStream out);
+    void setOutputStream(OutputStream out);
 }

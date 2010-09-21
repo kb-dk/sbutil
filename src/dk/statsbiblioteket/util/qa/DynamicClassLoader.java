@@ -18,29 +18,46 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 package dk.statsbiblioteket.util.qa;
 
-
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Package private class to help load class files on the fly.
  */
-@QAInfo(state=QAInfo.State.QA_NEEDED,
-        level=QAInfo.Level.NORMAL)
+@QAInfo(state = QAInfo.State.QA_NEEDED,
+        level = QAInfo.Level.NORMAL)
 class DynamicClassLoader extends ClassLoader {
-    public DynamicClassLoader (ClassLoader parent) {
+    /** Private buffer size. */
+    private static final int BUFFER_SIZE = 2048;
+
+    /**
+     * @param parent The class loader.
+     */
+    public DynamicClassLoader(ClassLoader parent) {
         super(parent);
     }
 
-    public Class loadClass (File baseDir, String classPath) throws IOException {
-        if (! classPath.endsWith(".class")) {
+    /**
+     * Loads a given class.
+     * @param baseDir The base directory.
+     * @param classPath The class' class path.
+     * @return The loaded class.
+     * @throws IOException If error occur while loading class.
+     */
+    public Class loadClass(File baseDir, String classPath) throws IOException {
+        final int classPosition = 6;
+        if (!classPath.endsWith(".class")) {
             throw new IllegalArgumentException("Argument is not a class file");
         }
 
-        File classFile = new File (baseDir, classPath);
+        File classFile = new File(baseDir, classPath);
 
         if (!classFile.isFile() || !classFile.exists()) {
             throw new FileNotFoundException(classFile + " not a file or "
@@ -48,24 +65,26 @@ class DynamicClassLoader extends ClassLoader {
         }
 
         // Read the class file into memory
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream ();
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         FileInputStream file = new FileInputStream(classFile);
-        byte[] buffer = new byte[2048];
+        byte[] buffer = new byte[BUFFER_SIZE];
         int len;
         while ((len = file.read(buffer)) > 0) {
-            bytes.write (buffer, 0, len);
+            bytes.write(buffer, 0, len);
         }
 
         // Get data needed to build class
-        String className = classPath.substring(0, classPath.length() -6 );
-        className = className.replace(File.separator, ".");        
+        String className = classPath.substring(0,
+                                            classPath.length() - classPosition);
+        className = className.replace(File.separator, ".");
         byte[] classData = bytes.toByteArray();
 
         // Actual loading of class, we have to check that the class has not
         // already been loaded automatically by the parent class loader
         Class loadedClass = findLoadedClass(className);
         if (loadedClass == null) {
-            loadedClass = defineClass(className, classData, 0, classData.length);
+            loadedClass = defineClass(className, classData, 0,
+                                      classData.length);
         }
 
         //resolveClass (loadedClass);

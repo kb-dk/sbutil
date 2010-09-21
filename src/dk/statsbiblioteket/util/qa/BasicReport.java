@@ -18,7 +18,7 @@
  *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
  */
 package dk.statsbiblioteket.util.qa;
 
@@ -32,14 +32,22 @@ import java.io.PrintStream;
 @QAInfo(state = QAInfo.State.QA_NEEDED,
         level = QAInfo.Level.NORMAL)
 public class BasicReport implements Report {
-
+    /** Output stream. */
     private PrintStream out;
 
-    public BasicReport () {
+    /**
+     * Creates a basic report to {@link System#out}.
+     */
+    public BasicReport() {
         out = System.out;
     }
 
-    public void add(ReportElement element) {
+    /**
+     * Adds an element to the report.
+     * @param element The element to add.
+     */
+    @Override
+    public final void add(ReportElement element) {
         if (element.getType() != ReportElement.ElementType.ERROR) {
             // Ignore elements without QAInfo
             if (element.getQAInfo() == null) {
@@ -48,21 +56,28 @@ public class BasicReport implements Report {
 
             // Filter out elements where the annotation specifically tells
             // us to carry on
-            if (QAInfo.Level.NOT_NEEDED == element.getQAInfo().level() ||
-                    QAInfo.State.QA_OK == element.getQAInfo().state()) {
+            if (QAInfo.Level.NOT_NEEDED == element.getQAInfo().level()
+                    || QAInfo.State.QA_OK == element.getQAInfo().state()) {
                 return;
             }
         }
-        out.println (element);
+        out.println(element);
     }
 
+    /**
+     * Nothing done here.
+     */
+    @Override
     public void end() {
-        // no action nedded
+        // no action needed
     }
 
-    public void setOutputStream(OutputStream out) {
+    /**
+     * Override the output stream.
+     * @param out The new output stream.
+     */
+    @Override
+    public final void setOutputStream(OutputStream out) {
         this.out = new PrintStream(out);
     }
-
-
 }
