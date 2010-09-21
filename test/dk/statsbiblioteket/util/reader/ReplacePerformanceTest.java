@@ -4,16 +4,21 @@
  */
 package dk.statsbiblioteket.util.reader;
 
-import junit.framework.TestCase;
+import dk.statsbiblioteket.util.Profiler;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.util.*;
-import java.io.Reader;
-import java.io.IOException;
-import java.io.StringWriter;
-
-import dk.statsbiblioteket.util.Profiler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -44,7 +49,7 @@ public class ReplacePerformanceTest extends TestCase {
 
 
     public void testSmall() throws IOException {
-        int GETS = 100000;
+        int GETS = 10000; //100000;
         int RUNS = 5;
         Map<String, String> replacements = getSmallReplacements();
 
@@ -58,7 +63,7 @@ public class ReplacePerformanceTest extends TestCase {
         int RUNS = 2;
         int REPLACEMENT_TO_MAXLENGTH = 5;
 
-        int[] REPLACEMENT_COUNTS = {10, 100, 1000, 10000, 1000, 100, 10};
+        int[] REPLACEMENT_COUNTS = {10, 100, 1000, /*10000, 1000,*/ 100, 10};
         int[] REPLACEMENT_FROM_MAXLENGTHS = {1, 5, 10};
         for (int rCount: REPLACEMENT_COUNTS) {
             for (int rMaxLength: REPLACEMENT_FROM_MAXLENGTHS) {
@@ -75,12 +80,12 @@ public class ReplacePerformanceTest extends TestCase {
     }
 
     public void testCreation() throws Exception {
-        int REPLACEMENTS = 10000;
-        int RUNS = 2;
-        int REPLACEMENT_TO_MAXLENGTH = 5;
+        int REPLACEMENTS = 100; // 10000;
+        int RUNS = 1; //2;
+        int REPLACEMENT_TO_MAXLENGTH = 2; //5;
 
-        int[] REPLACEMENT_COUNTS = {10, 100, 1000, 10000, 1000, 100, 10};
-        int[] REPLACEMENT_FROM_MAXLENGTHS = {1, 5, 10};
+        int[] REPLACEMENT_COUNTS = {10, 100, 1000, /*10000, 1000,*/ 100, 10};
+        int[] REPLACEMENT_FROM_MAXLENGTHS = {1, 5/*, 10*/};
         for (int rCount: REPLACEMENT_COUNTS) {
             for (int rMaxLength: REPLACEMENT_FROM_MAXLENGTHS) {
                 log.info("Replacement count: " + rCount
@@ -89,7 +94,7 @@ public class ReplacePerformanceTest extends TestCase {
                 Map<String, String> replacements = getRangeReplacements(
                         rCount, rMaxLength, REPLACEMENT_TO_MAXLENGTH);
                 for (int i = 0 ; i < RUNS ; i++) {
-                    createSpeedTest(RUNS, REPLACEMENTS, 100, replacements);
+                    createSpeedTest(RUNS, REPLACEMENTS, 10/*0*/, replacements);
                 }
             }
         }
