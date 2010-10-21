@@ -8,7 +8,7 @@ import java.io.IOException;
  * Utillity class for working with bytes, bytearrays, and strings.
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
-        state = QAInfo.State.IN_DEVELOPMENT,
+        state = QAInfo.State.QA_NEEDED,
         author = "kfc, mke",
         reviewers = {"abr, mke"})
 public class Bytes {
