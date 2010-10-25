@@ -20,7 +20,7 @@ public class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
     public LRUCache(int initialCapacity,
                     boolean accessOrder) {
-        super(initialCapacity,(initialCapacity+2)/initialCapacity,accessOrder);
+        super(initialCapacity+1, 0.75f, accessOrder);
         this.initialCapacity = initialCapacity;
     }
 

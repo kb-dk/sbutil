@@ -1,3 +1,7 @@
+2010-10-25 blekinge, toke-sb
+   
+      Feature: Added LRU and time bases caches.
+
 2010-07-29 15:33  hkirk
 
 	* [r254] test/dk/statsbiblioteket/util/ZipsTest.java:

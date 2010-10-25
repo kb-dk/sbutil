@@ -22,9 +22,9 @@ import java.util.*;
  * All the methods in this class are synchronized, which should make this class
  * thread safe
  */
-@QAInfo(state=QAInfo.State.QA_NEEDED,
+@QAInfo(state=QAInfo.State.QA_OK,
         level=QAInfo.Level.NORMAL,
-        author = "abr")
+        author = "abr, te")
 public class  TimeSensitiveCache<K,V>{
 
     private BackingCache<K,Cacheble<V>> elements;
@@ -184,7 +184,7 @@ public class  TimeSensitiveCache<K,V>{
             this.timeToLive = timeToLive;
             this.capacity = initialCapacity;
             this.fixedSize = fixedSize;
-            lastClean = new Date().getTime();
+            lastClean = System.currentTimeMillis();
         }
 
 
@@ -266,7 +266,7 @@ public class  TimeSensitiveCache<K,V>{
             if (!isToOld(lastClean,timeBetweenGC)){
                 return;
             }
-            lastClean = new Date().getTime();
+            lastClean = System.currentTimeMillis();
             if (elements.isEmpty()){
                 return;
             }
@@ -292,8 +292,8 @@ public class  TimeSensitiveCache<K,V>{
          * @return if now-wait < event true
          */
         private boolean isToOld(long event, long wait) {
-            Date now = new Date();
-            if (new Date(event+wait).after(now)){
+            long now = System.currentTimeMillis();
+            if (event + wait > now){
                 return false;
             } else {
                 return true;
@@ -335,7 +335,7 @@ public class  TimeSensitiveCache<K,V>{
          */
         public Cacheble(T object) {
             this.object = object;
-            this.cacheTime = new Date().getTime();
+            this.cacheTime = System.currentTimeMillis();
         }
 
         /**
@@ -359,7 +359,7 @@ public class  TimeSensitiveCache<K,V>{
          * Set the cachetime to NOW from system
          */
         public void refreshCacheTime() {
-            this.cacheTime = new Date().getTime();
+            this.cacheTime = System.currentTimeMillis();
         }
     }
 
