@@ -3,6 +3,9 @@ package dk.statsbiblioteket.util.caching;
 import dk.statsbiblioteket.util.qa.QAInfo;
 import junit.framework.TestCase;
 
+import java.util.Map;
+import java.util.Set;
+
 @QAInfo(state=QAInfo.State.QA_NEEDED,
         level=QAInfo.Level.NORMAL,
         author = "abr")
@@ -26,7 +29,7 @@ public class TimeSensitiveCacheTest extends TestCase {
 
 
     public void testAccessOrderTrueSizeFixed() {
-        TimeSensitiveCache<String, String> cache
+        Map<String, String> cache
                 = new TimeSensitiveCache<String, String>(timeout, true, 3);
         cache.put("test1","test1value");
         cache.put("test2","test2value");
@@ -55,7 +58,7 @@ public class TimeSensitiveCacheTest extends TestCase {
 
     public void testAccessOrderTrueSizeFluid() {
 
-        TimeSensitiveCache<String, String> cache
+        Map<String, String> cache
                 = new TimeSensitiveCache<String, String>(timeout, true);
         cache.put("test1","test1value");
         cache.put("test2","test2value");
@@ -87,7 +90,7 @@ public class TimeSensitiveCacheTest extends TestCase {
 
     public void testAccessOrderFalseSizeFluid() {
 
-        TimeSensitiveCache<String, String> cache
+        Map<String, String> cache
                 = new TimeSensitiveCache<String, String>(timeout, false);
         cache.put("test1","test1value");
         cache.put("test2","test2value");
@@ -121,7 +124,7 @@ public class TimeSensitiveCacheTest extends TestCase {
 
 
     public void testAccessOrderFalseSizeFixed() {
-        TimeSensitiveCache<String, String> cache
+        Map<String, String> cache
                 = new TimeSensitiveCache<String, String>(timeout, false, 3);
         cache.put("test1","test1value");
         cache.put("test2","test2value");
@@ -151,6 +154,23 @@ public class TimeSensitiveCacheTest extends TestCase {
         value = cache.get("test4");
         assertSame("The test4 value should still be test4value","test4value",value);
         assertEquals("The cache should have timed out and cleared, except for the extra element put there",1,cache.size());
+
+    }
+
+    public void testMapSpecificMethods(){
+        Map<String, String> cache
+                = new TimeSensitiveCache<String, String>(timeout, false, 3);
+        cache.put("test1","test1value");
+        cache.put("test2","test2value");
+        cache.put("test3","test3value");
+        cache.put("test4","test4value");
+
+        assertEquals("The keyset should have the size 3",3,cache.keySet().size());
+        assertEquals("The valueset should have the size 3",3,cache.values().size());
+        Set<Map.Entry<String, String>> entries = cache.entrySet();
+        assertEquals("The entryset should have the size 3",3,entries.size());
+
+        assertTrue("The cache should still contain the test2value",cache.containsValue("test2value"));
 
     }
 

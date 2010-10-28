@@ -25,9 +25,9 @@ import java.util.*;
 @QAInfo(state=QAInfo.State.QA_OK,
         level=QAInfo.Level.NORMAL,
         author = "abr, te")
-public class  TimeSensitiveCache<K,V>{
+public class  TimeSensitiveCache<K,V> implements Map<K,V>{
 
-    private BackingCache<K,Cacheble<V>> elements;
+    private BackingCache<K, Cachable<V>> elements;
 
 
     /**
@@ -42,7 +42,7 @@ public class  TimeSensitiveCache<K,V>{
     public TimeSensitiveCache(long timeToLive,
                               boolean accessOrder,
                               int fixedSize) {
-        elements = new BackingCache<K,Cacheble<V>>(timeToLive, timeToLive/10,fixedSize,accessOrder,true);
+        elements = new BackingCache<K, Cachable<V>>(timeToLive, timeToLive/10,fixedSize,accessOrder,true);
     }
 
     /**
@@ -53,7 +53,7 @@ public class  TimeSensitiveCache<K,V>{
      */
     public TimeSensitiveCache(long timeToLive,
                               boolean accessOrder) {
-        elements = new BackingCache<K,Cacheble<V>>(timeToLive, timeToLive/10,10,accessOrder,false);
+        elements = new BackingCache<K, Cachable<V>>(timeToLive, timeToLive/10,10,accessOrder,false);
     }
 
 
@@ -67,7 +67,7 @@ public class  TimeSensitiveCache<K,V>{
      * @return the element or null
      */
     public synchronized V get(Object key) {
-        Cacheble<V> value = elements.get(key);
+        Cachable<V> value = elements.get(key);
         if (value != null){
             return value.getObject();
         } else {
@@ -80,6 +80,49 @@ public class  TimeSensitiveCache<K,V>{
      */
     public synchronized void clear() {
         elements.clear();
+    }
+
+    @Override
+    public Set<K> keySet() {
+        return elements.keySet();
+    }
+
+    @Override
+    public Collection<V> values() {
+        Collection<Cachable<V>> cachevalues = elements.values();
+        Collection<V> values = new ArrayList<V>(cachevalues.size());
+        for (Cachable<V> cachevalue : cachevalues) {
+            values.add(cachevalue.getObject());
+        }
+        return values;
+    }
+
+    @Override
+    public Set<Entry<K, V>> entrySet() {
+        Set<Entry<K, Cachable<V>>> cacheentries = elements.entrySet();
+        Set<Entry<K, V>> entries = new HashSet<Entry<K,V>>(cacheentries.size());
+        for (final Entry<K, Cachable<V>> cacheentry : cacheentries) {
+            Entry<K,V> entry = new Entry<K, V>() {
+                private K key = cacheentry.getKey();
+                private V value = cacheentry.getValue().getObject();
+
+                public K getKey() {
+                    return key;
+                }
+
+                public V getValue() {
+                    return value;
+                }
+
+                public V setValue(V value) {
+                    this.value = value;
+                    return value;
+                }
+            };
+            entries.add(entry);
+        }
+        return entries;
+
     }
 
     /**
@@ -109,6 +152,11 @@ public class  TimeSensitiveCache<K,V>{
         return elements.containsKey(key);
     }
 
+    @Override
+    public boolean containsValue(Object value) {
+        return values().contains(value);
+    }
+
     /**
      * Puts a new element into the cache. If the key already exist in the cache
      * the old value is overwritten. If fixedSize is set, and the cache would
@@ -118,7 +166,7 @@ public class  TimeSensitiveCache<K,V>{
      * @return the value
      */
     public synchronized V put(K key, V value) {
-        Cacheble<V> cacheable = new Cacheble<V>(value);
+        Cachable<V> cacheable = new Cachable<V>(value);
         elements.put(key,cacheable );
         return value;
     }
@@ -131,7 +179,7 @@ public class  TimeSensitiveCache<K,V>{
      */
     public synchronized void putAll(Map<? extends K, ? extends V> m) {
         for (Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
-            elements.put(entry.getKey(),new Cacheble<V>(entry.getValue()));
+            elements.put(entry.getKey(),new Cachable<V>(entry.getValue()));
         }
     }
 
@@ -141,7 +189,7 @@ public class  TimeSensitiveCache<K,V>{
      * @return the value of the element, or null if not in the cache.
      */
     public synchronized V remove(Object key) {
-        Cacheble<V> value = elements.remove(key);
+        Cachable<V> value = elements.remove(key);
         if (value != null){
             return value.getObject();
         } else {
@@ -155,7 +203,7 @@ public class  TimeSensitiveCache<K,V>{
      * @param <K> key type
      * @param <C> cacheable type
      */
-    private class BackingCache<K,C extends Cacheble<V>> extends LinkedHashMap<K,C>{
+    private class BackingCache<K,C extends Cachable<V>> extends LinkedHashMap<K,C>{
         private int capacity;
         private boolean fixedSize;
         private boolean accessOrder;
@@ -263,7 +311,7 @@ public class  TimeSensitiveCache<K,V>{
          * cleanup is over.
          */
         private void cleanup(){
-            if (!isToOld(lastClean,timeBetweenGC)){
+            if (!isTooOld(lastClean,timeBetweenGC)){
                 return;
             }
             lastClean = System.currentTimeMillis();
@@ -277,7 +325,7 @@ public class  TimeSensitiveCache<K,V>{
 
             while (iterator.hasNext()){
                 C element = iterator.next();
-                if (isToOld(element.getCacheTime(),timeToLive)){
+                if (isTooOld(element.getCacheTime(),timeToLive)){
                     iterator.remove();
                 } else {
                     break;
@@ -291,7 +339,7 @@ public class  TimeSensitiveCache<K,V>{
          * @param wait the allowed time to have passed since the event
          * @return if now-wait < event true
          */
-        private boolean isToOld(long event, long wait) {
+        private boolean isTooOld(long event, long wait) {
             long now = System.currentTimeMillis();
             if (event + wait > now){
                 return false;
@@ -306,7 +354,7 @@ public class  TimeSensitiveCache<K,V>{
      * information.
      * @param <T> the type of the element
      */
-    private class Cacheble<T> {
+    private class Cachable<T> {
 
         /**
          * The elemnt to store
@@ -324,7 +372,7 @@ public class  TimeSensitiveCache<K,V>{
          * @param object
          * @param cacheTime
          */
-        public Cacheble(T object,  long cacheTime) {
+        public Cachable(T object,  long cacheTime) {
             this.object = object;
             this.cacheTime = cacheTime;
         }
@@ -333,7 +381,7 @@ public class  TimeSensitiveCache<K,V>{
          * New element with cachetime set to NOW from the system
          * @param object
          */
-        public Cacheble(T object) {
+        public Cachable(T object) {
             this.object = object;
             this.cacheTime = System.currentTimeMillis();
         }
