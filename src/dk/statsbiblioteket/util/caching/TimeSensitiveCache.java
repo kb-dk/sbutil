@@ -1,3 +1,25 @@
+/* $Id: ReplaceFactory.java 183 2009-03-27 14:03:44Z toke $
+ * $Revision: 183 $
+ * $Date: 2009-03-27 15:03:44 +0100 (Fri, 27 Mar 2009) $
+ * $Author: toke $
+ *
+ * The SB Util Library.
+ * Copyright (C) 2005-2007  The State and University Library of Denmark
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 package dk.statsbiblioteket.util.caching;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
@@ -66,6 +88,7 @@ public class  TimeSensitiveCache<K,V> implements Map<K,V>{
      * @param key the key of the element
      * @return the element or null
      */
+    @Override
     public synchronized V get(Object key) {
         Cachable<V> value = elements.get(key);
         if (value != null){
@@ -78,6 +101,7 @@ public class  TimeSensitiveCache<K,V> implements Map<K,V>{
     /**
      * Clear all elements from the cache
      */
+    @Override
     public synchronized void clear() {
         elements.clear();
     }
@@ -106,14 +130,17 @@ public class  TimeSensitiveCache<K,V> implements Map<K,V>{
                 private K key = cacheentry.getKey();
                 private V value = cacheentry.getValue().getObject();
 
+                @Override
                 public K getKey() {
                     return key;
                 }
 
+                @Override
                 public V getValue() {
                     return value;
                 }
 
+                @Override
                 public V setValue(V value) {
                     this.value = value;
                     return value;
@@ -129,6 +156,7 @@ public class  TimeSensitiveCache<K,V> implements Map<K,V>{
      * Performs a cleanup of the cache, and gets the number of remaining elements.
      * @return the size
      */
+    @Override
     public synchronized int size() {
         return elements.size();
     }
@@ -137,6 +165,7 @@ public class  TimeSensitiveCache<K,V> implements Map<K,V>{
      * Performs a cleanup, and checks if the cache is then empty
      * @return true if empty
      */
+    @Override
     public synchronized boolean isEmpty() {
         return elements.isEmpty();
     }
@@ -148,6 +177,7 @@ public class  TimeSensitiveCache<K,V> implements Map<K,V>{
      * @param key the key of the element.
      * @return true if the cache has the element
      */
+    @Override
     public synchronized boolean containsKey(Object key) {
         return elements.containsKey(key);
     }
@@ -165,6 +195,7 @@ public class  TimeSensitiveCache<K,V> implements Map<K,V>{
      * @param value the element value
      * @return the value
      */
+    @Override
     public synchronized V put(K key, V value) {
         Cachable<V> cacheable = new Cachable<V>(value);
         elements.put(key,cacheable );
@@ -177,6 +208,7 @@ public class  TimeSensitiveCache<K,V> implements Map<K,V>{
      * @see #put(Object, Object)
      * @param m the map to dump
      */
+    @Override
     public synchronized void putAll(Map<? extends K, ? extends V> m) {
         for (Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
             elements.put(entry.getKey(),new Cachable<V>(entry.getValue()));
@@ -188,6 +220,7 @@ public class  TimeSensitiveCache<K,V> implements Map<K,V>{
      * @param key the key of the element
      * @return the value of the element, or null if not in the cache.
      */
+    @Override
     public synchronized V remove(Object key) {
         Cachable<V> value = elements.remove(key);
         if (value != null){
@@ -263,10 +296,7 @@ public class  TimeSensitiveCache<K,V> implements Map<K,V>{
         @Override
         public boolean containsKey(Object key) {
             C value = get(key);
-            if (value != null){
-                return true;
-            }
-            return false;
+            return value != null;
         }
 
         /**
@@ -341,11 +371,7 @@ public class  TimeSensitiveCache<K,V> implements Map<K,V>{
          */
         private boolean isTooOld(long event, long wait) {
             long now = System.currentTimeMillis();
-            if (event + wait > now){
-                return false;
-            } else {
-                return true;
-            }
+            return event + wait <= now;
         }
     }
 

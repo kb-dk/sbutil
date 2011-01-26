@@ -357,24 +357,28 @@ public class CachedCollatorTest extends TestCase {
 
     public void testCollatorEquivalence() throws Exception {
         Locale DA = new Locale("da");
-        System.out.println(Collator.getInstance(DA).compare("ur", "úr"));
-        assertTrue("The strings 'ur' and 'ú' should be sorted with 'ú' "
-                   + "first by normal collator",
-                   Collator.getInstance(DA).compare("ur", "ú") > 0);
-        assertTrue("The strings 'ur' and 'úr' should be sorted with 'ur' "
-                   + "first by normal collator",
-                   Collator.getInstance(DA).compare("ur", "úr") < 0);
-        assertTrue("The strings 'ur' and 'ú' should be sorted with 'ú' "
-                   + "first by cached collator",
-                   new CachedCollator(Collator.getInstance(DA)).
-                       compare("ur", "ú") > 0);
-        assertTrue("The strings 'u r' and 'ú r' should be sorted with 'ú r' "
-                   + "last by cached collator",
-                   new CachedCollator(Collator.getInstance(DA)).
-                       compare("u r", "ú r") < 0);
-        assertTrue("The strings 'ur' and 'U' should be sorted with 'U' "
-                   + "first by cached collator",
-                   new CachedCollator(Collator.getInstance(DA)).
-                       compare("ur", "U") > 0);
+        Collator plain = Collator.getInstance(DA);
+        Collator cached = new CachedCollator(Collator.getInstance(DA));
+
+        testCollator("a", "b");
+        testCollator("ú", "ur");
+        testCollator("ur", "úr");
+        testCollator("u r", "ú r");
+        testCollator("2 î kaja in o", "2 in accord");
+        testCollator("a a şorman", "a a syrov");
+        testCollator("a a darov", "a a Dorman");
+        testCollator("a zúñiga", "a zuraini");
+    }
+    private void testCollator(String s1, String s2) {
+        Locale DA = new Locale("da");
+        Collator plain = Collator.getInstance(DA);
+        Collator cached = new CachedCollator(Collator.getInstance(DA));
+        assertTrue("The strings '" + s1 + "' and '" + s2 + "' should be sorted "
+                   + "with '" + s1 + "' first by non-cached collator",
+                   plain.compare(s1, s2) < 0);
+        assertTrue("The strings '" + s1 + "' and '" + s2 + "' should be sorted "
+                   + "with '" + s1 + "' first by cached collator",
+                   cached.compare(s1, s2) < 0);
+
     }
 }

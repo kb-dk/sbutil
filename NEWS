@@ -1,4 +1,12 @@
 =========================
+2011-01-25: SB Util 0.5.3
+=========================
+
+ * Feature: Added LRU and time bases caches.
+ * Feature: Added pending caches where ont thread promises to make a delivery
+            of a value and other threads waits for the value.
+
+=========================
 2010-07-29: SB Util 0.5.1
 =========================
  * Feature: Added getZipEntry() method to the Zips class

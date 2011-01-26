@@ -3,7 +3,7 @@
 
     <property name="project.name" value="sbutil" />
     <property name="project.version.variant" value=""/>
-    <property name="project.version" value="0.5.2${project.version.variant}" />
+    <property name="project.version" value="0.5.3${project.version.variant}" />
     <property name="builder" value="te" />
     <property name="release" value="${project.name}-${project.version}" />
 

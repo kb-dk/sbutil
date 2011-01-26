@@ -273,7 +273,8 @@ public class CachedCollator extends Collator {
 
         // Split in low and high value characters.
 //        cachedPositions = new int[highest+1];
-        int position = 0;
+        int position = 1;
+        char lastChar = 0;
         for (String cString: sorted) {
             if (cString.length() != 1) {
                 log.warn("The expected character '" + cString
@@ -282,12 +283,20 @@ public class CachedCollator extends Collator {
                 continue;
             }
             char c = cString.charAt(0);
-            position++;
+            if (lastChar == 0) {
+                lastChar = c;
+            }
             cachedPositions[c] = position;
+            if (subCollator.compare(
+                Character.toString(lastChar), Character.toString(c)) != 0) {
+                position++;
+            }
+            lastChar = c;
         }
         log.debug("Finished building cache for " + position
                   + " characters (" + (mostCommon.length()-position)
-                  + " duplicates removed) of which the highest was " + highest);
+                  + " duplicates removed, " + position + " unique positions) "
+                  + "of which the highest was " + highest);
     }
 
     protected int getPosition(char c) {
@@ -315,7 +324,10 @@ public class CachedCollator extends Collator {
                     return subCollator.compare(source, target);
                 }
                 if (sPos != tPos) {
-                    return sPos - tPos;
+                    return source.charAt(i+1) == ' ' 
+                           || target.charAt(i+1) == ' ' ?
+                           subCollator.compare(source, target) :
+                           sPos - tPos;
                 }
             } catch (IndexOutOfBoundsException e) { // Non-handled char
                 log.debug(String.format(
