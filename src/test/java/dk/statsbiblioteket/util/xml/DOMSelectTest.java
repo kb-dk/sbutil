@@ -119,6 +119,7 @@ public class DOMSelectTest extends TestCase {
         for (int i = 0; i < expected.getLength(); i++) {
             if (expected.item(i).getNodeName().equals("sub")) {
                 subExist = true;
+                break;
             }
         }
         if (!subExist) {
