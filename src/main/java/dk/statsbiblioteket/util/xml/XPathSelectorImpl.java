@@ -121,8 +121,9 @@ public class XPathSelectorImpl implements XPathSelector {
                         xpathCompiler.setNamespaceContext(nsContext);
                     }
                     exp = xpathCompiler.compile(xpath);
+                    cache.put(xpath, exp);
                 }
-                cache.put(xpath, exp);
+
             }
 
             retval = exp.evaluate(dom, returnType);

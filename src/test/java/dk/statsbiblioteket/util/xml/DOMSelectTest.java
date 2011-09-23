@@ -175,7 +175,7 @@ public class DOMSelectTest extends TestCase {
 
         if (errors.size() > 0) {
             for (Throwable t : errors) {
-                t.printStackTrace();
+         //       t.printStackTrace();
             }
             fail("Uncaught exceptions in threads");
         }

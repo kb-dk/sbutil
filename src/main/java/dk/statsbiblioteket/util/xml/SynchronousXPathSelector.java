@@ -2,6 +2,7 @@ package dk.statsbiblioteket.util.xml;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import javax.xml.namespace.NamespaceContext;
@@ -57,7 +58,16 @@ public class SynchronousXPathSelector extends XPathSelectorImpl {
                 }
             }
             try {
-                retval = exp.evaluate(dom, returnType);
+                Document doc = dom.getOwnerDocument();
+                if (doc != null){
+                    synchronized (doc){
+                        retval = exp.evaluate(dom, returnType);
+                    }
+                } else {
+                    synchronized (dom){
+                        retval = exp.evaluate(dom, returnType);
+                    }
+                }
             } finally {
                 // Put back the compiled xpath in the cache
                 synchronized (xpathCompiler) {
