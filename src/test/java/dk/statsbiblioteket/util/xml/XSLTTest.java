@@ -72,14 +72,19 @@ public class XSLTTest extends TestCase {
                 "data/xml/trivial_input.xml").getFile()));
         String expected1 = Files.loadString(new File(getURL(
                 "data/xml/expected1.xml").getFile()));
+        input = input.replaceAll("\\s+", " ");
+        expected1 = expected1.replaceAll("\\s+", " ");
+        String result = XSLT.transform(xslt1, input).replaceAll("\\s+", " ");
         assertEquals("Sample 1 should transform correctly",
-                     expected1.trim(), XSLT.transform(xslt1, input).trim());
+                     expected1.trim(), result.trim());
 
         URL xslt2 = getURL("data/xml/trivial_transform2.xslt");
         String expected2 = Files.loadString(new File(getURL(
                 "data/xml/expected2.xml").getFile()));
+        expected2 = expected2.replaceAll("\\s+", " ");
+        result = XSLT.transform(xslt2, input).replaceAll("\\s+", " ");
         assertEquals("Sample 2 should transform correctly",
-                     expected2.trim(), XSLT.transform(xslt2, input).trim());
+                     expected2.trim(), result.trim());
     }
 
     public void testParameter() throws Exception {
@@ -91,8 +96,8 @@ public class XSLTTest extends TestCase {
         String expected1 = Files.loadString(new File(getURL(
                 "data/xml/parameter_expected.xml").getFile()));
         assertEquals("Parameter should transform correctly",
-                     expected1.trim(),
-                     XSLT.transform(xslt1, input, properties).trim());
+                     expected1.trim().replaceAll("\\s+", " "),
+                     XSLT.transform(xslt1, input, properties).trim().replaceAll("\\s+", " "));
 
     }
 
@@ -179,7 +184,7 @@ public class XSLTTest extends TestCase {
                 try {
                     String actual = XSLT.transform(xslt, xmlInput).trim();
                     transforms++;
-                    if (!expected.trim().equals(actual)) {
+                    if (!expected.trim().replaceAll("\\s+", " ").equals(actual.replaceAll("\\s+", " "))) {
                         fullStop = true;
                         fail("Not the expected result for '" + xslt
                              + "'. Expected:\n" + expected + "\nActual:\n"
@@ -237,7 +242,8 @@ public class XSLTTest extends TestCase {
         String expected = Files.loadString(new File(XSLTTest.getURL(
                 "data/xml/namespace_expected_faulty.xml").getFile()));
         assertEquals("Fault namespaces should give faulty output",
-                     expected.trim(), XSLT.transform(xslt, input).trim());
+                     expected.trim().replaceAll("\\s+", " "),
+                     XSLT.transform(xslt, input).trim().replaceAll("\\s+", " "));
     }
 
     public void testCorrectRemoveNamespace() throws Exception {
@@ -247,7 +253,8 @@ public class XSLTTest extends TestCase {
         String expected = Files.loadString(new File(XSLTTest.getURL(
                 "data/xml/namespace_expected_correct.xml").getFile()));
         assertEquals("Fault namespaces should give faulty output",
-                     expected.trim(), XSLT.transform(xslt, input, true).trim());
+                     expected.trim().replaceAll("\\s+", " "),
+                     XSLT.transform(xslt, input, true).trim().replaceAll("\\s+", " "));
     }
 
     public void testNoNamespaceSpeed() throws Exception {
