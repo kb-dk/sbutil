@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<Index:document Index:resolver="test1" Index:id="SomeID" xmlns:Index="http://statsbiblioteket.dk/2004/Index">
-<Index:fields>
-<Index:field Index:type="keyword" Index:name="one">The One</Index:field>
-</Index:fields>
-</Index:document>
