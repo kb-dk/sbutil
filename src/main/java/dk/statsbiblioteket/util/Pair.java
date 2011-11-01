@@ -1,11 +1,11 @@
 package dk.statsbiblioteket.util;
 
 /**
- * Created by IntelliJ IDEA.
- * User: abr
- * Date: 11/1/11
- * Time: 12:25 PM
- * To change this template use File | Settings | File Templates.
+ * The much missed Pair class. There have been much discussion about Pairs. Here it is, do not use
+ * it if you do not like it.
+ *
+ * This implementation is immutable, ie, there are no setter methods. Equals and hashcode have
+ * been overridden to delegate the work the the contained elements.
  */
 public class Pair<L,R> {
 
