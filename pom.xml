@@ -3,7 +3,7 @@
 
     <groupId>dk.statsbiblioteket.sbutil</groupId>
     <artifactId>sbutil</artifactId>
-    <version>0.5.5-SNAPSHOT</version>
+    <version>0.5.5</version>
     <packaging>jar</packaging>
 
     <name>sbutil</name>
@@ -64,9 +64,9 @@
         <url>http://sbforge.statsbiblioteket.dk/hudson/view/SBUtil</url>
     </ciManagement>
     <scm>
-        <connection>scm:svn:https://sbutil.svn.sourceforge.net/svnroot/sbutil/trunk/</connection>
-        <developerConnection>scm:svn:https://sbutil.svn.sourceforge.net/svnroot/sbutil/trunk/</developerConnection>
-        <url>http://summa.svn.sourceforge.net/viewvc/sbutil/</url>
+        <connection>scm:svn:https://sbutil.svn.sourceforge.net/svnroot/sbutil/tags/sbutil-0.5.5</connection>
+        <developerConnection>scm:svn:https://sbutil.svn.sourceforge.net/svnroot/sbutil/tags/sbutil-0.5.5</developerConnection>
+        <url>http://summa.svn.sourceforge.net/viewvc/sbutil/tags/sbutil-0.5.5</url>
     </scm>
     <dependencies>
         <dependency>
