@@ -36,14 +36,12 @@ import java.nio.ByteBuffer;
 public class Streams {
 
     @Deprecated
-    public static void pipeStream(InputStream in, OutputStream out, int bufSize)
-            throws IOException {
+    public static void pipeStream(InputStream in, OutputStream out, int bufSize) throws IOException {
         pipe(in, out, bufSize);
     }
 
     @Deprecated
-    public static void pipeStream(InputStream in,
-                                  OutputStream out) throws IOException {
+    public static void pipeStream(InputStream in, OutputStream out) throws IOException {
         pipe(in, out);
     }
 
@@ -57,8 +55,7 @@ public class Streams {
      * @throws java.io.IOException If any sort of read/write error occurs on
      *                             either stream.
      */
-    public static void pipe(InputStream in, OutputStream out, int bufSize)
-            throws IOException {
+    public static void pipe(InputStream in, OutputStream out, int bufSize) throws IOException {
         try {
             byte[] buf = new byte[bufSize];
             int len;
@@ -98,8 +95,7 @@ public class Streams {
         URL url =
                 Thread.currentThread().getContextClassLoader().getResource(name);
         if (url == null) {
-            throw new FileNotFoundException("Could not locate '" + name
-                                            + "' in the class path");
+            throw new FileNotFoundException("Could not locate '" + name + "' in the class path");
         }
         InputStream in = url.openStream();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(1000);

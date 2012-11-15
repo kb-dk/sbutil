@@ -294,7 +294,6 @@ public class ConnectionManager<E> {
         if (isClosed) {
             throw new IllegalStateException("Manager is closed");
         }
-
         if (!connectionMonitor.isRunning()) {
             log.trace("First connection request. Starting connection monitor");
             connectionMonitor.runInThread();

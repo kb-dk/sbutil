@@ -34,6 +34,61 @@ public class ConnectionManagerTestBase extends TestCase {
         cm.release(ctx);
     }
 
+    public void testConnectionTimeout() throws Exception {
+        log.info("TestGetConnection with no existing endpoint, initial attempt");
+        final String NONEXISTING1 = "//localhost:12345/notthere";
+        final String NONEXISTING2 = "//localhost:12345/notthereeither";
+
+        cf.setInitialNumRetries(2);
+        cf.setInitialGraceTimeMS(1000);
+
+        cf.setSubsequentNumRetries(1);
+        cf.setSubsequentGraceTimeMS(200);
+
+        { // Initial
+            long connectTime = -System.currentTimeMillis();
+            try {
+                cm.get(NONEXISTING1);
+            } catch (Exception e) {
+                // Expected
+            }
+            connectTime += System.currentTimeMillis();
+
+            assertTrue("It should take more than " + 2000 + "ms and less than " + 3000 + "ms for initial timeout "
+                       + "but took " + connectTime + "ms",
+                       connectTime > 2000 && connectTime < 3000);
+        }
+
+        { // Subsequent
+            long connectTime = -System.currentTimeMillis();
+            try {
+                cm.get(NONEXISTING1);
+            } catch (Exception e) {
+                // Expected
+            }
+            connectTime += System.currentTimeMillis();
+
+            assertTrue("It should take more than " + 200 + "ms and less than " + 400 + "ms for initial timeout "
+                       + "but took " + connectTime + "ms",
+                       connectTime > 200 && connectTime < 400);
+        }
+
+        { // Different initial
+            long connectTime = -System.currentTimeMillis();
+            try {
+                cm.get(NONEXISTING2);
+            } catch (Exception e) {
+                // Expected
+            }
+            connectTime += System.currentTimeMillis();
+
+            assertTrue("It should take more than " + 2000 + "ms and less than " + 3000 + "ms for initial timeout "
+                       + "for alternative address but took " + connectTime + "ms",
+                       connectTime > 2000 && connectTime < 3000);
+        }
+
+    }
+
     public void testBookkeeping() throws Exception {
         System.out.println("TestBookKeeping");
         ConnectionContext ctx = cm.get(connId);
