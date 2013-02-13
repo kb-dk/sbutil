@@ -3,7 +3,7 @@
 
     <groupId>dk.statsbiblioteket.sbutil</groupId>
     <artifactId>sbutil</artifactId>
-    <version>0.5.8-SNAPSHOT</version>
+    <version>0.5.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>sbutil</name>
@@ -100,7 +100,7 @@
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
             <artifactId>xstream</artifactId>
-            <version>1.2.2</version>
+            <version>1.4.4</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
