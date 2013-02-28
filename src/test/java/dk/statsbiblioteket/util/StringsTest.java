@@ -36,10 +36,12 @@ import java.util.List;
  */
 public class StringsTest extends TestCase {
 
+    @Override
     public void setUp() throws Exception {
 
     }
 
+    @Override
     public void tearDown() throws Exception {
 
     }
@@ -60,6 +62,10 @@ public class StringsTest extends TestCase {
 
         assertEquals("abe", Strings.join(new String[]{"abe"}, "."));
         assertEquals("abe.foo", Strings.join(new String[]{"abe", "foo"}, "."));
+    }
+
+    public void testJoinExtended() {
+        assertEquals("abe, ged, ...", Strings.join(Arrays.asList("abe", "ged", "so"), ", ", 2));
     }
 
     public void testJoinNulls() throws Exception {

@@ -35,6 +35,12 @@ import java.util.Collection;
         level = QAInfo.Level.NORMAL)
 public class Strings {
 
+    /**
+     * Utility class, don't initialise.
+     */
+    private Strings() {
+    }
+
     private static final ThreadLocal<StringBuilder> localBuilder =
             new ThreadLocal<StringBuilder>() {
                 @Override
@@ -73,24 +79,61 @@ public class Strings {
     }
 
     /**
-     * <p>Concatenate all elements in a collection with a given delimiter.
+     * Concatenate all elements in a collection with ", " as delimiter. If a list contains "foo", "bar", and "baz",
+     * the returned string will be <code>foo, bar, baz</code>.
+     * If any of the collection's elements are null the empty string will be used.
+     *
+     * @param c         The collection which elements will be concatenated as strings
+     * @return A string representation of the collection. If the collection is empty the empty string will be returned.
+     * @throws NullPointerException if the collection or delimiter is null.
+     */
+    public static String join(Collection c) {
+       return join(c, ", ", Long.MAX_VALUE);
+    }
+
+    /**
+     * Concatenate all elements in a collection with ", " as delimiter.
+     *
+     * @param c         The collection which elements will be concatenated as strings
+     * @param max       the maximum number of elements to concatenate. If the number of elements exceeds this, max
+     *                  elements will be used, followed by "...".
+     * @return A string representation of the collection. If the collection is empty the empty string will be returned.
+     * @throws NullPointerException if the collection or delimiter is null.
+     */
+    public static String join(Collection c, long max) {
+       return join(c, ", ", max);
+    }
+
+    /**
+     * Concatenate all elements in a collection with a given delimiter.
      * For example if a list contains "foo", "bar", and "baz" and the delimiter
-     * is ":" the returned string will be</p>
-     * <p>
-     * <code>
-     * "foo:bar:baz"
-     * </code>
-     * </p>
-     * If any of the collection's elements are null the empty string will simply
-     * be used.
+     * is ":", the returned string will be <code>foo:bar:baz</code>.
+     * If any of the collection's elements are null the empty string will be used.
      *
      * @param c         The collection which elements will be concatenated as strings
      * @param delimiter symbol(s) to put in between elements
+     * @return A string representation of the collection. If the collection is empty the empty string will be returned.
+     * @throws NullPointerException if the collection or delimiter is null.
+     */
+    public static String join(Collection c, String delimiter) {
+       return join(c, delimiter, Long.MAX_VALUE);
+    }
+
+    /**
+     * Concatenate all elements in a collection with a given delimiter.
+     * For example if a list contains "foo", "bar", and "baz" and the delimiter
+     * is ":", the returned string will be <code>foo:bar:baz</code>.
+     * If any of the collection's elements are null the empty string will be used.
+     *
+     * @param c         The collection which elements will be concatenated as strings
+     * @param delimiter symbol(s) to put in between elements
+     * @param max       the maximum number of elements to concatenate. If the number of elements exceeds this, max
+     *                  elements will be used, followed by "...".
      * @return A string representation of the collection. If the collection
      *         is empty the empty string will be returned.
      * @throws NullPointerException if the collection or delimiter is null.
      */
-    public static String join(Collection c, String delimiter) {
+    public static String join(Collection c, String delimiter, long max) {
         if (c == null) {
             throw new NullPointerException("Collection argument is null");
         } else if (delimiter == null) {
@@ -98,24 +141,46 @@ public class Strings {
         }
 
         StringBuilder b = localBuilder.get();
-
+        long counter = 0;
         for (Object o : c) {
-            if (b.length() == 0) {
-                b.append(o == null ? "" : o.toString());
-            } else {
+            if (b.length() != 0) {
                 b.append(delimiter);
-                b.append(o == null ? "" : o.toString());
             }
-
+            if (counter++ == max) {
+                b.append("...");
+                break;
+            }
+            b.append(o == null ? "" : o.toString());
         }
 
         return b.toString();
     }
 
     /**
+     * See {@link #join(java.util.Collection)}.
+     */
+    public static String join(Object[] a) {
+        return join(a, ", ", Long.MAX_VALUE);
+    }
+
+    /**
+     * See {@link #join(java.util.Collection, long)}.
+     */
+    public static String join(Object[] a, long max) {
+        return join(a, ", ", max);
+    }
+
+    /**
      * See {@link Strings#join(Collection, String)}.
      */
     public static String join(Object[] a, String delimiter) {
+        return join(a, delimiter, Long.MAX_VALUE);
+    }
+
+    /**
+     * See {@link #join(java.util.Collection, String, long)}.
+     */
+    public static String join(Object[] a, String delimiter, long max) {
         if (a == null) {
             throw new NullPointerException("Collection argument is null");
         } else if (delimiter == null) {
@@ -124,14 +189,16 @@ public class Strings {
 
         StringBuilder b = localBuilder.get();
 
+        long counter = 0;
         for (Object o : a) {
-            if (b.length() == 0) {
-                b.append(o == null ? "" : o.toString());
-            } else {
+            if (b.length() != 0) {
                 b.append(delimiter);
-                b.append(o == null ? "" : o.toString());
             }
-
+            if (counter++ == max) {
+                b.append("...");
+                break;
+            }
+            b.append(o == null ? "" : o.toString());
         }
 
         return b.toString();
@@ -241,6 +308,7 @@ public class Strings {
                 return asCharSequence(Arrays.copyOfRange(chars, start, end));
             }
 
+            @Override
             public String toString() {
                 return new String(chars);
             }

@@ -16,8 +16,7 @@ public class Bytes {
      * The hexidecimal characters in numeric order from {@code 0-f}
      */
     public static final char[] HEX_DIGITS =
-            {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-             'a', 'b', 'c', 'd', 'e', 'f'};
+            {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
     /**
      * The number of bits in a nibble (used for shifting).
@@ -45,8 +44,7 @@ public class Bytes {
         try {
             toHex(sb, ba);
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Unexpected IOException while appending to StringBuilder");
+            throw new RuntimeException("Unexpected IOException while appending to StringBuilder");
         }
 
         return sb.toString();
@@ -61,12 +59,12 @@ public class Bytes {
      * @return always returns {@code buf}
      * @throws IOException upon errors writing to {@code buf}
      */
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     public static Appendable toHex(Appendable buf, byte[] ba)
             throws IOException {
-        int baLen = ba.length;
+        final int baLen = ba.length;
         for (int i = 0; i < baLen; i++) {
-            buf.append(
-                    HEX_DIGITS[(ba[i] >> BITS_IN_NIBBLE) & BITMASK_FOR_NIBBLE]);
+            buf.append(HEX_DIGITS[(ba[i] >> BITS_IN_NIBBLE) & BITMASK_FOR_NIBBLE]);
             buf.append(HEX_DIGITS[ba[i] & BITMASK_FOR_NIBBLE]);
         }
 
