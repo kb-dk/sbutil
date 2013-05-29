@@ -118,8 +118,16 @@ public class EntryCounter {
     /**
      * @return the keys defined for the counter.
      */
-    public synchronized Set<String> getKeys() {
+    public synchronized Set<String> keySet() {
         return entries.keySet();
+    }
+
+    /**
+     * @return the underlying Map with Keys and Counts. Note that changes to the returned map will be reflected in
+     *         the EntryCounter.
+     */
+    public Map<String, Integer> getMap() {
+        return entries;
     }
 
     @Override
