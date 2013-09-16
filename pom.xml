@@ -22,7 +22,8 @@
     </properties>
 
     <modules>
-        <module>sbutil</module>
+        <module>sbutil-common</module>
+        <module>sbutil-xproperties</module>
     </modules>
 
     <build>
@@ -100,12 +101,6 @@
             <artifactId>log4j</artifactId>
             <version>1.2.14</version>
             <type>jar</type>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.thoughtworks.xstream</groupId>
-            <artifactId>xstream</artifactId>
-            <version>1.4.4</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

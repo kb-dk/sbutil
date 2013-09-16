@@ -42,12 +42,12 @@ public class EntryCounterTest extends TestCase {
         assertEquals("Explicit setting of value should give old value", 7, ec.set("zoo", 9));
         assertEquals("Explicit sat value should be correct", 9, ec.get("zoo"));
 
-        List<String> keys = new ArrayList<String>(ec.getKeys());
+        List<String> keys = new ArrayList<String>(ec.keySet());
         Collections.sort(keys);
         assertEquals("Listing of keys", "bar, zoo", Strings.join(keys));
         ec.remove("zoo");
-        assertEquals("Listing of keys after remove", "bar", Strings.join(ec.getKeys()));
+        assertEquals("Listing of keys after remove", "bar", Strings.join(ec.keySet()));
         ec.clear();
-        assertEquals("Clear should result in empty list", 0, ec.getKeys().size());
+        assertEquals("Clear should result in empty list", 0, ec.keySet().size());
     }
 }
