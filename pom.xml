@@ -1,12 +1,13 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>dk.statsbiblioteket.sbutil</groupId>
-    <artifactId>sbutil</artifactId>
+    <artifactId>sbutil-parent</artifactId>
     <version>0.5.13-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
-    <name>sbutil</name>
+    <name>sbutil-parent</name>
     <description>Utilities package for SB</description>
     <url>http://maven.apache.org</url>
 
@@ -19,6 +20,10 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <modules>
+        <module>sbutil</module>
+    </modules>
 
     <build>
         <plugins>

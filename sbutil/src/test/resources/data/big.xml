@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
-<project default="all" name="sbutil" basedir=".">
+<project default="all" name="sbutil" basedir="">
 
     <property name="project.name" value="sbutil"/>
     <property name="project.version.variant" value=""/>
-    <property name="project.version" value="0.5.3${project.version.variant}"/>
-    <property name="builder" value="te"/>
+    <property name="project.version" value="0.4.8${project.version.variant}"/>
+    <property name="builder" value="mke"/>
     <property name="release" value="${project.name}-${project.version}"/>
 
     <!-- Build deps -->
@@ -12,7 +12,7 @@
     <property name="sbutil.ant.version" value="1.7.0"/>
 
     <!-- Persistent files and directories -->
-    <property name="src.dir" value="/src"/>
+    <property name="src.dir" value="${basedir}/src"/>
     <property name="lib.dir" value="${basedir}/lib"/>
     <property name="config.dir" value="${basedir}/config"/>
     <property name="scripts.dir" value="${basedir}/scripts"/>
@@ -120,7 +120,7 @@
                 access="protected"
                 windowtitle="Statsbiblioteket Utility Module"
                 additionalparam="-breakiterator">
-            <packageset dir="/src">
+            <packageset dir="${src.dir}">
                 <include name="dk/statsbiblioteket/util/**"/>
             </packageset>
             <classpath refid="base.path"/>
@@ -139,7 +139,7 @@
 
     <target name="jar" depends="compile">
         <copy todir="${build.dir}">
-            <fileset dir="/src">
+            <fileset dir="${src.dir}">
                 <include name="**/*.xslt"/>
             </fileset>
         </copy>
@@ -273,7 +273,7 @@
     <target name=".src.zip" depends="prepare">
         <property name="prefix" value="${release}"/>
         <zip destfile="${release.src.zip}">
-            <zipfileset prefix="${prefix}/src" dir="/src"/>
+            <zipfileset prefix="${prefix}/src" dir="${src.dir}"/>
             <zipfileset prefix="${prefix}/lib" dir="${lib.dir}"/>
             <zipfileset prefix="${prefix}/test" dir="${test.src.dir}"/>
             <zipfileset prefix="${prefix}/config" dir="${config.dir}"/>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<record>
+    <id>SomeID</id>
+    <elementOne attributeOne="Really?">The One</elementOne>
+    <elementTwo attributeTwo="Did you mean minute?">The Second</elementTwo>
+    <cdata><![CDATA[
+            <incdata:someelement>No escapie!<&></incdata:someelement>
+    ]]></cdata>
+    <!-- A comment  <![CDATA[ ]]> <foo:bar xmlns="koo:be" xmlns:tr="htl -->
+</record>
