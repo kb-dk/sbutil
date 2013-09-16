@@ -50,8 +50,7 @@ public class LineReaderTest extends TestCase {
     private static Logger log = Logger.getLogger(LineReaderTest.class);
 
     private static final int LINES = 376;
-    File logfile = new File("src/test/resources/data",
-            "website-performance-info.log.2007-04-01");
+    File logfile = null;
     private File TMPFOLDER = new File(
             System.getProperty("java.io.tmpdir"), "linereadertest");
 
@@ -62,6 +61,7 @@ public class LineReaderTest extends TestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
+        logfile = new File(Thread.currentThread().getContextClassLoader().getResource("data/website-performance-info.log.2007-04-01").toURI());
         if (TMPFOLDER.exists()) {
             Files.delete(TMPFOLDER);
         }
@@ -434,7 +434,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWrite() throws Exception {
-        File temp = new File("src/test/resources/data/temp.tmp");
+        File temp = new File(logfile.getParentFile(), "temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -657,7 +657,8 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWrite2Bytes() throws Exception {
-        File temp = new File("src/test/resources/data/temp.tmp");
+        File temp = new File(logfile.getParentFile(), "temp.tmp");
+
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -678,7 +679,8 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteCloseReadWrite() throws Exception {
-        File temp = new File("src/test/resources/data/temp.tmp");
+        File temp = new File(logfile.getParentFile(), "temp.tmp");
+
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -710,7 +712,8 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteCloseNewWrite() throws Exception {
-        File temp = new File("src/test/resources/data/temp.tmp");
+        File temp = new File(logfile.getParentFile(), "temp.tmp");
+
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -735,7 +738,8 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteSeekWrite() throws Exception {
-        File temp = new File("src/test/resources/data/temp.tmp");
+        File temp = new File(logfile.getParentFile(), "temp.tmp");
+
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
