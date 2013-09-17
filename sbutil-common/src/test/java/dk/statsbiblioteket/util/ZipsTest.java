@@ -40,9 +40,19 @@ public class ZipsTest extends TestCase {
     String outputFile; // test output zip file
     String dataDir; // the data dir for test
 
+    public File targetDir() {
+        String relPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
+        File targetDir = new File(relPath + "../../target");
+        if (!targetDir.exists()) {
+            targetDir.mkdir();
+        }
+        return targetDir;
+    }
+
+
     public void setUp() throws URISyntaxException {
         dataDir = new File(Thread.currentThread().getContextClassLoader().getResource("data/xml/expected1.xml").toURI()).getParent();
-        inputDir = System.getProperty("user.dir") + File.separator + "target";
+        inputDir = targetDir().getAbsolutePath();
         inputFile = System.getProperty("user.dir") + File.separator + "README";
         tmpDir = System.getProperty("user.dir") + File.separator + "tmp";
         outputFile = tmpDir + File.separator + "test";

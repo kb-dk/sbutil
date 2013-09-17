@@ -47,8 +47,18 @@ public class FilesTest extends TestCase {
     File subFile1;
     File subFile2;
 
+    public File targetDir() {
+        String relPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
+        File targetDir = new File(relPath + "../../target");
+        if (!targetDir.exists()) {
+            targetDir.mkdir();
+        }
+        return targetDir;
+    }
+
+
     public void setUp() throws Exception {
-        inputDir = System.getProperty("user.dir") + File.separator + "target";
+        inputDir = targetDir().getAbsolutePath();
         inputFile = System.getProperty("user.dir") + File.separator + "README";
         tmpDir = new File(System.getProperty("java.io.tmpdir"), "filestest");
         outputFile = tmpDir + File.separator + "test";

@@ -36,9 +36,18 @@ public class PackageScannerTest extends TestCase {
 
     // FIXME: These are not real unit tests
 
-    String CLASS_DIR = "target/classes/";
+    String CLASS_DIR = targetDir() + "/classes/";
     String PACKAGE_SCANNER = "dk/statsbiblioteket/util/qa/PackageScanner.class";
     Report report;
+
+    public File targetDir() {
+        String relPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
+        File targetDir = new File(relPath + "../../target");
+        if (!targetDir.exists()) {
+            targetDir.mkdir();
+        }
+        return targetDir;
+    }
 
     public void setUp() throws Exception {
         report = new BasicReport();
