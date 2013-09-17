@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<record>
-    <id>SomeID</id>
+<record >
+    <id >SomeID</id>
     <elementOne attributeOne="Really?">The One</elementOne>
     <elementTwo attributeTwo="Did you mean minute?">The Second</elementTwo>
     <cdata><![CDATA[
