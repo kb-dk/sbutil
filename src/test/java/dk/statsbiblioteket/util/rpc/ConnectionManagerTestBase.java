@@ -3,10 +3,13 @@ package dk.statsbiblioteket.util.rpc;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Ignore;
 
 /**
  * "Abstract" test suite to help test {@link ConnectionManager} implementations.
+ * This unit test class should not be activated standalone.
  */
+@Ignore
 public class ConnectionManagerTestBase extends TestCase {
 
     static final Log log = LogFactory.getLog(ConnectionManagerTestBase.class);
@@ -15,6 +18,7 @@ public class ConnectionManagerTestBase extends TestCase {
     ConnectionFactory<? extends TestIFace> cf;
     String connId;
 
+    @Override
     public void tearDown() throws Exception {
         assertEquals("Connection leak detected", 0, getTotalRefCount(cm));
         cm.close();

@@ -13,7 +13,9 @@ public class StaticConnectionFactory<E> extends ConnectionFactory<E> {
         conn = connection;
     }
 
+    @Override
     public E createConnection(String connectionId) {
         return conn;
     }
+
 }

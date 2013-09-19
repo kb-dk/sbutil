@@ -7,10 +7,12 @@ import java.io.IOException;
  */
 public class StaticConnectionManagerTest extends ConnectionManagerTestBase {
 
+    @Override
     public void setUp() {
         connId = "foo is bar";
         cf = new StaticConnectionFactory<TestIFace>(new TestIFace() {
 
+            @Override
             public String ping() throws IOException {
                 return connId;
             }
@@ -34,5 +36,12 @@ public class StaticConnectionManagerTest extends ConnectionManagerTestBase {
     @Override
     public void testMultiRef() throws Exception {
         super.testMultiRef();
+    }
+
+    /**
+     * Connection timeouts does not exist for static connections so we make this an empty test.
+     */
+    @Override
+    public void testConnectionTimeout() {
     }
 }

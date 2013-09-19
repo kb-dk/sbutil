@@ -8,6 +8,7 @@ public class RMIConnectionManagerTest extends ConnectionManagerTestBase {
 
     TestRemoteIFaceImpl server;
 
+    @Override
     public void setUp() throws Exception {
         connId = "//localhost:2767/test";
         server = new TestRemoteIFaceImpl(connId);
@@ -17,6 +18,7 @@ public class RMIConnectionManagerTest extends ConnectionManagerTestBase {
         cm.setLingerTime(1);
     }
 
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
         server.close();
