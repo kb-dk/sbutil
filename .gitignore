@@ -1,0 +1,10 @@
+*.ipr
+**/*.iml
+*.iml
+*.iws
+target/
+**/target/
+testfile
+tmp/
+**/*~
+*~

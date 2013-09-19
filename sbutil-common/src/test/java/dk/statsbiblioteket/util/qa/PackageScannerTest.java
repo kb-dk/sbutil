@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.URISyntaxException;
 
 
 /**
@@ -36,9 +37,13 @@ public class PackageScannerTest extends TestCase {
 
     // FIXME: These are not real unit tests
 
-    String CLASS_DIR = "target/classes/";
+    String CLASS_DIR;
     String PACKAGE_SCANNER = "dk/statsbiblioteket/util/qa/PackageScanner.class";
     Report report;
+
+    public PackageScannerTest() throws URISyntaxException {
+        CLASS_DIR = new File(new File(Thread.currentThread().getContextClassLoader().getResource("placeholder").toURI()).getParentFile().getParentFile().getAbsolutePath(),"classes").getAbsolutePath();
+    }
 
     public void setUp() throws Exception {
         report = new BasicReport();

@@ -26,6 +26,7 @@ import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 
 /**
@@ -39,11 +40,14 @@ public class ZipsTest extends TestCase {
     String outputFile; // test output zip file
     String dataDir; // the data dir for test
 
-    public void setUp() {
-        dataDir = "src/test/resources/data/xml/";
-        inputDir = System.getProperty("user.dir") + File.separator + "target";
-        inputFile = System.getProperty("user.dir") + File.separator + "README";
-        tmpDir = System.getProperty("user.dir") + File.separator + "tmp";
+    public void setUp() throws URISyntaxException {
+        File resources = new File(Thread.currentThread().getContextClassLoader().getResource("placeholder").toURI()).getParentFile();
+        dataDir = new File(resources,"data/xml").getAbsolutePath();
+        File myFolder = resources.getParentFile().getParentFile();
+        File rootProject = resources.getParentFile().getParentFile().getParentFile();
+        inputDir = myFolder.getAbsolutePath() + File.separator + "target";
+        inputFile = rootProject + File.separator + "README";
+        tmpDir = myFolder + File.separator + "tmp";
         outputFile = tmpDir + File.separator + "test";
     }
 

@@ -48,8 +48,11 @@ public class FilesTest extends TestCase {
     File subFile2;
 
     public void setUp() throws Exception {
-        inputDir = System.getProperty("user.dir") + File.separator + "target";
-        inputFile = System.getProperty("user.dir") + File.separator + "README";
+        File resources = new File(Thread.currentThread().getContextClassLoader().getResource("placeholder").toURI()).getParentFile();
+
+        String myFolder = resources.getParentFile().getParentFile().getParentFile().getAbsolutePath();
+        inputDir = myFolder + File.separator + "target";
+        inputFile = myFolder+ File.separator + "README";
         tmpDir = new File(System.getProperty("java.io.tmpdir"), "filestest");
         outputFile = tmpDir + File.separator + "test";
 

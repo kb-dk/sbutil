@@ -38,7 +38,7 @@ public class ProjectsTest extends TestCase {
     public void testGetProjectRootSimple() throws Exception {
         File root = Projects.getProjectRoot(Projects.class);
 
-        assertTrue("build.xml should be found in sbutil root: " + root, new File(root, "build.xml").exists());
+        assertTrue("pom.xml should be found in sbutil root: " + root, new File(root, "pom.xml").exists());
         System.out.println("Root dir: " + root);
     }
 }

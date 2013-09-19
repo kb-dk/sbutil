@@ -28,6 +28,7 @@ import junit.framework.TestSuite;
 import org.apache.log4j.Logger;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.*;
@@ -37,13 +38,15 @@ public class LineReaderTest extends TestCase {
     private static Logger log = Logger.getLogger(LineReaderTest.class);
 
     private static final int LINES = 376;
-    File logfile = new File("src/test/resources/data",
-                            "website-performance-info.log.2007-04-01");
+    private final File tempFolder;
+    File logfile;
     private File TMPFOLDER = new File(
             System.getProperty("java.io.tmpdir"), "linereadertest");
 
-    public LineReaderTest(String name) {
+    public LineReaderTest(String name) throws URISyntaxException {
         super(name);
+        logfile = new File(Thread.currentThread().getContextClassLoader().getResource("data/website-performance-info.log.2007-04-01").toURI());
+        tempFolder= logfile.getParentFile();
     }
 
     @Override
@@ -421,11 +424,12 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWrite() throws Exception {
-        File temp = new File("src/test/resources/data/temp.tmp");
+        File temp = new File(tempFolder,"temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
         assertEquals("Newly created file should be empty", 0, lr.length());
+
         byte[] myBytes = new byte[10];
         lr.write(myBytes, 0, myBytes.length);
         assertEquals("After writing 10 bytes, the length should be 10",
@@ -644,7 +648,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWrite2Bytes() throws Exception {
-        File temp = new File("src/test/resources/data/temp.tmp");
+        File temp = new File(tempFolder,"temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -665,7 +669,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteCloseReadWrite() throws Exception {
-        File temp = new File("src/test/resources/data/temp.tmp");
+        File temp = new File(tempFolder,"temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -697,7 +701,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteCloseNewWrite() throws Exception {
-        File temp = new File("src/test/resources/data/temp.tmp");
+        File temp = new File(tempFolder,"temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -722,7 +726,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteSeekWrite() throws Exception {
-        File temp = new File("src/test/resources/data/temp.tmp");
+        File temp = new File(tempFolder,"temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");

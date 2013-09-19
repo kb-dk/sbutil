@@ -4,7 +4,7 @@
     <groupId>dk.statsbiblioteket.sbutil</groupId>
     <artifactId>sbutil</artifactId>
     <version>0.5.13-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>sbutil</name>
     <description>Utilities package for SB</description>
@@ -13,8 +13,13 @@
     <parent>
         <groupId>org.sbforge</groupId>
         <artifactId>sbforge-parent</artifactId>
-        <version>8</version>
+        <version>12</version>
     </parent>
+
+    <modules>
+        <module>sbutil-common</module>
+    </modules>
+
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
