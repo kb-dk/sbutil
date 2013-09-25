@@ -25,10 +25,22 @@ package dk.statsbiblioteket.util;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Assert;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.Properties;
 
 /**
  * XProperties Tester.
@@ -62,21 +74,21 @@ public class XPropertiesTest extends TestCase {
     public void testGetXStream() throws Exception {
         log.debug("Entered testGetXStream");
         XProperties properties = new XProperties();
-        assertNotNull("Accessing XStream", properties.getXStream());
+        Assert.assertNotNull("Accessing XStream", properties.getXStream());
     }
 
     public void testContainsHR() throws Exception {
         log.debug("Entered testContainsHR");
         XProperties properties = new XProperties();
         properties.put("SomeInt", 87);
-        assertFalse("Non-existing object", properties.containsValue(86));
-        assertTrue("Existing object", properties.containsValue(87));
-        assertFalse("Non-existing object", properties.containsValue("Blah"));
-        assertFalse("Non-existing object",
-                    properties.containsValue(Calendar.getInstance()));
+        Assert.assertFalse("Non-existing object", properties.containsValue(86));
+        Assert.assertTrue("Existing object", properties.containsValue(87));
+        Assert.assertFalse("Non-existing object", properties.containsValue("Blah"));
+        Assert.assertFalse("Non-existing object",
+                properties.containsValue(Calendar.getInstance()));
 
         properties.put("SomeInt", "AString");
-        assertTrue("Existing object II", properties.containsValue("AString"));
+        Assert.assertTrue("Existing object II", properties.containsValue("AString"));
     }
 
     public void testPutHRDefault() throws Exception {
@@ -86,13 +98,13 @@ public class XPropertiesTest extends TestCase {
             properties.getObject("Foo");
         } catch (NullPointerException e) {
             properties.putDefault("Foo", "Bar");
-            assertNotNull("Default object", properties.getProperty("Foo"));
+            Assert.assertNotNull("Default object", properties.getProperty("Foo"));
 
             properties.putDefault("Zoo", new LinkedList<Integer>());
-            assertNotNull("Complex object", properties.getObject("Zoo"));
+            Assert.assertNotNull("Complex object", properties.getObject("Zoo"));
             return;
         }
-        fail("Empty properties should not containa 'Foo' key");
+        Assert.fail("Empty properties should not containa 'Foo' key");
 
 
     }
@@ -104,24 +116,24 @@ public class XPropertiesTest extends TestCase {
             properties.getObject("Foo");
         } catch (NullPointerException e) {
             properties.put("Foo", "Bar");
-            assertNotNull("Existing object", properties.getObject("Foo"));
+            Assert.assertNotNull("Existing object", properties.getObject("Foo"));
             assertEquals("Replacing object", "Bar", properties.put("Foo", "Zoo"));
-            assertNull("First time storage", properties.put("Blonk", "Mxyzptlk"));
+            Assert.assertNull("First time storage", properties.put("Blonk", "Mxyzptlk"));
 
             byte[] anArray = {1, 2, 3};
             properties.put("MyArray", anArray);
             byte[] anotherArray = (byte[]) properties.getObject("MyArray");
-            assertEquals("Bytearray length", anArray.length, anArray.length);
+            Assert.assertEquals("Bytearray length", anArray.length, anArray.length);
             for (int i = 0; i < Math.max(anArray.length, anotherArray.length);
                  i++) {
-                assertEquals("Bytearray content", anArray[i], anotherArray[i]);
+                Assert.assertEquals("Bytearray content", anArray[i], anotherArray[i]);
             }
             properties.put("MoreComplex", new LinkedList<Integer>());
-            assertNotNull("Existing complex object",
-                          properties.getObject("MoreComplex"));
+            Assert.assertNotNull("Existing complex object",
+                    properties.getObject("MoreComplex"));
             return;
         }
-        fail("Non-existing key should throw NP Exception");
+        Assert.fail("Non-existing key should throw NP Exception");
     }
 
     public void testDefaultPath() throws Exception {
@@ -141,7 +153,7 @@ public class XPropertiesTest extends TestCase {
         path.delete();
         try {
             properties.setDefaultPath(path);
-            fail("Should have thrown exception on nonexisting path");
+            Assert.fail("Should have thrown exception on nonexisting path");
         } catch (IllegalArgumentException e) {
             //Expected
         }
@@ -154,16 +166,16 @@ public class XPropertiesTest extends TestCase {
             properties.getObject("Foo");
         } catch (NullPointerException e) {
             properties.put("Foo", "Bar");
-            assertNotNull("Existing object", properties.getObject("Foo"));
+            Assert.assertNotNull("Existing object", properties.getObject("Foo"));
             assertEquals("Object value", "Bar", properties.getObject("Foo"));
             Date now = Calendar.getInstance().getTime();
             properties.put("Zoo", now);
             assertEquals("Date value", properties.getObject("Zoo"), now);
-            assertNotSame("Date value 2", properties.getObject("Zoo"),
-                          Calendar.getInstance().getTime());
+            Assert.assertNotSame("Date value 2", properties.getObject("Zoo"),
+                    Calendar.getInstance().getTime());
             return;
         }
-        fail("Non-existing key should throw NP Exception");
+        Assert.fail("Non-existing key should throw NP Exception");
     }
 
     public void testGetString() throws Exception {
@@ -172,7 +184,7 @@ public class XPropertiesTest extends TestCase {
         properties.put("Foo", 87);
         try {
             properties.getString("Foo");
-            fail("Should throw exception for wrong value type");
+            Assert.fail("Should throw exception for wrong value type");
         } catch (ClassCastException ex) {
             //expected
         }
@@ -180,13 +192,13 @@ public class XPropertiesTest extends TestCase {
         properties.put("Zoo", "Bingo");
         assertEquals("Extracting String", "Bingo", properties.getString("Zoo"));
         try {
-            assertNull("Expecting null when requesting a non-existing String",
-                       properties.getString("Dumbo"));
+            Assert.assertNull("Expecting null when requesting a non-existing String",
+                    properties.getString("Dumbo"));
         } catch (NullPointerException e) {
             // expected behavior
             return;
         }
-        fail("Non-existing key should throw NP Exception");
+        Assert.fail("Non-existing key should throw NP Exception");
 
     }
 
@@ -201,13 +213,13 @@ public class XPropertiesTest extends TestCase {
         } catch (Exception ex) {
             throwed = true;
         }
-        assertTrue("Throw exception for wrong value type", throwed);
+        Assert.assertTrue("Throw exception for wrong value type", throwed);
 
         properties.put("Zoo", 87);
         assertEquals("Extracting integer", 87, properties.getInteger("Zoo"));
         try {
             properties.getInteger("Dumbo");
-            fail("Throw exception on non-existing object");
+            Assert.fail("Throw exception on non-existing object");
         } catch (Exception ex) {
             // Expected behaviour
         }
@@ -219,7 +231,7 @@ public class XPropertiesTest extends TestCase {
         properties.put("Foo", "Bar");
         try {
             properties.getBoolean("Foo");
-            fail("Throw expected for wrong value type");
+            Assert.fail("Throw expected for wrong value type");
         } catch (Exception ex) {
             // Do nothing, as this is the correct behaviour
         }
@@ -228,7 +240,7 @@ public class XPropertiesTest extends TestCase {
         assertEquals("Extracting boolean", true, properties.getBoolean("Zoo"));
         try {
             properties.getBoolean("Dumbo");
-            fail("Throw exception on non-existing object");
+            Assert.fail("Throw exception on non-existing object");
         } catch (Exception ex) {
             // Expected behaviour
         }
@@ -240,7 +252,7 @@ public class XPropertiesTest extends TestCase {
         properties.put("Foo", "Bar");
         try {
             properties.getDouble("Foo");
-            fail("Throw expected for wrong value type");
+            Assert.fail("Throw expected for wrong value type");
         } catch (Exception ex) {
             // Do nothing, as this is the correct behaviour
         }
@@ -249,7 +261,7 @@ public class XPropertiesTest extends TestCase {
         assertEquals("Extracting double", 87.88, properties.getDouble("Zoo"));
         try {
             properties.getDouble("Dumbo");
-            fail("Throw exception on non-existing object");
+            Assert.fail("Throw exception on non-existing object");
         } catch (Exception ex) {
             // Expected behaviour
         }
@@ -261,7 +273,7 @@ public class XPropertiesTest extends TestCase {
         properties.put("Foo", "Bar");
         try {
             properties.getChar("Foo");
-            fail("Throw expected for wrong value type");
+            Assert.fail("Throw expected for wrong value type");
         } catch (Exception ex) {
             // Do nothing, as this is the correct behaviour
         }
@@ -270,7 +282,7 @@ public class XPropertiesTest extends TestCase {
         assertEquals("Extracting char", 't', properties.getChar("Zoo"));
         try {
             properties.getChar("Dumbo");
-            fail("Throw exception on non-existing object");
+            Assert.fail("Throw exception on non-existing object");
         } catch (Exception ex) {
             // Expected behaviour
         }
@@ -281,7 +293,7 @@ public class XPropertiesTest extends TestCase {
         final String resourceName = "JUnit_HRProperties_testfile.tmp";
 
         // Store resource
-        assertNotNull(new XProperties("Somename"));
+        Assert.assertNotNull(new XProperties("Somename"));
         XProperties properties = new XProperties();
         properties.put("Foo", "Bar");
         assertEquals("Sanity check for Object Value", "Bar",
@@ -297,7 +309,7 @@ public class XPropertiesTest extends TestCase {
         properties.load(resourceName, true, true);
         assertEquals("Persistence load", "Bar", properties.getObject("Foo"));
 
-        assertTrue("Cleaning up", deleteResource(resourceName));
+        Assert.assertTrue("Cleaning up", deleteResource(resourceName));
     }
 
     public void testPopulateWithDefaults() throws Exception {
@@ -309,13 +321,13 @@ public class XPropertiesTest extends TestCase {
 
         // Sanity check
         properties.putDefault("Foo", "Bar");
-        assertSame("Exists as default", "Bar", properties.getObject("Foo"));
+        Assert.assertSame("Exists as default", "Bar", properties.getObject("Foo"));
         properties.store();
 
         properties = new XProperties(resourceName);
         properties.putDefault("Foo", "Bar2");
-        assertSame("Defaults should not be saved", "Bar2",
-                   properties.getObject("Foo"));
+        Assert.assertSame("Defaults should not be saved", "Bar2",
+                properties.getObject("Foo"));
 
         properties.populateWithDefaults();
         properties.store();
@@ -331,8 +343,8 @@ public class XPropertiesTest extends TestCase {
         properties.put("Foo", "Bar");
         properties.putDefault("Foo", "gnyph");
         properties.populateWithDefaults();
-        assertSame("Original value should not be overwritten",
-                   "Bar", properties.getString("Foo"));
+        Assert.assertSame("Original value should not be overwritten",
+                "Bar", properties.getString("Foo"));
     }
 
     public void testSize() throws Exception {
@@ -376,8 +388,8 @@ public class XPropertiesTest extends TestCase {
         // Load invalid resource by constructor
         try {
             new XProperties(resourceName);
-            fail("Should throw an exception because of invalid resource " +
-                 "(constructor)");
+            Assert.fail("Should throw an exception because of invalid resource " +
+                    "(constructor)");
         } catch (Exception ex) {
             // Expected
 
@@ -393,8 +405,8 @@ public class XPropertiesTest extends TestCase {
         try {
             properties = new XProperties();
             properties.load(resourceName, false, false);
-            fail("Should throw an exception because of invalid resource " +
-                 "(method)");
+            Assert.fail("Should throw an exception because of invalid resource " +
+                    "(method)");
         } catch (Exception ex) {
             // Expected
 
@@ -412,16 +424,16 @@ public class XPropertiesTest extends TestCase {
             properties.load(resourceName, true, true);
         } catch (Exception ex) {
             ex.printStackTrace(System.err);
-            fail(String.format("Should not throw an exception, when " +
-                               "ignoreErrors is true. Got message %s",
-                               ex.getMessage()));
+            Assert.fail(String.format("Should not throw an exception, when " +
+                    "ignoreErrors is true. Got message %s",
+                    ex.getMessage()));
             // Note: The XML parser writes [Fatal Error] :1:1: Content is not
             // allowed in prolog to stderr.
             // No need to be alarmed, since it's supposed to react that way to
             // invalid XML documents.
         }
 
-        assertTrue("Cleaning up sould complete", deleteResource(resourceName));
+        Assert.assertTrue("Cleaning up sould complete", deleteResource(resourceName));
     }
 
     /**
@@ -493,31 +505,31 @@ public class XPropertiesTest extends TestCase {
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         properties.list(pw);
-        assertTrue("Should generate simple output 1 but was:\n" + sw.toString(),
-                   sw.toString().matches("(?s)(?m)\\s*<xstream>\\s*"
-                                         + "<xproperties>\\s*"
-                                         + "<entry>\\s*"
-                                         + "<key>Foo</key>\\s*"
-                                         + "<value\\s*class=\"string\">Bar</value>\\s*"
-                                         + "</entry>\\s*"
-                                         + "</xproperties>\\s*"
-                                         + "</xstream>\\s*"));
+        Assert.assertTrue("Should generate simple output 1 but was:\n" + sw.toString(),
+                sw.toString().matches("(?s)(?m)\\s*<xstream>\\s*"
+                        + "<xproperties>\\s*"
+                        + "<entry>\\s*"
+                        + "<key>Foo</key>\\s*"
+                        + "<value\\s*class=\"string\">Bar</value>\\s*"
+                        + "</entry>\\s*"
+                        + "</xproperties>\\s*"
+                        + "</xstream>\\s*"));
         ByteArrayOutputStream ba = new ByteArrayOutputStream();
         properties.put("Foo2", 7);
         properties.list(new PrintStream(ba));
-        assertTrue("Should generate simple output 2 but was:\n" + sw.toString(),
-                   ba.toString().matches("(?s)(?m)\\s*<xstream>\\s*"
-                                         + "<xproperties>\\s*"
-                                         + "<entry>\\s*"
-                                         + "<key>Foo2</key>\\s*"
-                                         + "<value\\s*class=\"int\">7</value>\\s*"
-                                         + "</entry>\\s*"
-                                         + "<entry>\\s*"
-                                         + "<key>Foo</key>\\s*"
-                                         + "<value\\s*class=\"string\">Bar</value>\\s*"
-                                         + "</entry>\\s*"
-                                         + "</xproperties>\\s*"
-                                         + "</xstream>\\s*"));
+        Assert.assertTrue("Should generate simple output 2 but was:\n" + sw.toString(),
+                ba.toString().matches("(?s)(?m)\\s*<xstream>\\s*"
+                        + "<xproperties>\\s*"
+                        + "<entry>\\s*"
+                        + "<key>Foo2</key>\\s*"
+                        + "<value\\s*class=\"int\">7</value>\\s*"
+                        + "</entry>\\s*"
+                        + "<entry>\\s*"
+                        + "<key>Foo</key>\\s*"
+                        + "<value\\s*class=\"string\">Bar</value>\\s*"
+                        + "</entry>\\s*"
+                        + "</xproperties>\\s*"
+                        + "</xstream>\\s*"));
     }
 
     public void dumpNothing() {
@@ -610,37 +622,37 @@ public class XPropertiesTest extends TestCase {
         XProperties properties = new XProperties();
         try {
             properties.getBoolean("gnaf");
-            fail("Getting non-existing  should throw an exception");
+            Assert.fail("Getting non-existing  should throw an exception");
         } catch (NullPointerException e) {
             // Expected
         }
         try {
             properties.getChar("gnaf");
-            fail("Getting non-existing char should throw an exception");
+            Assert.fail("Getting non-existing char should throw an exception");
         } catch (NullPointerException e) {
             // Expected
         }
         try {
             properties.getDouble("gnaf");
-            fail("Getting non-existing double should throw an exception");
+            Assert.fail("Getting non-existing double should throw an exception");
         } catch (NullPointerException e) {
             // Expected
         }
         try {
             properties.getInteger("gnaf");
-            fail("Getting non-existing int should throw an exception");
+            Assert.fail("Getting non-existing int should throw an exception");
         } catch (NullPointerException e) {
             // Expected
         }
         try {
             properties.getString("gnaf");
-            fail("Getting non-existing String should throw an exception");
+            Assert.fail("Getting non-existing String should throw an exception");
         } catch (NullPointerException e) {
             // Expected
         }
         try {
             properties.getSubProperty("gnaf");
-            fail("Getting non-existing sub-property should throw an exception");
+            Assert.fail("Getting non-existing sub-property should throw an exception");
         } catch (NullPointerException e) {
             // Expected
         }
@@ -667,7 +679,7 @@ public class XPropertiesTest extends TestCase {
                      false, properties.getBoolean("false"));
         try {
             properties.getString("false");
-            fail("Requesting a boolean as a String should raise exception");
+            Assert.fail("Requesting a boolean as a String should raise exception");
         } catch (ClassCastException e) {
             // Expected
         }
@@ -688,14 +700,14 @@ public class XPropertiesTest extends TestCase {
             FileOutputStream fout;
 
             if (file.exists()) {
-                fail("Test file " + file + " already exists. Please delete it.");
+                Assert.fail("Test file " + file + " already exists. Please delete it.");
             }
 
             // Try to store
             fout = new FileOutputStream(file);
             props.store(fout, null);
             fout.close();
-            assertTrue(file.exists());
+            Assert.assertTrue(file.exists());
 
             // Load
             props.load(new FileInputStream(file));
@@ -720,16 +732,16 @@ public class XPropertiesTest extends TestCase {
     public void testNonExistingResource() throws Exception {
         try {
             new XProperties("nonexisting", false, true);
-            fail("XProperties should throw an exception when fetching "
-                 + "non-existing resource with failOnNotFould == true");
+            Assert.fail("XProperties should throw an exception when fetching "
+                    + "non-existing resource with failOnNotFould == true");
         } catch (IOException e) {
             // Expected
         }
         try {
             new XProperties("nonexisting2", false, false);
         } catch (IOException e) {
-            fail("XProperties should not throw an exception when fetching "
-                 + "non-existing resource with failOnNotFould == false");
+            Assert.fail("XProperties should not throw an exception when fetching "
+                    + "non-existing resource with failOnNotFould == false");
         }
     }
 }
