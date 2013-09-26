@@ -22,11 +22,12 @@ package dk.statsbiblioteket.util.xml;
 import dk.statsbiblioteket.util.Files;
 import dk.statsbiblioteket.util.Profiler;
 import dk.statsbiblioteket.util.qa.QAInfo;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.w3c.dom.Document;
 
 import javax.xml.transform.TransformerException;
@@ -40,31 +41,28 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+
 @SuppressWarnings({"DuplicateStringLiteralInspection"})
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
-public class XSLTTest extends TestCase {
+public class XSLTTest {
     private static Log log = LogFactory.getLog(XSLTTest.class);
 
-    public XSLTTest(String name) {
-        super(name);
-    }
 
-    @Override
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
-        super.tearDown();
+
     }
 
-    public static Test suite() {
-        return new TestSuite(XSLTTest.class);
-    }
-
+    @Test
     public void testSimpletransformation() throws TransformerException,
                                                   IOException {
         URL xslt1 = getURL("data/xml/trivial_transform1.xslt");
@@ -87,6 +85,7 @@ public class XSLTTest extends TestCase {
                      expected2.trim(), result.trim());
     }
 
+    @Test
     public void testParameter() throws Exception {
         Properties properties = new Properties();
         properties.put("keyword", "foo");
@@ -100,15 +99,16 @@ public class XSLTTest extends TestCase {
                      XSLT.transform(xslt1, input, properties).trim().replaceAll("\\s+", " "));
 
     }
-
+    @Test
     public void testMediumStress() throws Exception {
         testThread(20, 20, 20);
     }
 
+    @Test
     public void testFewThreadsManyRepeats() throws Exception {
         testThread(5, 200, 20);
     }
-
+    @Test
     public void testManyThreadsFewRepeats() throws Exception {
         testThread(200, 5, 20);
     }
@@ -234,7 +234,7 @@ public class XSLTTest extends TestCase {
         return Thread.currentThread().getContextClassLoader().getResource(
                 resource);
     }
-
+    @Test
     public void testFaultyRemoveNamespace() throws Exception {
         URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
         String input = Files.loadString(new File(XSLTTest.getURL(
@@ -245,7 +245,7 @@ public class XSLTTest extends TestCase {
                      expected.trim().replaceAll("\\s+", " "),
                      XSLT.transform(xslt, input).trim().replaceAll("\\s+", " "));
     }
-
+    @Test
     public void testCorrectRemoveNamespace() throws Exception {
         URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
         String input = Files.loadString(new File(XSLTTest.getURL(
@@ -257,6 +257,8 @@ public class XSLTTest extends TestCase {
                      XSLT.transform(xslt, input, true).trim().replaceAll("\\s+", " "));
     }
 
+    @Test
+    @Ignore
     public void testNoNamespaceSpeed() throws Exception {
         int OUTER = 10;
         int RUNS = 5000;
@@ -307,7 +309,8 @@ public class XSLTTest extends TestCase {
                                + " namespace-keeping transformation/second\n");
         }
     }
-
+    @Test
+    @Ignore
     public void tsestBurnNoNamespace() throws Exception {
         int RUNS = 50000;
         URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
