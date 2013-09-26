@@ -70,7 +70,7 @@ public class Streams {
 
     /**
      * Shorthand for
-     * {@link #pipeStream(java.io.InputStream, java.io.OutputStream, int)}.
+     * {@link #pipe(java.io.InputStream, java.io.OutputStream, int)}.
      * A default buffer of 4KB is used.
      *
      * @param in  The source stream.
@@ -99,7 +99,7 @@ public class Streams {
         }
         InputStream in = url.openStream();
         ByteArrayOutputStream bytes = new ByteArrayOutputStream(1000);
-        pipeStream(in, bytes);
+        pipe(in, bytes);
         return bytes.toString("utf-8");
     }
 

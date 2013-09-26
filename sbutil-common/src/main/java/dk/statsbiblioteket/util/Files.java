@@ -217,7 +217,7 @@ public class Files {
                 throw new FilePermissionException(dest,
                                                   Files.Permission.writable);
             }
-            dest = new File(dest, Files.baseName(source));
+            dest = new File(dest, source.getName());
         }
 
         if (dest.exists()) {
@@ -447,7 +447,7 @@ public class Files {
         }
         InputStream in = new ByteArrayInputStream(content.getBytes("UTF-8"));
         FileOutputStream out = new FileOutputStream(destination);
-        Streams.pipeStream(in, out);
+        Streams.pipe(in, out);
     }
 
     /**
@@ -465,7 +465,7 @@ public class Files {
         InputStream in = new FileInputStream(source);
         ByteArrayOutputStream out =
                 new ByteArrayOutputStream((int) source.length());
-        Streams.pipeStream(in, out);
+        Streams.pipe(in, out);
         return out.toString("UTF-8");
     }
 
@@ -477,7 +477,7 @@ public class Files {
      * @deprecated use {@link File#getName)} instead.
      */
     public static String baseName(File file) {
-        return baseName(file.toString());
+        return file.getName();
     }
 
     /**
@@ -489,10 +489,11 @@ public class Files {
      *
      * @param filename the filename to extract the base name for.
      * @return file's basename.
-     * @deprecated use {@link File#getName)} instead.
      */
-    public static String baseName(String filename) {
-        return filename.substring(filename.lastIndexOf(File.separator) + 1);
+    public static String baseName(String filename)
+    {
+        return new File(filename).getName();
+
     }
 
     /**
@@ -532,7 +533,7 @@ public class Files {
         File result;
 
         if (target.isDirectory()) {
-            result = new File(target, baseName(new File(url.getFile())));
+            result = new File(target, new File(url.getFile()).getName());
         } else {
             result = target;
         }
@@ -549,7 +550,7 @@ public class Files {
             throw new IOException("Failed to open stream to '" + url + "'", e);
         }
         OutputStream out = new FileOutputStream(result);
-        Streams.pipeStream(con, out);
+        Streams.pipe(con, out);
         return result;
     }
 

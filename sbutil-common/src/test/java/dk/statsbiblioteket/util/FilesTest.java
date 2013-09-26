@@ -164,11 +164,13 @@ public class FilesTest extends TestCase {
         tempFile.delete();
     }
 
+    @Deprecated
     public void testBaseNameOfDir() {
         File f = new File("uga" + File.separator + "buga");
         assertEquals("buga", Files.baseName(f));
     }
 
+    @Deprecated
     public void testBaseNameNoSep() {
         File f = new File("uga");
         assertEquals("uga", Files.baseName(f));

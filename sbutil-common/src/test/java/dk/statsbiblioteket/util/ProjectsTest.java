@@ -35,6 +35,7 @@ import java.io.File;
  */
 public class ProjectsTest extends TestCase {
 
+    @Deprecated
     public void testGetProjectRootSimple() throws Exception {
         File root = Projects.getProjectRoot(Projects.class);
 
