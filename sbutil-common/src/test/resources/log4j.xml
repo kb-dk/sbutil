@@ -24,7 +24,7 @@
 
     <logger name="dk.statsbiblioteket.util">
         <level value="debug"/>
-        <appender-ref ref="CONSOLE"/>
+
     </logger>
 
     <!-- all loggeres inherit the root logger - so don't include the root appenders in the other loggers (will duplicate log entries in the log file) -->
