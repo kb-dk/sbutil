@@ -21,17 +21,19 @@ package dk.statsbiblioteket.util.reader;
 
 import dk.statsbiblioteket.util.Strings;
 import dk.statsbiblioteket.util.qa.QAInfo;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+
 
 /**
  * Performs comparisons and tests of different replacers.
@@ -40,24 +42,12 @@ import java.util.Random;
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
-public class ReplacerTest extends TestCase {
+public class ReplacerTest {
     private static Log log = LogFactory.getLog(ReplacerTest.class);
 
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-    }
-
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    public static Test suite() {
-        return new TestSuite(ReplacerTest.class);
-    }
 
     // 'f' => 'b'
+    @Test
     public void testMonkeyCharToChar() throws IOException {
         Map<String, String> rules =
                 ReplacePerformanceTest.getRangeReplacements(300, 1, 1, 1, 1);
@@ -65,19 +55,21 @@ public class ReplacerTest extends TestCase {
     }
 
     // 'f' => "bar"
+    @Test
     public void testMonkeyCharToChars() throws IOException {
         Map<String, String> rules =
                 ReplacePerformanceTest.getRangeReplacements(300, 1, 1, 0, 5);
         testMonkey(new CharArrayReplacer(rules), rules);
     }
 
+    @Test
     // "foo" => "bar"
     public void testMonkeyCharsToChars() throws IOException {
         Map<String, String> rules =
                 ReplacePerformanceTest.getRangeReplacements(300, 1, 5, 0, 5);
         testMonkey(new StringReplacer(rules), rules);
     }
-
+    @Test
     public void testSetSourceString() throws Exception {
         StringReplacer rep = new StringReplacer(
                 new StringReader("foo"), new HashMap<String, String>());
@@ -93,6 +85,7 @@ public class ReplacerTest extends TestCase {
         assertEquals("abcdefghijklmnopqrstuvwxyz", Strings.flushLocal(rep));
     }
 
+    @Test
     public void testSetSourceChar() throws Exception {
         CharReplacer rep = new CharReplacer(
                 new StringReader("foo"), new HashMap<String, String>());
@@ -108,6 +101,7 @@ public class ReplacerTest extends TestCase {
         assertEquals("abcdefghijklmnopqrstuvwxyz", Strings.flushLocal(rep));
     }
 
+    @Test
     public void testSetSourceCharArray() throws Exception {
         CharArrayReplacer rep = new CharArrayReplacer(
                 new StringReader("foo"), new HashMap<String, String>());
@@ -123,6 +117,7 @@ public class ReplacerTest extends TestCase {
         assertEquals("abcdefghijklmnopqrstuvwxyz", Strings.flushLocal(rep));
     }
 
+    @Test
     public void testEmptyCharArrayReadSingle() throws Exception {
         ReplaceReader rep = new CharArrayReplacer(
                 new StringReader(""), new HashMap<String, String>());
@@ -132,6 +127,7 @@ public class ReplacerTest extends TestCase {
         assertEquals(-1, rep.read());
     }
 
+    @Test
     public void testEmptyCharReadSingle() throws Exception {
         ReplaceReader rep = new CharReplacer(
                 new StringReader(""), new HashMap<String, String>());
@@ -141,6 +137,7 @@ public class ReplacerTest extends TestCase {
         assertEquals(-1, rep.read());
     }
 
+    @Test
     public void testEmptyStringReadSingle() throws Exception {
         ReplaceReader rep = new StringReplacer(
                 new StringReader(""), new HashMap<String, String>());
@@ -150,7 +147,9 @@ public class ReplacerTest extends TestCase {
         assertEquals(-1, rep.read());
     }
 
-    public void testSpeedCharsVsString() throws Exception {
+    @Test
+    @Ignore
+        public void testSpeedCharsVsString() throws Exception {
         Random random = new Random(456);
         int RUNS = 10;
         int[] RULES = new int[]{0, 10, 100, 1000};
@@ -188,6 +187,8 @@ public class ReplacerTest extends TestCase {
         }
     }
 
+    @Test
+    @Ignore
     public void testSpeedCharVsChars() throws Exception {
         Random random = new Random(456);
         int RUNS = 10;
