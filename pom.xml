@@ -106,17 +106,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <issueManagement>
-        <url>https://sourceforge.net/apps/trac/sbutil/</url>
-    </issueManagement>
-    <ciManagement>
-        <system>hudson</system>
-        <url>http://sbforge.statsbiblioteket.dk/hudson/view/SBUtil</url>
-    </ciManagement>
-    <scm>
-        <connection>scm:svn:https://sbutil.svn.sourceforge.net/svnroot/sbutil/trunk/</connection>
-        <developerConnection>scm:svn:https://sbutil.svn.sourceforge.net/svnroot/sbutil/trunk/</developerConnection>
-        <url>http://summa.svn.sourceforge.net/viewvc/sbutil/</url>
-    </scm>
 </project>
