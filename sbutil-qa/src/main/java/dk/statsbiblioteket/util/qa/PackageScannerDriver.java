@@ -22,7 +22,6 @@
  */
 package dk.statsbiblioteket.util.qa;
 
-import dk.statsbiblioteket.util.Files;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -127,8 +126,9 @@ public final class PackageScannerDriver {
             if (f.isDirectory()) {
                 scanner = new PackageScanner(report, f, targetPackage);
             } else {
+                String filename = f.toString();
                 scanner = new PackageScanner(report, f.getParentFile(),
-                                             Files.baseName(f));
+                        filename.substring(filename.lastIndexOf(File.separator) + 1));
             }
             scanner.scan();
         }

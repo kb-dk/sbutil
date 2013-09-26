@@ -22,13 +22,14 @@
  */
 package dk.statsbiblioteket.util.qa;
 
-import dk.statsbiblioteket.util.Strings;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -168,8 +169,11 @@ public class PackageScanner {
                     new ReportElement(ReportElement.ElementType.ERROR,
                                       "Unknown class name", null,
                                       baseSource.toString(), source, null);
+            StringWriter writer = new StringWriter();
+            PrintWriter printer = new PrintWriter(writer);
+            t.printStackTrace(printer);
             String data = "Message: " + t.getMessage() + "\n\n"
-                          + "Stacktrace:\n" + Strings.getStackTrace(t);
+                          + "Stacktrace:\n" + writer.toString();
             error.setData(data);
             report.add(error);
         }
