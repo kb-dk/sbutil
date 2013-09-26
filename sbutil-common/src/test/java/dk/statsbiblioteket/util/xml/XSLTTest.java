@@ -267,6 +267,27 @@ public class XSLTTest extends TestCase {
         Profiler profiler = new Profiler(RUNS);
         for (int outer = 0; outer < OUTER; outer++) {
 
+
+            System.gc();
+            profiler.reset();
+            for (int i = 0; i < RUNS; i++) {
+                Document dom = DOM.stringToDOM(input,false);
+                XSLT.transform(xslt, dom, null);
+                profiler.beat();
+            }
+            System.out.println("Speed: " + profiler.getBps(false)
+                               + " DOM-using namespace-ignoring transformation/second");
+
+            System.gc();
+            profiler.reset();
+            for (int i = 0; i < RUNS; i++) {
+                Document dom = DOM.stringToDOM(input,true);
+                XSLT.transform(xslt, dom, null);
+                profiler.beat();
+            }
+            System.out.println("Speed: " + profiler.getBps(false)
+                               + " DOM-using namespace-keeping transformation/second");
+
             System.gc();
             profiler.reset();
             for (int i = 0; i < RUNS; i++) {
@@ -275,16 +296,6 @@ public class XSLTTest extends TestCase {
             }
             System.out.println("Speed: " + profiler.getBps(false)
                                + " namespace-ignoring transformation/second");
-
-            System.gc();
-            profiler.reset();
-            for (int i = 0; i < RUNS; i++) {
-                Document dom = DOM.stringToDOM(input);
-                XSLT.transform(xslt, dom, null);
-                profiler.beat();
-            }
-            System.out.println("Speed: " + profiler.getBps(false)
-                               + " DOM-using transformation/second");
 
             System.gc();
             profiler.reset();

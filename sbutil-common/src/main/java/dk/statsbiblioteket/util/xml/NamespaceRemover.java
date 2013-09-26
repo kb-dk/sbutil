@@ -143,12 +143,6 @@ public class NamespaceRemover extends ReplaceReader {
     }
 
     @Override
-    public int read(char cbuf[]) throws IOException {
-        ensureLength(cbuf.length);
-        return outBuf.read(cbuf, 0, cbuf.length);
-    }
-
-    @Override
     public boolean ready() throws IOException {
         return !outBuf.isEmpty() || in.ready();
     }
