@@ -22,7 +22,9 @@
  */
 package dk.statsbiblioteket.util;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.Reader;
 import java.io.StringReader;
@@ -31,17 +33,22 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Test suite for the {@link Strings} class.
  */
-public class StringsTest extends TestCase {
+public class StringsTest {
 
-    @Override
+    @Before
     public void setUp() throws Exception {
 
     }
 
-    @Override
+    @After
     public void tearDown() throws Exception {
 
     }
@@ -49,13 +56,14 @@ public class StringsTest extends TestCase {
     /**
      * Test that the provided stack trace is not null or the empty string
      */
+    @Test
     public void testGetStackTrace() {
         Throwable t = new Exception("This is my test exception");
         String trace = Strings.getStackTrace(t);
         assertNotNull(trace);
         assertTrue(!"".equals(trace));
     }
-
+    @Test
     public void testJoinSimple() {
         assertEquals("abe", Strings.join(Arrays.asList("abe"), "."));
         assertEquals("abe.foo", Strings.join(Arrays.asList("abe", "foo"), "."));
@@ -63,11 +71,11 @@ public class StringsTest extends TestCase {
         assertEquals("abe", Strings.join(new String[]{"abe"}, "."));
         assertEquals("abe.foo", Strings.join(new String[]{"abe", "foo"}, "."));
     }
-
+    @Test
     public void testJoinExtended() {
         assertEquals("abe, ged, ...", Strings.join(Arrays.asList("abe", "ged", "so"), ", ", 2));
     }
-
+    @Test
     public void testJoinNulls() throws Exception {
         List<Object> l = new ArrayList<Object>();
 
@@ -91,7 +99,7 @@ public class StringsTest extends TestCase {
         l.add("bar");
         System.out.println(Strings.join(l, ":"));
     }
-
+    @Test
     public void testJoinEmptyList() throws Exception {
         String s = Strings.join(new ArrayList(), ":");
         assertEquals("", s);
@@ -99,7 +107,7 @@ public class StringsTest extends TestCase {
         s = Strings.join(new ArrayList(), "");
         assertEquals("", s);
     }
-
+    @Test
     public void testKnownCases() throws Exception {
         List<Object> l = new ArrayList<Object>();
         l.add("foo");
@@ -109,7 +117,7 @@ public class StringsTest extends TestCase {
         String s = Strings.join(l, " ABE ");
         assertEquals("foo ABE bar ABE baz", s);
     }
-
+    @Test
     public void testFlushSmall() throws Exception {
         // We try tree times to check that we
         // properly reset the thread local cache
@@ -122,7 +130,7 @@ public class StringsTest extends TestCase {
         r = new StringReader("1");
         assertEquals("1", Strings.flush(r));
     }
-
+    @Test
     public void testAsCharSequence() {
         char[] chars = new char[]{'f', 'o', 'o', 'b', 'a', 'r'};
         assertEquals("foobar", Strings.asCharSequence(chars).toString());
@@ -130,7 +138,7 @@ public class StringsTest extends TestCase {
                      Strings.asCharSequence(chars).subSequence(0, 3).toString());
         assertEquals(6, Strings.asCharSequence(chars).length());
     }
-
+    @Test
     public void testIndexOf() {
         // Zero based indexOf
         assertEquals(1, Strings.indexOf('o', "foo"));

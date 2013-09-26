@@ -22,17 +22,26 @@
  */
 package dk.statsbiblioteket.util;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.util.Arrays;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Test dk.statsbiblioteket.util.Zips
  */
-public class ZipsTest extends TestCase {
+public class ZipsTest {
 
     String inputDir; // build dir for the sbutil installation is used for test input
     String inputFile; // test input file
@@ -40,6 +49,7 @@ public class ZipsTest extends TestCase {
     String outputFile; // test output zip file
     String dataDir; // the data dir for test
 
+    @Before
     public void setUp() throws URISyntaxException {
         File resources = new File(Thread.currentThread().getContextClassLoader().getResource("placeholder").toURI()).getParentFile();
         dataDir = new File(resources,"data/xml").getAbsolutePath();
@@ -51,12 +61,14 @@ public class ZipsTest extends TestCase {
         outputFile = tmpDir + File.separator + "test";
     }
 
+    @After
     public void tearDown() {
     }
 
     /**
      * Test if we can zip a directory with errors
      */
+    @Test
     public void testZipDir() throws Exception {
         Zips.zip(inputDir, outputFile + "-DIR.zip", true);
         new File(outputFile + "-DIR.zip").delete();
@@ -65,6 +77,7 @@ public class ZipsTest extends TestCase {
     /**
      * Test if we can zip a file with errors
      */
+    @Test
     public void testZipFile() throws Exception {
         Zips.zip(inputFile, outputFile + "-FILE.zip", true);
         new File(outputFile + "-FILE.zip").delete();
@@ -74,6 +87,7 @@ public class ZipsTest extends TestCase {
      * We should throw a FileAlreadyExistsException if the
      * output file already exists.
      */
+    @Test
     public void testNoOverwrite() throws Exception {
         Zips.zip(inputFile, outputFile + ".zip", true);
 
@@ -90,6 +104,7 @@ public class ZipsTest extends TestCase {
     /**
      * Check that permissions on files are retained when ZIPping.
      */
+    @Test
     public void testPermissions() throws Exception {
         // FIXME: Does this work at all?
         File tmpDir = new File(System.getProperty("java.io.tmpdir"));
@@ -188,15 +203,15 @@ public class ZipsTest extends TestCase {
 //        sw.append(", exec: ").append(Boolean.toString(file.canExecute()));
         return sw.toString();
     }
-
+    @Test
     public void testUnzipDir() throws Exception {
         // FIXME: Implement me
     }
-
+    @Test
     public void testUnzipFile() throws Exception {
         // FIXME: Implement me
     }
-
+    @Test
     public void testGzipBuffer() throws Exception {
         byte[] buf = "hola mondo!".getBytes();
         byte[] zipBuf, unzipBuf;
@@ -207,7 +222,7 @@ public class ZipsTest extends TestCase {
         assertTrue(Arrays.equals(unzipBuf, buf));
         assertFalse(Arrays.equals(zipBuf, buf));
     }
-
+    @Test
     public void testZeroLengthGzipBuffer() throws Exception {
         byte[] buf = "".getBytes();
         byte[] zipBuf, unzipBuf;
@@ -218,7 +233,7 @@ public class ZipsTest extends TestCase {
         assertTrue(Arrays.equals(unzipBuf, buf));
         assertFalse(Arrays.equals(zipBuf, buf));
     }
-
+    @Test
     public void testNullGzipBuffer() throws Exception {
 
         try {
@@ -235,7 +250,7 @@ public class ZipsTest extends TestCase {
             // Expected
         }
     }
-
+    @Test
     public void testGetZipEntry() throws Exception {
         String nameSpaceFile = "xml/namespace_input.xml";
         File zipFile = new File(outputFile + "-DIR.zip");
