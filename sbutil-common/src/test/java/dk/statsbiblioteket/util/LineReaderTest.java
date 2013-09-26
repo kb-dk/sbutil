@@ -25,7 +25,9 @@ package dk.statsbiblioteket.util;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -35,7 +37,7 @@ import java.util.*;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class LineReaderTest extends TestCase {
-    private static Logger log = Logger.getLogger(LineReaderTest.class);
+    private static Log log = LogFactory.getLog(LineReaderTest.class);
 
     private static final int LINES = 376;
     private final File tempFolder;

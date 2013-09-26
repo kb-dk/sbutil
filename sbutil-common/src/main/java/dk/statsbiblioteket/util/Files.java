@@ -23,7 +23,9 @@
 package dk.statsbiblioteket.util;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 import java.io.*;
 import java.net.ConnectException;
@@ -36,7 +38,7 @@ import java.net.URL;
 @QAInfo(state = QAInfo.State.QA_NEEDED,
         level = QAInfo.Level.NORMAL)
 public class Files {
-    private static Logger log = Logger.getLogger(Files.class);
+    private static Log log = LogFactory.getLog(Files.class);
 
     // TODO: Add method for recursively copying directories (and just plain file copying)
 

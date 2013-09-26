@@ -27,7 +27,9 @@
 package dk.statsbiblioteket.util.watch;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -47,7 +49,7 @@ import java.util.List;
         author = "te")
 public class FolderWatcher extends Observable<FolderListener> implements
                                                               Runnable {
-    protected static Logger log = Logger.getLogger(FolderWatcher.class);
+    protected static Log log = LogFactory.getLog(FolderWatcher.class);
 
     protected File watchedFolder;
     protected List<File> oldContent;

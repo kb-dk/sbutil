@@ -27,7 +27,8 @@
 package dk.statsbiblioteket.util;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -51,7 +52,7 @@ import java.util.Comparator;
 @QAInfo(state = QAInfo.State.QA_NEEDED,
         level = QAInfo.Level.NORMAL)
 public class LineReader implements DataInput, DataOutput {
-    private static Logger log = Logger.getLogger(LineReader.class);
+    private static Log log = LogFactory.getLog(LineReader.class);
 
     protected static final int BUFFER_SIZE = 8192; // TODO: Performance-tweak this
 
