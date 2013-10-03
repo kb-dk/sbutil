@@ -14,7 +14,7 @@ import java.util.Arrays;
  * This implementation is not thread safe.
  */
 // TODO: Running calculation of average and deviation
-public class SlidingPercentiles<L,R> {
+public class SlidingPercentiles {
     /**
      * The maximum size of the windows that holds collected data.
      */
