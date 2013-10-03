@@ -204,6 +204,34 @@ public class Strings {
         return b.toString();
     }
 
+    // TODO: Create a callback implementation so we can do this for all atomics without duplicating code too much
+    public static String join(int[] values) {
+        return join(values, ", ", Long.MAX_VALUE);
+    }
+    public static String join(int[] values, String delimiter, long max) {
+        if (values == null) {
+            throw new NullPointerException("Collection argument is null");
+        } else if (delimiter == null) {
+            throw new NullPointerException("Delimiter argument is null");
+        }
+
+        StringBuilder b = localBuilder.get();
+
+        long counter = 0;
+        for (int value : values) {
+            if (b.length() != 0) {
+                b.append(delimiter);
+            }
+            if (counter++ == max) {
+                b.append("...");
+                break;
+            }
+            b.append(value);
+        }
+
+        return b.toString();
+    }
+
     /**
      * Read all character data from {@code r} and create a String based on
      * that data. The reader is guaranteed to be closed when this method
