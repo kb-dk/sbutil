@@ -98,9 +98,22 @@ public class SlidingPercentiles<L,R> {
     /**
      * Returns the given percentile, interpolated between two values if the percentile is not a perfect split.
      * @param percent the wanted percentile as a number from 0 to 1, both inclusive.
-     * @return the calculated percentile in O(1) time.
+     * @return the calculated percentile in O(1) time or 0 if no values is in the structure.
      */
     public double getPercentile(double percent) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        if (values.length() == 0) {
+            return 0;
+        }
+        double pos = values.length() * percent - 1;
+        if (pos < 0) {
+            return values.peek(0);
+        }
+        if (pos >= values.length()-1) {
+            return values.peek(values.length()-1);
+        }
+        int valLeft = values.peek((int)pos);
+        int valRight = values.peek(((int)pos)+1);
+        double fraction = pos - ((int)pos);
+        return valLeft + (valRight - valLeft) * fraction;
     }
 }
