@@ -73,8 +73,8 @@
 
     <scm>
       <url>git@github.com:statsbiblioteket/sbutil.git</url>
-      <connection>scm:git@github.com:statsbiblioteket/sbutil.git</connection>
-      <developerConnection>scm:git@github.com:statsbiblioteket/sbutil.git</developerConnection>
+      <connection>scm:git:https://github.com/statsbiblioteket/sbutil.git</connection>
+      <developerConnection>scm:git:git@github.com:statsbiblioteket/sbutil.git</developerConnection>
     </scm>
 
     <build>
