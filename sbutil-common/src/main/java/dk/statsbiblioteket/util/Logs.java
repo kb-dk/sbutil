@@ -72,9 +72,7 @@ public class Logs {
      * @param message  the message for the log.
      * @param elements the elements to log.
      */
-    public static void log(Log log, Level level, String message,
-                           Throwable error, boolean verbose,
-                           Object... elements) {
+    public static void log(Log log, Level level, String message, Throwable error, boolean verbose, Object... elements) {
         int maxLength = verbose ? VERBOSE_MAXLENGTH : DEFAULT_MAXLENGTH;
         int maxDepth = verbose ? VERBOSE_MAXDEPTH : DEFAULT_MAXDEPTH;
         String expanded = message;
@@ -143,34 +141,43 @@ public class Logs {
                 }
                 break;
             default:
-                throw new IllegalArgumentException("The level '" + level
-                                                   + "' is unknown");
+                throw new IllegalArgumentException("The level '" + level + "' is unknown");
         }
     }
 
     /**
      * Log a throwable with a message at a given log level.
      *
-     * @param log     The logger to log to
+     * @param destLog The logger to log to
      * @param level   The log level at which the log entry shold be registered
      * @param message Message string to log
      * @param t       Throwable which' stack trace will be included in the log
      */
-    public static void log(Log log, Level level, String message, Throwable t) {
-        log(log, level, message, t, false);
+    public static void log(Log destLog, Level level, String message, Throwable t) {
+        log(destLog, level, message, t, false);
     }
 
     /**
      * Log a message at a given log level
      *
-     * @param log      The logger to log to
+     * @param destLog  The logger to log to
      * @param level    The log level at which the log entry shold be registered
      * @param message  Message string to log
-     * @param elements
      */
-    public static void log(Log log, Level level, String message,
-                           Object... elements) {
-        log(log, level, message, null, false, elements);
+    public static void log(Log destLog, Level level, String message) {
+        log(destLog, level, message, null, false);
+    }
+
+    /**
+     * Log a message at a given log level
+     *
+     * @param destLog  The logger to log to
+     * @param level    The log level at which the log entry shold be registered
+     * @param message  Message string to log
+     * @param elements will be appended to message if there is an appender for the given level
+     */
+    public static void logExpand(Log destLog, Level level, String message, Object... elements) {
+        log(destLog, level, message, null, false, elements);
     }
 
     protected static String expand(Object... elements) {
@@ -195,8 +202,7 @@ public class Logs {
         return expand(element, maxLength, maxDepth);
     }
 
-    protected static String expand(Object element, int maxLength,
-                                   int maxDepth) {
+    protected static String expand(Object element, int maxLength, int maxDepth) {
         StringWriter writer = new StringWriter(200);
         expand(writer, element, maxLength, maxDepth);
         return writer.toString();
@@ -212,8 +218,7 @@ public class Logs {
      * @param maxDepth  the maximum numer of recursive calls, in case of
      *                  lists or arrays.
      */
-    protected static void expand(StringWriter writer, Object element,
-                                 int maxLength, int maxDepth) {
+    protected static void expand(StringWriter writer, Object element, int maxLength, int maxDepth) {
         if (element instanceof Set) {
             expand(writer, (Set) element, maxLength, maxDepth);
         } else if (element instanceof Map) {
@@ -349,8 +354,7 @@ public class Logs {
         return sw.toString();
     }
 
-    protected static void expand(StringWriter writer, List list,
-                                 int maxLength, int maxDepth, int listLength) {
+    protected static void expand(StringWriter writer, List list, int maxLength, int maxDepth, int listLength) {
         writer.append(Integer.toString(listLength));
         if (maxDepth == 0) {
             writer.append("(...)");
@@ -375,8 +379,7 @@ public class Logs {
         writer.append(")");
     }
 
-    protected static void expand(StringWriter writer, Set set,
-                                 int maxLength, int maxDepth) {
+    protected static void expand(StringWriter writer, Set set, int maxLength, int maxDepth) {
         writer.append(Integer.toString(set.size()));
         if (maxDepth == 0) {
             writer.append("(...)");
@@ -401,8 +404,7 @@ public class Logs {
         writer.append(")");
     }
 
-    protected static void expand(StringWriter writer, Map map,
-                                 int maxLength, int maxDepth) {
+    protected static void expand(StringWriter writer, Map map, int maxLength, int maxDepth) {
         writer.append(Integer.toString(map.size()));
         if (maxDepth == 0) {
             writer.append("(...)");

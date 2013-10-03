@@ -43,17 +43,19 @@ public class LogsTest extends TestCase {
         super(name);
     }
 
+    @Override
     public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     public void tearDown() throws Exception {
         super.tearDown();
     }
 
     public void testNullExpansion() {
         Log log = LogFactory.getLog(LogsTest.class);
-        Logs.log(log, Logs.Level.WARN, "Null expansion:", (Object[]) null);
+        Logs.logExpand(log, Logs.Level.WARN, "Null expansion:", (Object[]) null);
     }
 
     public static Test suite() {
@@ -76,8 +78,8 @@ public class LogsTest extends TestCase {
 
         Logs.log(log, Logs.Level.INFO, "hello");
         Logs.log(log, Logs.Level.INFO, "hello", e);
-        Logs.log(log, Logs.Level.INFO, "list: ", list);
-        Logs.log(log, Logs.Level.INFO, "empty array: ", intArray);
+        Logs.logExpand(log, Logs.Level.INFO, "list: ", list);
+        Logs.logExpand(log, Logs.Level.INFO, "empty array: ", intArray);
     }
 
     public void testExpandVoid() throws Exception {
