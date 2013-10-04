@@ -25,26 +25,66 @@ package dk.statsbiblioteket.util;
 import junit.framework.TestCase;
 
 import java.util.Arrays;
+import java.util.Random;
 
 public class SlidingPercentilesTest extends TestCase {
 
     public static final double FUZZY = 0.001; // For comparing doubles
+    public static final Random random = new Random();
 
-    public void testPercentiles() {
-        assertPercentile(new int[]{0, 1, 2, 3}, 0.5, 1.0);
-        assertPercentile(new int[]{0, 1, 2, 3, 4}, 0.5, 1.5);
+    public void testOrdering() {
+        int[] values = new int[]{0, 1, 2, 3};
+        SlidingPercentiles original = toSlider(values);
+        shuffle(values);
+        SlidingPercentiles shuffled = toSlider(values);
+        assertEquals(Strings.join(original.getSortedValues()), Strings.join(shuffled.getSortedValues()));
+        System.out.println(Strings.join(shuffled.getSortedValues()));
+    }
+
+    public void testPercentilesMean() {
+        assertPercentile(new int[]{0, 1, 2, 3}, 0.5, 1.0, true);
+        assertPercentile(new int[]{0, 1, 2, 3, 4}, 0.5, 1.5, true);
+    }
+
+    public void testPercentilesMisc() {
+        assertPercentile(new int[]{0, 1, 2, 3, 4}, 0.8, 3.0, true);
+    }
+
+    private void assertPercentile(int[] input, double percentile, double expected, boolean shuffle) {
+        assertPercentile(input, percentile, expected);
+        if (!shuffle) {
+            return;
+        }
+        // Not correct, but we do not require a proper shuffle for this test
+        shuffle(input);
+        assertPercentile(input, percentile, expected);
+    }
+
+    private void shuffle(int[] input) {
+        for (int i = 0 ; i < input.length ; i++) {
+            int p1 = random.nextInt(input.length);
+            int p2 = random.nextInt(input.length);
+            int tmp = input[p1];
+            input[p1] = input[p2];
+            input[p2] = tmp;
+        }
     }
 
     private void assertPercentile(int[] input, double percentile, double expected) {
-        SlidingPercentiles slider = new SlidingPercentiles(input.length);
-        for (int i: input) {
-            slider.add(i);
-        }
+        SlidingPercentiles slider = toSlider(input);
         if (expected < slider.getPercentile(percentile) + FUZZY
             && expected > slider.getPercentile(percentile) - FUZZY) {
             return;
         }
         fail(String.format("The percentile %f for input %s should be %f but was %f",
                            percentile, Strings.join(input), expected, slider.getPercentile(percentile)));
+    }
+
+    private SlidingPercentiles toSlider(int[] input) {
+        SlidingPercentiles slider = new SlidingPercentiles(input.length);
+        for (int i: input) {
+            slider.add(i);
+        }
+        return slider;
     }
 }

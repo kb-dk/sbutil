@@ -54,6 +54,7 @@ public class SlidingPercentiles {
         int insertionPoint = Arrays.binarySearch(sortedValues, 0, windowSize, value);
         insertionPoint = insertionPoint >= 0 ? insertionPoint : -1 * (insertionPoint +1);
         System.arraycopy(sortedValues, insertionPoint, sortedValues, insertionPoint+1, windowSize-insertionPoint);
+        sortedValues[insertionPoint] = value;
         values.put(value);
         windowSize++;
     }
@@ -107,13 +108,13 @@ public class SlidingPercentiles {
         }
         double pos = values.length() * percent - 1;
         if (pos < 0) {
-            return values.peek(0);
+            return sortedValues[0];
         }
         if (pos >= values.length()-1) {
-            return values.peek(values.length()-1);
+            return sortedValues[values.length()-1];
         }
-        int valLeft = values.peek((int)pos);
-        int valRight = values.peek(((int)pos)+1);
+        int valLeft = sortedValues[(int)pos];
+        int valRight = sortedValues[((int)pos)+1];
         double fraction = pos - ((int)pos);
         return valLeft + (valRight - valLeft) * fraction;
     }
@@ -123,5 +124,12 @@ public class SlidingPercentiles {
      */
     public double getAverage() {
         return values.length() == 0 ? 0 : sum/values.length();
+    }
+
+    /**
+     * @return the underlying sorted value array. Might contain unassigned entry points. Expert use only
+     */
+    int[] getSortedValues() {
+        return sortedValues;
     }
 }
