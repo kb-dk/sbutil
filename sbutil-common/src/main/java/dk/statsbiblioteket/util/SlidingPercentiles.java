@@ -19,7 +19,6 @@ public class SlidingPercentiles {
      * The maximum size of the windows that holds collected data.
      */
     private final int maxWindow;
-
     private int windowSize = 0;
 
     /**
@@ -32,6 +31,7 @@ public class SlidingPercentiles {
      */
     private final CircularIntBuffer values;
 
+    private long sum = 0;
 
     public SlidingPercentiles(int windowSize) {
         this.maxWindow = windowSize;
@@ -47,8 +47,9 @@ public class SlidingPercentiles {
      * @param value will be added to the sliding window.
      */
     public void add(int value) {
+        sum += value;
         if (size() >= maxWindow) {
-            pop();
+            sum -= pop();
         }
         int insertionPoint = Arrays.binarySearch(sortedValues, 0, windowSize, value);
         insertionPoint = insertionPoint >= 0 ? insertionPoint : -1 * (insertionPoint +1);
@@ -115,5 +116,12 @@ public class SlidingPercentiles {
         int valRight = values.peek(((int)pos)+1);
         double fraction = pos - ((int)pos);
         return valLeft + (valRight - valLeft) * fraction;
+    }
+
+    /**
+     * @return {code sum/count} aka the unweighted mean or 0 uf there are no values.
+     */
+    public double getAverage() {
+        return values.length() == 0 ? 0 : sum/values.length();
     }
 }
