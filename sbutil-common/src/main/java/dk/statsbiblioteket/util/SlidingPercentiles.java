@@ -123,7 +123,7 @@ public class SlidingPercentiles {
      * @return {code sum/count} aka the unweighted mean or 0 uf there are no values.
      */
     public double getAverage() {
-        return values.length() == 0 ? 0 : sum/values.length();
+        return values.length() == 0 ? 0 : ((double)sum)/values.length();
     }
 
     /**

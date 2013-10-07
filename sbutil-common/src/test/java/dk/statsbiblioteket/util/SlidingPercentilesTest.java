@@ -46,6 +46,24 @@ public class SlidingPercentilesTest extends TestCase {
         assertPercentile(new int[]{0, 1, 2, 3, 4}, 0.5, 1.5, true);
     }
 
+    public void testMonkeyAverage() {
+        final int RUNS = 10;
+        final int COUNT=100;
+
+        Random random = new Random(87);
+        for (int r = 0 ; r < RUNS ; r++) {
+            SlidingPercentiles slider = new SlidingPercentiles(COUNT);
+            long sum = 0;
+            for (int i = 0 ; i < COUNT ; i++) {
+                int rNum = random.nextInt(10000);
+                sum += rNum;
+                slider.add(rNum);
+            }
+            assertEquals("The percentile average should match explicit average in run " + r,
+                         sum * 1.0 / COUNT, slider.getAverage());
+        }
+    }
+
     public void testPercentilesMisc() {
         assertPercentile(new int[]{0, 1, 2, 3, 4}, 0.8, 3.0, true);
     }
