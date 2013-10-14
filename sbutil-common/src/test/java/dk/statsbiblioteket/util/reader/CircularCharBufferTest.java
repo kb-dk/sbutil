@@ -1,10 +1,12 @@
 package dk.statsbiblioteket.util.reader;
 
+import dk.statsbiblioteket.util.Strings;
 import dk.statsbiblioteket.util.qa.QAInfo;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
+import javax.print.DocFlavor;
 import java.util.NoSuchElementException;
 
 @QAInfo(level = QAInfo.Level.NORMAL,
@@ -165,5 +167,44 @@ public class CircularCharBufferTest extends TestCase {
         assertEquals("indexOf elloz should be correct", -1, b.indexOf("elloz"));
         assertEquals("indexOf helloz should be correct",
                      -1, b.indexOf("helloz"));
+    }
+
+    public void testLength() {
+        CircularCharBuffer cb = new CircularCharBuffer(2, 2);
+        cb.add("1");
+        assertEquals("add(1);", cb.size(), 1);
+        cb.add("2");
+        assertEquals("add(1); add(2);", cb.size(), 2);
+        cb.take();
+        assertEquals("add(1); add(2); take();", cb.size(), 1);
+        cb.take();
+        assertEquals("add(1); add(2); take(); take();", cb.size(), 0);
+    }
+
+    public void testCopyDirect() {
+         testCopy(10, "1234567", "1234567");
+    }
+
+    public void testCopyWrap() {
+        testCopy(5, "34567", "1234567");
+    }
+
+    private void testCopy(int cbSize, String expected, String input) {
+        CircularCharBuffer cb = new CircularCharBuffer(cbSize, cbSize);
+        for (char c: input.toCharArray()) {
+            if (cb.size() == cbSize) {
+                cb.take();
+            }
+            cb.add(c);
+        }
+
+        final char[] OUTPUT = new char[cbSize];
+        int retrieved = cb.copy(OUTPUT);
+
+        String o = "";
+        for (int i = 0; i < retrieved; i++) {
+            o += OUTPUT[i];
+        }
+        assertEquals("Input '" + input + "' with CB-size " + cbSize, expected, o);
     }
 }

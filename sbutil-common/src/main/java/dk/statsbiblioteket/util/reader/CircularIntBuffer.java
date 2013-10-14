@@ -25,8 +25,6 @@ package dk.statsbiblioteket.util.reader;
 import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.IOException;
-import java.io.StringWriter;
-import java.nio.CharBuffer;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -324,7 +322,7 @@ public class CircularIntBuffer implements Iterable<Integer> {
         return child;
     }
 
-    /* Queue<Character> interface */
+    /* Queue<Integer> interface */
 
     public boolean add(Integer value) {
         put(value);
@@ -365,7 +363,7 @@ public class CircularIntBuffer implements Iterable<Integer> {
         return peek(0);
     }
 
-    /* Collection<Character> interface */
+    /* Collection<Integer> interface */
 
     public boolean isEmpty() {
         return first == next;
@@ -389,6 +387,7 @@ public class CircularIntBuffer implements Iterable<Integer> {
      *
      * @return an iterator over the content of the buffer.
      */
+    @Override
     public Iterator<Integer> iterator() {
         return new CircularIntBufferIterator();
     }
@@ -396,14 +395,17 @@ public class CircularIntBuffer implements Iterable<Integer> {
     private class CircularIntBufferIterator implements Iterator<Integer> {
         private int pos = 0;
 
+        @Override
         public boolean hasNext() {
             return pos < size();
         }
 
+        @Override
         public Integer next() {
             return peek(pos++);
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException("Remove not supported");
         }
@@ -518,5 +520,55 @@ public class CircularIntBuffer implements Iterable<Integer> {
         for (int i = 0; i < n; i++) {
             take();
         }
+    }
+
+    /**
+     * Copies the content of the buffer into the given array.
+     * @param dest the array to copy into.
+     * @return the number of values copied.
+     * @throws ArrayIndexOutOfBoundsException if the destination array was not large enough.
+     */
+    public int copy(int[] dest) throws ArrayIndexOutOfBoundsException {
+        return copy(dest, 0, length());
+    }
+
+    /**
+     * Copies the content of the buffer into the given array.
+     * @param dest the array to copy into.
+     * @param start the start position in the destination to copy into.
+     * @return the number of values copied.
+     * @throws ArrayIndexOutOfBoundsException if the destination array was not large enough.
+     */
+    public int copy(int[] dest, int start) throws ArrayIndexOutOfBoundsException {
+        return copy(dest, start, length());
+    }
+
+    /**
+     * Copies the content of the buffer into the given array.
+     * @param dest the array to copy into.
+     * @param offset the start position in the destination to copy into.
+     * @param length the maximum number of values to copy.
+     * @return the number of values copied.
+     * @throws ArrayIndexOutOfBoundsException if the destination array was not large enough.
+     */
+    public int copy(int[] dest, int offset, int length) throws ArrayIndexOutOfBoundsException {
+        final int realLength = length > length() ? length() : length;
+
+        if (realLength == 0) {
+            return 0;
+        }
+
+        // Simple direct copy case
+        int end = first + length;
+        if (end < array.length) {
+            System.arraycopy(array, first, dest, offset, realLength);
+            return length;
+        }
+
+        // Wrap-around case
+        int copied = array.length - first;
+        System.arraycopy(array, first, dest, offset, copied);
+        System.arraycopy(array, 0, dest, offset + copied, realLength-copied);
+        return realLength;
     }
 }

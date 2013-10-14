@@ -414,6 +414,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * @throws ArrayIndexOutOfBoundsException if {@code end} is past
      *                                        the buffer length
      */
+    @Override
     public CircularCharBuffer subSequence(int start, int end) {
         if (end < start) {
             throw new IllegalArgumentException(String.format(
@@ -434,6 +435,13 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
         }
 
         return child;
+    }
+
+    public boolean add(CharSequence chars) {
+        for (int i = 0 ; i < chars.length() ; i++) {
+            put(chars.charAt(i));
+        }
+        return chars.length() > 0;
     }
 
     /* Queue<Character> interface */
@@ -502,6 +510,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      *
      * @return an iterator over the content of the buffer.
      */
+    @Override
     public Iterator<Character> iterator() {
         return new CircularCharBufferIterator();
     }
@@ -509,14 +518,17 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     private class CircularCharBufferIterator implements Iterator<Character> {
         private int pos = 0;
 
+        @Override
         public boolean hasNext() {
             return pos < size();
         }
 
+        @Override
         public Character next() {
             return charAt(pos++);
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException("Remove not supported");
         }
@@ -647,5 +659,55 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
         for (int i = 0; i < n; i++) {
             take();
         }
+    }
+
+    /**
+     * Copies the content of the buffer into the given array.
+     * @param dest the array to copy into.
+     * @return the number of values copied.
+     * @throws ArrayIndexOutOfBoundsException if the destination array was not large enough.
+     */
+    public int copy(char[] dest) throws ArrayIndexOutOfBoundsException {
+        return copy(dest, 0, length());
+    }
+
+    /**
+     * Copies the content of the buffer into the given array.
+     * @param dest the array to copy into.
+     * @param start the start position in the destination to copy into.
+     * @return the number of values copied.
+     * @throws ArrayIndexOutOfBoundsException if the destination array was not large enough.
+     */
+    public int copy(char[] dest, int start) throws ArrayIndexOutOfBoundsException {
+        return copy(dest, start, size());
+    }
+
+    /**
+     * Copies the content of the buffer into the given array.
+     * @param dest the array to copy into.
+     * @param offset the start position in the destination to copy into.
+     * @param length the maximum number of values to copy.
+     * @return the number of values copied.
+     * @throws ArrayIndexOutOfBoundsException if the destination array was not large enough.
+     */
+    public int copy(char[] dest, int offset, int length) throws ArrayIndexOutOfBoundsException {
+        final int realLength = length > size() ? size() : length;
+
+        if (realLength == 0) {
+            return 0;
+        }
+
+        // Simple direct copy case
+        int end = first + length;
+        if (end < array.length) {
+            System.arraycopy(array, first, dest, offset, realLength);
+            return length;
+        }
+
+        // Wrap-around case
+        int copied = array.length - first;
+        System.arraycopy(array, first, dest, offset, copied);
+        System.arraycopy(array, 0, dest, offset + copied, realLength-copied);
+        return realLength;
     }
 }
