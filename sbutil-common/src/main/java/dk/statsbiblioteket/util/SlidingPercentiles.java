@@ -45,12 +45,16 @@ public class SlidingPercentiles {
 
     private long sum = 0;
 
+    /**
+     * Shorthand for {@code SlidingPercentiles(windowSize, true)}. The slider is thus optimized for frequent
+     * polling for percentiles.
+     * @param windowSize the maximum amount of values that are remembered.
+     */
     public SlidingPercentiles(int windowSize) {
         this(windowSize, DEFAULT_CONTINUOUS_SORT);
     }
 
     /**
-     *
      * @param windowSize     the maximum amount of values that are remembered.
      * @param continuousSort if true, the structure is optimized for frequent polling of percentiles.
      *                       If false, calculation of percentiles is more costly but updates are cheaper.

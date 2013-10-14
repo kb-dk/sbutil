@@ -86,18 +86,29 @@ public class SlidingPercentilesTest extends TestCase {
     }
 
     public void testPerformance() {
-        final Random random = new Random();
+        final Random contRandom = new Random(87);
+        final Random delayedRandom = new Random(87);
         final int COUNT = 10000;
         final int RUNS = 10;
         for (int i = 0 ; i < RUNS ; i++) {
-            long testTime = -System.nanoTime();
-            SlidingPercentiles sp = new SlidingPercentiles(COUNT);
+            long contTime = -System.nanoTime();
+            SlidingPercentiles sp = new SlidingPercentiles(COUNT, true);
             for (int j = 0 ; j < COUNT ; j++) {
-                sp.add(random.nextInt());
+                sp.add(contRandom.nextInt());
             }
-            testTime += System.nanoTime();
-            System.out.println(String.format("Run %d/%d with %d insertions took %dms at %dns/insertion",
-                                             i+1, RUNS, COUNT, testTime/1000000, testTime/COUNT));
+            contTime += System.nanoTime();
+
+            long delayedTime = -System.nanoTime();
+            SlidingPercentiles delay = new SlidingPercentiles(COUNT, false);
+            for (int j = 0 ; j < COUNT ; j++) {
+                delay.add(delayedRandom.nextInt());
+            }
+            delayedTime += System.nanoTime();
+
+            System.out.println(String.format(
+                    "Run %2d/%d with %d insertions took %3dms at %5dns/insertion for plain and" +
+                    " %3dms at %5dns/insertion for delayed",
+                    i+1, RUNS, COUNT, contTime/1000000, contTime/COUNT, delayedTime/1000000, delayedTime/COUNT));
         }
     }
 
