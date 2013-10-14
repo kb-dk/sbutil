@@ -24,7 +24,6 @@ package dk.statsbiblioteket.util;
 
 import junit.framework.TestCase;
 
-import java.util.Arrays;
 import java.util.Random;
 
 public class SlidingPercentilesTest extends TestCase {
@@ -37,8 +36,9 @@ public class SlidingPercentilesTest extends TestCase {
         SlidingPercentiles original = toSlider(values);
         shuffle(values);
         SlidingPercentiles shuffled = toSlider(values);
-        assertEquals(Strings.join(original.getSortedValues()), Strings.join(shuffled.getSortedValues()));
-        System.out.println(Strings.join(shuffled.getSortedValues()));
+        shuffled.updateSortedValues();
+        assertEquals(Strings.join(original.getSortedValuesRaw()), Strings.join(shuffled.getSortedValuesRaw()));
+        System.out.println(Strings.join(shuffled.getSortedValuesRaw()));
     }
 
     public void testPercentilesMean() {
@@ -61,6 +61,43 @@ public class SlidingPercentilesTest extends TestCase {
             }
             assertEquals("The percentile average should match explicit average in run " + r,
                          sum * 1.0 / COUNT, slider.getAverage());
+        }
+    }
+
+    public void testMonkeyDelayedSort() {
+        final int RUNS = 100;
+        final int MAX_SIZE = 100;
+
+        final Random random = new Random(87);
+
+        for (int r = 0 ; r < RUNS ; r++) {
+            int size = random.nextInt(MAX_SIZE);
+
+            SlidingPercentiles slider = new SlidingPercentiles(size, true);
+            SlidingPercentiles delayed = new SlidingPercentiles(size, false);
+            for (int i = 0 ; i < size ; i++) {
+                int rNum = random.nextInt(10000);
+                slider.add(rNum);
+                delayed.add(rNum);
+            }
+            assertEquals("The median for delayed and non-delayed should be equal",
+                         delayed.getMedian(), slider.getMedian());
+        }
+    }
+
+    public void testPerformance() {
+        final Random random = new Random();
+        final int COUNT = 10000;
+        final int RUNS = 10;
+        for (int i = 0 ; i < RUNS ; i++) {
+            long testTime = -System.nanoTime();
+            SlidingPercentiles sp = new SlidingPercentiles(COUNT);
+            for (int j = 0 ; j < COUNT ; j++) {
+                sp.add(random.nextInt());
+            }
+            testTime += System.nanoTime();
+            System.out.println(String.format("Run %d/%d with %d insertions took %dms at %dns/insertion",
+                                             i+1, RUNS, COUNT, testTime/1000000, testTime/COUNT));
         }
     }
 
