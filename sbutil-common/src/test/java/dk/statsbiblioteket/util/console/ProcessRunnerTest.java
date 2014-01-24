@@ -103,13 +103,26 @@ public class ProcessRunnerTest extends TestCase {
 
     public void testTimeout() throws Exception {
 
-        ProcessRunner runner = new ProcessRunner(Arrays.asList("sleep", "2"));
+        ProcessRunner runner = new ProcessRunner(Arrays.asList("sleep", "2000"));
 
         runner.setTimeout(100);
         runner.run();
         if (!runner.isTimedOut()) {
             fail("The execution of sleep should time out");
         }
+        assertFalse("The process should be marked as failed", runner.getReturnCode() == 0);
+    }
+
+    public void testNoTimeout() throws Exception {
+
+        ProcessRunner runner = new ProcessRunner(Arrays.asList("sleep", "1"));
+
+        runner.setTimeout(1100);
+        runner.run();
+        if (runner.isTimedOut()) {
+            fail("The execution of sleep should not have timed out");
+        }
+        assertTrue("The process should finish normally", runner.getReturnCode() == 0);
     }
 
     public void testEnvironment() throws Exception {
