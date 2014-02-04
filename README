@@ -14,19 +14,13 @@ The bundled program qaScan-<version>.jar contains an inlined versions of
 Apache's commons-cli and commons-logging as well as log4j.
 
 RELEASING
-When code has been added, do the following:
+When code has been added or changed, do the following:
 
-- Update the version number in build.xml and commit. Compile the the release
-  *from a clean checkout*.
+  mvn release:prepare
 
-- Ensure that the unit-tests completes (run ant test)
-  (you might need to right click on sbutil under ant and add JUnit.jar as library to ANT)
-  Make sure the tests run both in Idea and from the command line
+  Or speed up the process if you are a test-hating villain:
+  mvn -Darguments='-Dmaven.test.skip=true' release:prepare
 
-- Make a release (run ant release)
-  There is now a ZIP file in dist.
+  Check the suggested versions. If everything builds and looks ok then
 
-- Copy the ZIP files dist/sbutil-<version>{.zip,-apidocs.zip,-src.zip} 
-  to hera:/d12/home/java-3part/sbutil
-
-- Unpack the ZIP file at hera (just for convenience)
+  mvn -Darguments='-Dmaven.test.skip=true'  release:perform
