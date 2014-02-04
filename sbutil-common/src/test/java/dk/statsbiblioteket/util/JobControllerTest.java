@@ -19,6 +19,7 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +39,7 @@ public class JobControllerTest extends TestCase {
         final AtomicInteger counter = new AtomicInteger(0);
         JobController<Long> controller = new JobController<Long>(10) {
             @Override
-            protected void popCallback(Future<Long> removed) {
+            protected void afterExecute(Future<Long> finished) {
                 counter.incrementAndGet();
             }
         };
@@ -66,7 +67,7 @@ public class JobControllerTest extends TestCase {
         final AtomicInteger counter = new AtomicInteger(0);
         JobController<Long> controller = new JobController<Long>(10) {
             @Override
-            protected void popCallback(Future<Long> removed) {
+            protected void afterExecute(Future<Long> finished) {
                 counter.incrementAndGet();
             }
         };
@@ -86,7 +87,7 @@ public class JobControllerTest extends TestCase {
         final AtomicInteger counter = new AtomicInteger(0);
         JobController<Long> controller = new JobController<Long>(10) {
             @Override
-            protected void popCallback(Future<Long> removed) {
+            protected void afterExecute(Future<Long> finished) {
                 counter.incrementAndGet();
             }
         };
@@ -99,7 +100,7 @@ public class JobControllerTest extends TestCase {
         final AtomicInteger counter = new AtomicInteger(0);
         JobController<Long> controller = new JobController<Long>(10) {
             @Override
-            protected void popCallback(Future<Long> removed) {
+            protected void afterExecute(Future<Long> finished) {
                 counter.incrementAndGet();
             }
         };
@@ -123,7 +124,7 @@ public class JobControllerTest extends TestCase {
         final AtomicInteger counter = new AtomicInteger(0);
         JobController<Long> controller = new JobController<Long>(10) {
             @Override
-            protected void popCallback(Future<Long> removed) {
+            protected void afterExecute(Future<Long> finished) {
                 counter.incrementAndGet();
             }
         };
@@ -135,6 +136,50 @@ public class JobControllerTest extends TestCase {
         }
         assertEquals("The number of pops should match", JOBS, controller.popAll().size());
         assertEquals("The number of callbacks should match", JOBS, counter.get());
+    }
+
+    public void TestAutoEmpty() throws InterruptedException {
+        final int JOBS = 10;
+        final AtomicInteger counter = new AtomicInteger(0);
+        JobController<Long> controller = new JobController<Long>(10, true) {
+            @Override
+            protected void afterExecute(Future<Long> finished) {
+                counter.incrementAndGet();
+            }
+        };
+        for (int i = 0 ; i < JOBS ; i++) {
+            controller.submit(new Shout(JOBS/4));
+            synchronized (Thread.currentThread()) {
+                Thread.currentThread().wait(JOBS/10);
+            }
+        }
+        synchronized (Thread.currentThread()) {
+            Thread.currentThread().wait(JOBS/4+1);
+        }
+        assertEquals("The auto removed count should be all the jobs", JOBS, counter.get());
+        assertEquals("The JobController should be empty", 0, controller.getTaskCount());
+    }
+
+    public void TestAutoEmptyMultiPoll() throws InterruptedException {
+        final int JOBS = 10;
+        final AtomicInteger counter = new AtomicInteger(0);
+        JobController<Long> controller = new JobController<Long>(10, true) {
+            @Override
+            protected void afterExecute(Future<Long> finished) {
+                counter.incrementAndGet();
+            }
+        };
+        for (int i = 0 ; i < JOBS ; i++) {
+            controller.submit(new Shout(JOBS/4));
+            synchronized (Thread.currentThread()) {
+                Thread.currentThread().wait(JOBS/10);
+            }
+        }
+        int popped = controller.popAll().size();
+        assertEquals("The auto removed count should be all the jobs", JOBS, counter.get());
+        assertEquals("The JobController should be empty", 0, controller.getTaskCount());
+        assertTrue("The number of explicit popped jobs should be > 0 and < " + JOBS + " but was " + popped,
+                   popped >0 && popped < JOBS);
     }
 
     private class Shout implements Callable<Long> {

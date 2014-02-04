@@ -34,13 +34,25 @@ public class JobController<R> extends ExecutorCompletionService<R> {
     private final Executor executor;
     private final AtomicInteger issued = new AtomicInteger(0);
     private final AtomicInteger tasks = new AtomicInteger(0);
+    private boolean autoEmpty = false;
 
     /**
-     * Shortcut for {@code JobController(maxConcurrentThreads, false)}.
+     * Shortcut for {@code JobController(maxConcurrentThreads, false, false)}.
      * @param maxConcurrentThreads the maximum number of active threads.
      */
     public JobController(int maxConcurrentThreads) {
-        this(maxConcurrentThreads, false);
+        this(maxConcurrentThreads, false, false);
+    }
+
+    /**
+     * Shortcut for {@code JobController(maxConcurrentThreads, false, autoEmpty)}.<br/>
+     * Constructs a JobController that automatically empties the queue for finished jobs.<br/>
+     * Post-finish processing of the results from the jobs are handled by overriding
+     * {@link #afterExecute(java.util.concurrent.Future)}.
+     * @param maxConcurrentThreads the maximum number of active threads.
+     */
+    public JobController(int maxConcurrentThreads, boolean autoEmpty) {
+        this(maxConcurrentThreads, false, autoEmpty);
     }
 
     /**
@@ -49,20 +61,10 @@ public class JobController<R> extends ExecutorCompletionService<R> {
      * @param daemonThreads if true, exiting the main thread will end JVM execution.
      *                      If false, active threads will finish before exiting the JVM.
      */
-    public JobController(int maxConcurrentThreads, final boolean daemonThreads) {
-        this(new ThreadPoolExecutor(
-                maxConcurrentThreads < MAX_IDLE_THREADS ? maxConcurrentThreads : MAX_IDLE_THREADS,
-                MAX_IDLE_THREADS,
-                10, TimeUnit.MINUTES,
-                new ArrayBlockingQueue<Runnable>(100),
-                new ThreadFactory() {
-                    @Override
-                    public Thread newThread(Runnable r) {
-                        Thread t = new Thread(r);
-                        t.setDaemon(daemonThreads);
-                        return t;
-                    }
-                }));
+    public JobController(int maxConcurrentThreads, final boolean daemonThreads, final boolean autoEmpty) {
+        this(new CallbackThreadPoolExecutor(maxConcurrentThreads, daemonThreads));
+        ((CallbackThreadPoolExecutor)executor).setCallback(this);
+        this.autoEmpty = autoEmpty;
     }
 
     /**
@@ -71,6 +73,16 @@ public class JobController<R> extends ExecutorCompletionService<R> {
     public JobController(Executor executor) {
         super(executor);
         this.executor = executor;
+    }
+
+    /**
+     * Called each time a task is removed from the controller. Override for special processing.
+     * The call takes place outside of task synchronization so long processing will not affect other threads.
+     * @param finished the Future for a finished task.
+     */
+    @SuppressWarnings("UnusedParameters")
+    protected void afterExecute(Future<R> finished) {
+        // No standard processing
     }
 
     /**
@@ -113,7 +125,7 @@ public class JobController<R> extends ExecutorCompletionService<R> {
             }
         }
         for (Future<R> future: finished) {
-            popCallback(future);
+            afterExecute(future);
         }
         return finished;
     }
@@ -141,19 +153,9 @@ public class JobController<R> extends ExecutorCompletionService<R> {
             }
         }
         for (Future<R> future: finished) {
-            popCallback(future);
+            afterExecute(future);
         }
         return finished;
-    }
-
-    /**
-     * Called each time a task is removed from the controller. Override for special processing.
-     * The call takes place outside of task synchronization so long processing will not affect other threads.
-     * @param removed the Future for a finished task.
-     */
-    @SuppressWarnings("UnusedParameters")
-    protected void popCallback(Future<R> removed) {
-        // No standard processing
     }
 
     @Override
@@ -181,7 +183,7 @@ public class JobController<R> extends ExecutorCompletionService<R> {
             future = super.take();
             tasks.decrementAndGet();
         }
-        popCallback(future);
+        afterExecute(future);
         return future;
     }
 
@@ -195,7 +197,7 @@ public class JobController<R> extends ExecutorCompletionService<R> {
             }
         }
         if (future != null) {
-            popCallback(future);
+            afterExecute(future);
         }
         return future;
     }
@@ -210,7 +212,7 @@ public class JobController<R> extends ExecutorCompletionService<R> {
             }
         }
         if (future != null) {
-            popCallback(future);
+            afterExecute(future);
         }
         return future;
     }
@@ -246,4 +248,40 @@ public class JobController<R> extends ExecutorCompletionService<R> {
         return "JobController(tasks=" + getTaskCount() + ", active=" + getActiveCount()
                + ", issued=" + getIssued() + ", executor=" + executor + ")";
     }
+
+    /**
+     * Automatically calls {@link dk.statsbiblioteket.util.JobController#afterExecute(java.util.concurrent.Future)}
+     * when a task finishes.
+     */
+    private static class CallbackThreadPoolExecutor extends ThreadPoolExecutor {
+        private JobController callback;
+
+        public CallbackThreadPoolExecutor( int maxConcurrentThreads, final boolean daemonThreads) {
+            super(maxConcurrentThreads < MAX_IDLE_THREADS ? maxConcurrentThreads : MAX_IDLE_THREADS,
+                  MAX_IDLE_THREADS,
+                  10, TimeUnit.MINUTES,
+                  new ArrayBlockingQueue<Runnable>(100),
+                  new ThreadFactory() {
+                      @Override
+                      public Thread newThread(Runnable r) {
+                          Thread t = new Thread(r);
+                          t.setDaemon(daemonThreads);
+                          return t;
+                      }
+                  });
+            }
+        @Override
+        protected void afterExecute(Runnable r, Throwable t) {
+            super.afterExecute(r, t);
+            if (callback != null && callback.autoEmpty) {
+                // Only poll, not take, as another thread might have already removed the result
+                callback.poll();
+            }
+        }
+
+        public void setCallback(JobController callback) {
+            this.callback = callback;
+        }
+    }
+
 }
