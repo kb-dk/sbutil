@@ -29,8 +29,6 @@ import java.util.concurrent.atomic.AtomicInteger;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class JobController<R> extends ExecutorCompletionService<R> {
-    private static final int MAX_IDLE_THREADS = 20;
-
     private final Executor executor;
     private final AtomicInteger issued = new AtomicInteger(0);
     private final AtomicInteger tasks = new AtomicInteger(0);
@@ -257,8 +255,7 @@ public class JobController<R> extends ExecutorCompletionService<R> {
         private JobController callback;
 
         public CallbackThreadPoolExecutor( int maxConcurrentThreads, final boolean daemonThreads) {
-            super(maxConcurrentThreads < MAX_IDLE_THREADS ? maxConcurrentThreads : MAX_IDLE_THREADS,
-                  MAX_IDLE_THREADS,
+            super(maxConcurrentThreads, maxConcurrentThreads,
                   10, TimeUnit.MINUTES,
                   new ArrayBlockingQueue<Runnable>(100),
                   new ThreadFactory() {
