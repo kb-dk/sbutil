@@ -109,15 +109,20 @@ public class JobController<R> extends ExecutorCompletionService<R> {
             while (tasks.get() > 0) {
                 Future<R> future = super.take();
                 tasks.decrementAndGet();
-                popCallback(future);
                 finished.add(future);
             }
+        }
+        for (Future<R> future: finished) {
+            popCallback(future);
         }
         return finished;
     }
 
     /**
      * Blocking. Waits at most the given time for all running tasks to finish, the returns their Futures.
+     * </p><p>
+     * To avoid synchronized callbacks, all running tasks are collected before they are issued to callback.
+     * </p>
      * Important: The JobController is not guaranteed to be empty after this call.
      * @return all tasks.
      * @throws java.lang.InterruptedException if interrupted during poll.
@@ -127,21 +132,23 @@ public class JobController<R> extends ExecutorCompletionService<R> {
         synchronized (tasks) {
             while (tasks.get() > 0) {
                 Future<R> future = super.poll(timeout, unit);
-                if (future != null) {
-                    tasks.decrementAndGet();
-                    popCallback(future);
-                    finished.add(future);
-                } else {
+                if (future == null) {
                     // TODO: Silent ignore of timeout is bad but this is the design of the ExecutorCompletionService
-                    return finished;
+                    break;
                 }
+                tasks.decrementAndGet();
+                finished.add(future);
             }
+        }
+        for (Future<R> future: finished) {
+            popCallback(future);
         }
         return finished;
     }
 
     /**
      * Called each time a task is removed from the controller. Override for special processing.
+     * The call takes place outside of task synchronization so long processing will not affect other threads.
      * @param removed the Future for a finished task.
      */
     @SuppressWarnings("UnusedParameters")
@@ -185,8 +192,10 @@ public class JobController<R> extends ExecutorCompletionService<R> {
             future = super.poll();
             if (future != null) {
                 tasks.decrementAndGet();
-                popCallback(future);
             }
+        }
+        if (future != null) {
+            popCallback(future);
         }
         return future;
     }
@@ -199,6 +208,8 @@ public class JobController<R> extends ExecutorCompletionService<R> {
             if (future != null) {
                 tasks.decrementAndGet();
             }
+        }
+        if (future != null) {
             popCallback(future);
         }
         return future;

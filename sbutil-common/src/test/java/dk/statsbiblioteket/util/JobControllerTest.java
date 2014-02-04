@@ -82,6 +82,18 @@ public class JobControllerTest extends TestCase {
         assertEquals("The callback count should be correct", 10, counter.get());
     }
 
+    public void testEmptyPop() throws Exception {
+        final AtomicInteger counter = new AtomicInteger(0);
+        JobController<Long> controller = new JobController<Long>(10) {
+            @Override
+            protected void popCallback(Future<Long> removed) {
+                counter.incrementAndGet();
+            }
+        };
+        assertTrue("Popping on empty should return empty list", controller.popAll(10, TimeUnit.MILLISECONDS).isEmpty());
+        assertEquals("The callback count should zero on empty controller", 0, counter.get());
+    }
+
     public void testPopTimeout() throws Exception {
         final int JOBS = 10;
         final AtomicInteger counter = new AtomicInteger(0);
