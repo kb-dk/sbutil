@@ -22,6 +22,7 @@
  */
 package dk.statsbiblioteket.util.console;
 
+import dk.statsbiblioteket.util.JobController;
 import dk.statsbiblioteket.util.qa.QAInfo;
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -31,6 +32,8 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * NativeRunner Tester.
@@ -113,6 +116,41 @@ public class ProcessRunnerTest extends TestCase {
         assertFalse("The process should be marked as failed", runner.getReturnCode() == 0);
     }
 
+    public void testOutputCollection() throws InterruptedException, ExecutionException {
+        final int RUNS = 10;
+        final int JOBS = 100;
+        final String COMMAND = "echo start ; sleep 1 ; echo stop";
+        final String EXPECTED = "start\nstop\n";
+
+        JobController<ProcessRunner> controller = new JobController<ProcessRunner>(JOBS);
+
+        for (int r = 0 ; r < RUNS ; r++) {
+            for (int i = 0 ; i < JOBS ; i++) {
+                ProcessRunner runner = new ProcessRunner(Arrays.asList("bash", "-c", COMMAND));
+                controller.submit(new ProcessCallable(runner));
+            }
+
+            for (int t = 0 ; t < JOBS ; t++) {
+                String result = controller.take().get().getProcessOutputAsString();
+                assertEquals("The output from run " + r + ", take " + t + " should be as expected", EXPECTED, result);
+            }
+        }
+    }
+
+    private final class ProcessCallable implements Callable<ProcessRunner> {
+        private final ProcessRunner r;
+
+        private ProcessCallable(ProcessRunner r) {
+            this.r = r;
+        }
+
+        @Override
+        public ProcessRunner call() throws Exception {
+            r.run();
+            return r;
+        }
+    }
+
     public void testNoTimeout() throws Exception {
 
         ProcessRunner runner = new ProcessRunner(Arrays.asList("sleep", "1"));
@@ -131,8 +169,7 @@ public class ProcessRunnerTest extends TestCase {
         env.put("FLAM", "flim");
 
 
-        ProcessRunner runner =
-                new ProcessRunner(Arrays.asList("/bin/sh", "-c", "echo $FLAM"));
+        ProcessRunner runner = new ProcessRunner(Arrays.asList("/bin/sh", "-c", "echo $FLAM"));
         runner.setEnviroment(env);
         //Nessesary for the command variable expansion to work correctly
 
