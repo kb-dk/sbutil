@@ -86,6 +86,43 @@ public class ProcessRunnerTest extends TestCase {
                      1, runner.getReturnCode());
     }
 
+
+    public void testReturnCodes() throws Exception {
+        ProcessRunner runner = new ProcessRunner("false");
+        runner.run();
+        assertFalse("The execution of 'false' should not return 0",
+                    runner.getReturnCode() == 0);
+    }
+
+    public void testError() throws Exception {
+        ProcessRunner runner = new ProcessRunner("bash", "-c", "echo -n foo 1>&2 ; false");
+        runner.run();
+        assertFalse("The execution of 'false' should not return 0",
+                    runner.getReturnCode() == 0);
+        assertEquals("The correct error should be printed",
+                     "foo", runner.getProcessErrorAsString());
+    }
+
+    public void testMuchOutput() throws Exception {
+        int MAX_OUT = 1000;
+        ProcessRunner runner = new ProcessRunner("bash", "-c", "echo $(yes %| head -n2000)");
+        runner.setOutputCollectionByteSize(1000);
+        runner.run();
+        assertEquals("The execution of 'false' should return 0",
+                     0, runner.getReturnCode());
+        assertEquals("The length of the output should be as expected",
+                     MAX_OUT-1, runner.getProcessOutputAsString().length());
+    }
+
+    public void testProblemsNotError() throws Exception {
+        ProcessRunner runner = new ProcessRunner("bash", "-c", "echo -n foo 1>&2 ; true");
+        runner.run();
+        assertEquals("The execution of 'false' should return 0",
+                     0, runner.getReturnCode());
+        assertEquals("The correct error should be printed",
+                     "foo", runner.getProcessErrorAsString());
+    }
+
     public void testVarArgs() throws Exception {
         ProcessRunner runner = new ProcessRunner("sleep", "1");
         runner.run();

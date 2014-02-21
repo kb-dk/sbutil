@@ -311,10 +311,8 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
             Process p = pb.start();
 
             if (collect) {
-                ByteArrayOutputStream pOut =
-                        collectProcessOutput(p.getInputStream(), this.maxOutput);
-                ByteArrayOutputStream pError =
-                        collectProcessOutput(p.getErrorStream(), this.maxError);
+                ByteArrayOutputStream pOut = collectProcessOutput(p.getInputStream(), this.maxOutput);
+                ByteArrayOutputStream pError = collectProcessOutput(p.getErrorStream(), this.maxError);
                 return_code = execute(p);
                 waitForThreads();
                 processOutput = new ByteArrayInputStream(pOut.toByteArray());
