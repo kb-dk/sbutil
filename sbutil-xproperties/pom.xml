@@ -5,7 +5,7 @@
     <parent>
         <groupId>dk.statsbiblioteket.sbutil</groupId>
         <artifactId>sbutil</artifactId>
-        <version>0.5.17-SNAPSHOT</version>
+        <version>0.5.17</version>
     </parent>
 
     <artifactId>sbutil-xproperties</artifactId>
@@ -14,7 +14,7 @@
         <dependency>
             <groupId>dk.statsbiblioteket.sbutil</groupId>
             <artifactId>sbutil-common</artifactId>
-            <version>0.5.17-SNAPSHOT</version>
+            <version>0.5.17</version>
         </dependency>
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
