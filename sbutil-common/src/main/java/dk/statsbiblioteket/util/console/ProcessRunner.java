@@ -10,6 +10,7 @@ import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 
 /**
@@ -35,7 +36,7 @@ import java.util.*;
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "abr")
-public class ProcessRunner implements Runnable {
+public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
     private InputStream processInput = null;
     private InputStream processOutput = null;
     private InputStream processError = null;
@@ -60,7 +61,7 @@ public class ProcessRunner implements Runnable {
     private boolean collect = true;
     private int maxOutput = 31000;
     private int maxError = 31000;
-    private int return_code;
+    private int return_code = -2;
     private boolean timedOut;
 
     /**
@@ -221,8 +222,8 @@ public class ProcessRunner implements Runnable {
 
     /**
      * Get the return code of the process. If the process timed out and was
-     * killed, the return code will be -1. But this is not exclusive to this
-     * scenario, other programs can also use this return code.
+     * killed, the return code will be -1. If the process has not be started at all, it will be -2.
+     * But this is not exclusive to this scenario, other programs can also use this return code.
      *
      * @return the return code
      */
@@ -304,6 +305,7 @@ public class ProcessRunner implements Runnable {
      * Run the method, feeding it input, and killing it if the timeout is exceeded.
      * Blocking.
      */
+    @Override
     public void run() {
         try {
             Process p = pb.start();
@@ -326,6 +328,12 @@ public class ProcessRunner implements Runnable {
         } catch (IOException e) {
             throw new RuntimeException("An io error occurred when running the command", e);
         }
+    }
+
+    @Override
+    public ProcessRunner call() throws Exception {
+        run();
+        return this;
     }
 
     private int execute(Process p) {
@@ -369,8 +377,7 @@ public class ProcessRunner implements Runnable {
         if (maxCollect < 0) {
             stream = new ByteArrayOutputStream();
         } else {
-            stream = new ByteArrayOutputStream(Math.min(MAXINITIALBUFFER,
-                                                        maxCollect));
+            stream = new ByteArrayOutputStream(Math.min(MAXINITIALBUFFER, maxCollect));
         }
 
         Thread t = new Thread() {
@@ -399,8 +406,7 @@ public class ProcessRunner implements Runnable {
                     }
                 } catch (IOException e) {
                     // This seems ugly
-                    throw new RuntimeException("Couldn't read output from " +
-                                               "process.", e);
+                    throw new RuntimeException("Couldn't read output from process.", e);
                 }
                 threads.remove(this);
             }
@@ -411,8 +417,7 @@ public class ProcessRunner implements Runnable {
         return stream;
     }
 
-    private void feedProcess(final Process process,
-                             InputStream processInput) {
+    private void feedProcess(final Process process, InputStream processInput) {
         if (processInput == null) {
             // No complaints here - null just means no input
             return;
@@ -456,5 +461,3 @@ public class ProcessRunner implements Runnable {
 
     }
 }
-
-
