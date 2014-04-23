@@ -16,11 +16,11 @@ package dk.statsbiblioteket.util.xml;
 
 import dk.statsbiblioteket.util.MutablePair;
 import dk.statsbiblioteket.util.Strings;
-import dk.statsbiblioteket.util.qa.QAInfo;
 import dk.statsbiblioteket.util.reader.CharSequenceReader;
 
 import javax.xml.stream.*;
 import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,9 +28,6 @@ import java.util.regex.Pattern;
 /**
  * Helper class for stream oriented processing of XML.
  */
-@QAInfo(level = QAInfo.Level.NORMAL,
-        state = QAInfo.State.IN_DEVELOPMENT,
-        author = "te")
 public class XMLStepper {
     /**
      * Iterates through the start tags in the stream until the current sub tree in the DOM is depleted
@@ -310,6 +307,11 @@ public class XMLStepper {
     }
 
     private static final XMLInputFactory xmlFactory = XMLInputFactory.newInstance();
+    static {
+        xmlFactory.setProperty(XMLInputFactory.IS_COALESCING, true);
+        // No resolving of external DTDs
+        xmlFactory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+    }
     /**
      * Steps through the provided XML and returns the text content of the first element with the given tag.
      * @param xml the XML to extract text from.
@@ -493,6 +495,28 @@ public class XMLStepper {
         });
     }
 
+    /**
+     * Convenience wrapper for {@link #limitXML(javax.xml.stream.XMLStreamReader, javax.xml.stream.XMLStreamWriter, java.util.Map, boolean, boolean, boolean)}
+     * that takes care of constructing and deconstructing XML streams.
+     * @param xml an XML block that should be reduced.
+     * @param limits patterns and max occurrences for entries. The limits are processed in entrySet order.
+     *               If max occurrence is -1 there is no limit for the given pattern.
+     * @param countPatterns if true, the limit applies to matched patterns. If false, the limit if for each regexp.
+     *                      If the limit is {code ".*", 10}, only 10 elements in total is kept.
+     * @param onlyCheckElementPaths if true, only element names are matched, not attributes.
+     *                              Setting this to true speeds up processing.
+     * @param discardNonMatched if true, paths that are not matched by any limit are discarded.
+     * @throws javax.xml.stream.XMLStreamException if there was a problem reading (in) or writing (out) XML.
+     */
+    public static String limitXML(final String xml, final Map<Pattern, Integer> limits,
+                                  final boolean countPatterns, final boolean onlyCheckElementPaths,
+                                  final boolean discardNonMatched) throws XMLStreamException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        XMLStreamWriter out = xmlOutFactory.createXMLStreamWriter(os);
+        XMLStreamReader in = xmlFactory.createXMLStreamReader(new StringReader(xml));
+        limitXML(in, out, limits, countPatterns, onlyCheckElementPaths, discardNonMatched);
+        return os.toString();
+    }
     /**
      * Iterates the given input, counting occurrences of limit-matches and skipping matching elements when the limits
      * are reached.

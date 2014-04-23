@@ -14,24 +14,21 @@
  */
 package dk.statsbiblioteket.util.xml;
 
+import dk.statsbiblioteket.util.Files;
+import dk.statsbiblioteket.util.Profiler;
 import dk.statsbiblioteket.util.Strings;
-import dk.statsbiblioteket.util.qa.QAInfo;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import javax.xml.stream.*;
-import java.io.ByteArrayOutputStream;
-import java.io.StringReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-@QAInfo(level = QAInfo.Level.NORMAL,
-        state = QAInfo.State.IN_DEVELOPMENT,
-        author = "te")
 public class XMLStepperTest extends TestCase {
     private static Log log = LogFactory.getLog(XMLStepperTest.class);
 
@@ -82,6 +79,29 @@ public class XMLStepperTest extends TestCase {
                     "/foo/bar#zoo=true", 1);
     }
 
+    // Hacked test that requires a file we cannot re-distribute
+    public void testLimitPerformance() throws IOException, XMLStreamException {
+        final File SOURCE = new File("/home/te/tmp/sb_4106186_indent.xml");
+        final int RUNS = 10;
+        final Map<Pattern, Integer> limits = new HashMap<Pattern, Integer>();
+        limits.put(Pattern.compile("/record/datafield#tag=Z30"), 10);
+
+        if (!SOURCE.exists()) {
+            return;
+        }
+        String in = Strings.flush(new FileInputStream(SOURCE));
+        Profiler profiler = new Profiler(RUNS);
+
+        String reduced = "";
+        for (int run = 0 ; run < RUNS ; run++) {
+            reduced = XMLStepper.limitXML(in, limits, false, false, false);
+            profiler.beat();
+        }
+        System.out.println(String.format(
+                "Reduced %d blocks @ %dKB to %dKB at %.1f reductions/sec",
+                RUNS, SOURCE.length() / 1024, reduced.length()/2/1024, profiler.getBps(false)));
+    }
+
     private void assertLimit(String input, String expected, boolean onlyElementMatch, boolean discardNonMatched,
                              Object... limits) throws XMLStreamException {
         if (!isCollapsing) {
@@ -97,6 +117,23 @@ public class XMLStepperTest extends TestCase {
         XMLStepper.limitXML(in, out, lims, false, onlyElementMatch, discardNonMatched);
         assertEquals("The input should be reduced properly for limits " + Strings.join(limits),
                      expected, os.toString());
+        assertLimitConvenience(input, expected, onlyElementMatch, discardNonMatched, limits);
+    }
+
+    private void assertLimitConvenience(
+            String input, String expected, boolean onlyElementMatch, boolean discardNonMatched, Object... limits)
+            throws XMLStreamException {
+        if (!isCollapsing) {
+            expected = expected.replaceAll("<([^> ]+)([^>]*) />", "<$1$2></$1>");
+        }
+        Map<Pattern, Integer> lims = new HashMap<Pattern, Integer>();
+        for (int i = 0 ; i < limits.length ; i+=2) {
+            lims.put(Pattern.compile((String) limits[i]), (Integer) limits[i + 1]);
+        }
+
+        String os = XMLStepper.limitXML(input, lims, false, onlyElementMatch, discardNonMatched);
+        assertEquals("The input should be convenience reduced properly for limits " + Strings.join(limits),
+                     expected, os);
     }
 
     // Sanity check for traversal of sub
