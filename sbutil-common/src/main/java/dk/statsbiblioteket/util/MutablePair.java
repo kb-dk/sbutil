@@ -1,18 +1,11 @@
 package dk.statsbiblioteket.util;
 
-/**
- * The much missed Pair class. There have been much discussion about Pairs. Here it is, do not use
- * it if you do not like it.
- *
- * This implementation is immutable, ie, there are no setter methods. Equals and hashcode have
- * been overridden to delegate the work the the contained elements.
- */
-public class Pair<L,R> {
+public class MutablePair<L,R> {
 
-    final private L left;
-    final private R right;
+    L left;
+    R right;
 
-    public Pair(L left, R right) {
+    public MutablePair(L left, R right) {
         this.left = left;
         this.right = right;
     }
@@ -31,26 +24,36 @@ public class Pair<L,R> {
         return right;
     }
 
+    public void setLeft(L left) {
+        this.left = left;
+    }
+    public void setKey(L key) {
+        this.left = key;
+    }
+
+    public void setRight(R right) {
+        this.right = right;
+    }
+    public void setValue(R value) {
+        this.right = value;
+    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof Pair)) {
+        if (!(o instanceof MutablePair)) {
             return false;
         }
 
-        Pair pair = (Pair) o;
+        MutablePair pair = (MutablePair) o;
 
         if (left != null ? !left.equals(pair.left) : pair.left != null) {
             return false;
         }
-        if (right != null ? !right.equals(pair.right) : pair.right != null) {
-            return false;
-        }
+        return !(right != null ? !right.equals(pair.right) : pair.right != null);
 
-        return true;
     }
 
     @Override
