@@ -198,7 +198,8 @@ public class XMLStepper {
         while (true) {
             switch (in.getEventType()) {
                 case XMLStreamReader.START_DOCUMENT: {
-                    if (in.getEncoding() != null || in.getVersion() != null) {
+                    if ((in.getEncoding() != null && !in.getEncoding().isEmpty()) ||
+                        (in.getVersion() != null && !"1.0".equals(in.getVersion()))) {
                         // Only write a declaration if the source has one
                         out.writeStartDocument(in.getEncoding(), in.getVersion());
                     }

@@ -14,7 +14,6 @@
  */
 package dk.statsbiblioteket.util.xml;
 
-import dk.statsbiblioteket.util.Files;
 import dk.statsbiblioteket.util.Profiler;
 import dk.statsbiblioteket.util.Strings;
 import junit.framework.TestCase;
@@ -57,26 +56,32 @@ public class XMLStepperTest extends TestCase {
             "<foo><bar zoo=\"true\"></bar><bar zoo=\"true\"></bar><bar zoo=\"false\"></bar><baz></baz></foo>";
 
     public void testLimitXMLSimple() throws XMLStreamException {
-        assertLimit(LIMIT_BARS, "<foo><baz /></foo>", true, false,
+        assertLimit(LIMIT_BARS, "<foo><baz /></foo>", false, true, false,
                     "/foo/bar", 0);
-        assertLimit(LIMIT_BARS, "<foo><bar zoo=\"true\" /><baz /></foo>", true, false,
+        assertLimit(LIMIT_BARS, "<foo><bar zoo=\"true\" /><baz /></foo>", false, true, false,
                     "/foo/bar", 1);
-        assertLimit(LIMIT_BARS, "<foo><bar zoo=\"true\" /><bar zoo=\"true\" /><baz /></foo>", true, false,
+        assertLimit(LIMIT_BARS, "<foo><bar zoo=\"true\" /><bar zoo=\"true\" /><baz /></foo>", false, true, false,
                     "/foo/bar", 2);
     }
 
     public void testLimitPositiveList() throws XMLStreamException {
-        assertLimit(LIMIT_BARS, "<foo><bar zoo=\"true\" /></foo>", true, true,
+        assertLimit(LIMIT_BARS, "<foo><bar zoo=\"true\" /></foo>", false, true, true,
                     "/foo$", -1, "/foo/bar", 1);
-        assertLimit(LIMIT_BARS, "<foo><baz /></foo>", true, true,
+        assertLimit(LIMIT_BARS, "<foo><baz /></foo>", false, true, true,
                     "/foo$", -1, "/foo/baz", 1);
     }
 
     public void testLimitXMLAttribute() throws XMLStreamException {
-        assertLimit(LIMIT_BARS, "<foo><bar zoo=\"false\" /><baz /></foo>", false, false,
+        assertLimit(LIMIT_BARS, "<foo><bar zoo=\"false\" /><baz /></foo>", false, false, false,
                     "/foo/bar#zoo=true", 0);
-        assertLimit(LIMIT_BARS, "<foo><bar zoo=\"true\" /><bar zoo=\"false\" /><baz /></foo>", false, false,
+        assertLimit(LIMIT_BARS, "<foo><bar zoo=\"true\" /><bar zoo=\"false\" /><baz /></foo>", false, false, false,
                     "/foo/bar#zoo=true", 1);
+    }
+
+    public void testLimitCountPatterns() throws XMLStreamException {
+        assertLimit(LIMIT_BARS,
+                    "<foo><bar zoo=\"true\"></bar><bar zoo=\"true\"></bar><baz></baz></foo>", true, true, false,
+                    ".*", 2);
     }
 
     // Hacked test that requires a file we cannot re-distribute
@@ -99,11 +104,11 @@ public class XMLStepperTest extends TestCase {
         }
         System.out.println(String.format(
                 "Reduced %d blocks @ %dKB to %dKB at %.1f reductions/sec",
-                RUNS, SOURCE.length() / 1024, reduced.length()/2/1024, profiler.getBps(false)));
+                RUNS, SOURCE.length() / 1024, reduced.length() / 2 / 1024, profiler.getBps(false)));
     }
 
-    private void assertLimit(String input, String expected, boolean onlyElementMatch, boolean discardNonMatched,
-                             Object... limits) throws XMLStreamException {
+    private void assertLimit(String input, String expected, boolean countPatterns, boolean onlyElementMatch,
+                             boolean discardNonMatched, Object... limits) throws XMLStreamException {
         if (!isCollapsing) {
             expected = expected.replaceAll("<([^> ]+)([^>]*) />", "<$1$2></$1>");
         }
@@ -114,16 +119,15 @@ public class XMLStepperTest extends TestCase {
         XMLStreamReader in = xmlFactory.createXMLStreamReader(new StringReader(input));
         ByteArrayOutputStream os = new ByteArrayOutputStream();
         XMLStreamWriter out = xmlOutFactory.createXMLStreamWriter(os);
-        XMLStepper.limitXML(in, out, lims, false, onlyElementMatch, discardNonMatched);
+        XMLStepper.limitXML(in, out, lims, countPatterns, onlyElementMatch, discardNonMatched);
         assertEquals("The input should be reduced properly for limits " + Strings.join(limits),
                      expected, os.toString());
-        assertLimitConvenience(input, expected, onlyElementMatch, discardNonMatched, limits);
-        assertLimitPersistent(input, expected, onlyElementMatch, discardNonMatched, limits);
+        assertLimitConvenience(input, expected, countPatterns, onlyElementMatch, discardNonMatched, limits);
+        assertLimitPersistent(input, expected, countPatterns, onlyElementMatch, discardNonMatched, limits);
     }
 
-    private void assertLimitConvenience(
-            String input, String expected, boolean onlyElementMatch, boolean discardNonMatched, Object... limits)
-            throws XMLStreamException {
+    private void assertLimitConvenience(String input, String expected, boolean countPatterns, boolean onlyElementMatch,
+                                        boolean discardNonMatched, Object... limits) throws XMLStreamException {
         if (!isCollapsing) {
             expected = expected.replaceAll("<([^> ]+)([^>]*) />", "<$1$2></$1>");
         }
@@ -132,14 +136,13 @@ public class XMLStepperTest extends TestCase {
             lims.put(Pattern.compile((String) limits[i]), (Integer) limits[i + 1]);
         }
 
-        String os = XMLStepper.limitXML(input, lims, false, onlyElementMatch, discardNonMatched);
+        String os = XMLStepper.limitXML(input, lims, countPatterns, onlyElementMatch, discardNonMatched);
         assertEquals("The input should be convenience reduced properly for limits " + Strings.join(limits),
                      expected, os);
     }
 
-    private void assertLimitPersistent(
-            String input, String expected, boolean onlyElementMatch, boolean discardNonMatched, Object... limits)
-            throws XMLStreamException {
+    private void assertLimitPersistent(String input, String expected, boolean countPatterns, boolean onlyElementMatch,
+                                       boolean discardNonMatched, Object... limits) throws XMLStreamException {
         if (!isCollapsing) {
             expected = expected.replaceAll("<([^> ]+)([^>]*) />", "<$1$2></$1>");
         }
@@ -148,7 +151,7 @@ public class XMLStepperTest extends TestCase {
             lims.put(Pattern.compile((String) limits[i]), (Integer) limits[i + 1]);
         }
 
-        XMLStepper.Limiter limiter = XMLStepper.createLimiter(lims, false, onlyElementMatch, discardNonMatched);
+        XMLStepper.Limiter limiter = XMLStepper.createLimiter(lims, countPatterns, onlyElementMatch, discardNonMatched);
         String os = limiter.limit(input);
         assertEquals("The input should be convenience reduced properly for limits " + Strings.join(limits),
                      expected, os);
