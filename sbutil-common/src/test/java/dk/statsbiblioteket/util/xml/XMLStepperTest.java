@@ -118,6 +118,7 @@ public class XMLStepperTest extends TestCase {
         assertEquals("The input should be reduced properly for limits " + Strings.join(limits),
                      expected, os.toString());
         assertLimitConvenience(input, expected, onlyElementMatch, discardNonMatched, limits);
+        assertLimitPersistent(input, expected, onlyElementMatch, discardNonMatched, limits);
     }
 
     private void assertLimitConvenience(
@@ -132,6 +133,23 @@ public class XMLStepperTest extends TestCase {
         }
 
         String os = XMLStepper.limitXML(input, lims, false, onlyElementMatch, discardNonMatched);
+        assertEquals("The input should be convenience reduced properly for limits " + Strings.join(limits),
+                     expected, os);
+    }
+
+    private void assertLimitPersistent(
+            String input, String expected, boolean onlyElementMatch, boolean discardNonMatched, Object... limits)
+            throws XMLStreamException {
+        if (!isCollapsing) {
+            expected = expected.replaceAll("<([^> ]+)([^>]*) />", "<$1$2></$1>");
+        }
+        Map<Pattern, Integer> lims = new HashMap<Pattern, Integer>();
+        for (int i = 0 ; i < limits.length ; i+=2) {
+            lims.put(Pattern.compile((String) limits[i]), (Integer) limits[i + 1]);
+        }
+
+        XMLStepper.Limiter limiter = XMLStepper.createLimiter(lims, false, onlyElementMatch, discardNonMatched);
+        String os = limiter.limit(input);
         assertEquals("The input should be convenience reduced properly for limits " + Strings.join(limits),
                      expected, os);
     }

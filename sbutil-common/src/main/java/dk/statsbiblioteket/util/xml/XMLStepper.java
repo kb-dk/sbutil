@@ -495,6 +495,56 @@ public class XMLStepper {
         });
     }
 
+    public static class Limiter {
+        final private Map<Pattern, Integer> limits;
+        final private boolean countPatterns;
+        final private boolean onlyCheckElementPaths;
+        final private boolean discardNonMatched;
+
+        public Limiter(Map<Pattern, Integer> limits, boolean countPatterns, boolean onlyCheckElementPaths,
+                       boolean discardNonMatched) {
+            this.limits = limits;
+            this.countPatterns = countPatterns;
+            this.onlyCheckElementPaths = onlyCheckElementPaths;
+            this.discardNonMatched = discardNonMatched;
+        }
+
+        /**
+         * Apply the specified limitations on the XML and return the result.
+         * @param xml an XML block that should be reduced.
+         * @return the processed XML.
+         * @throws javax.xml.stream.XMLStreamException if there was a problem reading or writing XML.
+         */
+        public String limit(String xml) throws XMLStreamException {
+            return limitXML(xml, limits, countPatterns, onlyCheckElementPaths, discardNonMatched);
+        }
+        /**
+         * Apply the specified limitations on the in XML, writing the result to out.
+         * @param in     XML stream positioned at the point from which reduction should occur (normally the start).
+         * @param out    the reduced XML.
+         * @throws javax.xml.stream.XMLStreamException if there was a problem reading (in) or writing (out) XML.
+         */
+        public void limit(XMLStreamReader in, XMLStreamWriter out) throws XMLStreamException {
+            limitXML(in, out, limits, countPatterns, onlyCheckElementPaths, discardNonMatched);
+        }
+    }
+
+    /**
+     * Packaging of {@link #limitXML(String, java.util.Map, boolean, boolean, boolean)} with pre-defined setup.
+     * @param limits patterns and max occurrences for entries. The limits are processed in entrySet order.
+     *               If max occurrence is -1 there is no limit for the given pattern.
+     * @param countPatterns if true, the limit applies to matched patterns. If false, the limit if for each regexp.
+     *                      If the limit is {code ".*", 10}, only 10 elements in total is kept.
+     * @param onlyCheckElementPaths if true, only element names are matched, not attributes.
+     *                              Setting this to true speeds up processing.
+     * @param discardNonMatched if true, paths that are not matched by any limit are discarded.
+     * @return an XML processor ready for limiting XML with the given constraints.
+     */
+    public static Limiter createLimiter(final Map<Pattern, Integer> limits, final boolean countPatterns,
+                                        final boolean onlyCheckElementPaths, final boolean discardNonMatched) {
+        return new Limiter(limits, countPatterns, onlyCheckElementPaths, discardNonMatched);
+    }
+
     /**
      * Convenience wrapper for {@link #limitXML(javax.xml.stream.XMLStreamReader, javax.xml.stream.XMLStreamWriter, java.util.Map, boolean, boolean, boolean)}
      * that takes care of constructing and deconstructing XML streams.
@@ -506,7 +556,8 @@ public class XMLStepper {
      * @param onlyCheckElementPaths if true, only element names are matched, not attributes.
      *                              Setting this to true speeds up processing.
      * @param discardNonMatched if true, paths that are not matched by any limit are discarded.
-     * @throws javax.xml.stream.XMLStreamException if there was a problem reading (in) or writing (out) XML.
+     * @return the processed XML.
+     * @throws javax.xml.stream.XMLStreamException if there was a problem reading or writing XML.
      */
     public static String limitXML(final String xml, final Map<Pattern, Integer> limits,
                                   final boolean countPatterns, final boolean onlyCheckElementPaths,
@@ -517,6 +568,7 @@ public class XMLStepper {
         limitXML(in, out, limits, countPatterns, onlyCheckElementPaths, discardNonMatched);
         return os.toString();
     }
+
     /**
      * Iterates the given input, counting occurrences of limit-matches and skipping matching elements when the limits
      * are reached.
