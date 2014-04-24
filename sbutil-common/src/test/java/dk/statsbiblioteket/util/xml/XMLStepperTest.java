@@ -84,27 +84,103 @@ public class XMLStepperTest extends TestCase {
                     ".*", 2);
     }
 
-    // Hacked test that requires a file we cannot re-distribute
+    // Limits on specific field with specific tag
     public void testLimitPerformance() throws IOException, XMLStreamException {
-        final File SOURCE = new File("/home/te/tmp/sb_4106186_indent.xml");
+        final String SAMPLE = getSample(9423);
         final int RUNS = 10;
         final Map<Pattern, Integer> limits = new HashMap<Pattern, Integer>();
         limits.put(Pattern.compile("/record/datafield#tag=Z30"), 10);
 
-        if (!SOURCE.exists()) {
-            return;
-        }
-        String in = Strings.flush(new FileInputStream(SOURCE));
         Profiler profiler = new Profiler(RUNS);
 
         String reduced = "";
         for (int run = 0 ; run < RUNS ; run++) {
-            reduced = XMLStepper.limitXML(in, limits, false, false, false);
+            reduced = XMLStepper.limitXML(SAMPLE, limits, false, false, false);
             profiler.beat();
         }
-        System.out.println(String.format(
+        log.info(String.format(
                 "Reduced %d blocks @ %dKB to %dKB at %.1f reductions/sec",
-                RUNS, SOURCE.length() / 1024, reduced.length() / 2 / 1024, profiler.getBps(false)));
+                RUNS, SAMPLE.length() / 1024, reduced.length() / 1024, profiler.getBps(false)));
+        assertTrue("The reduced XML should contain datafields after the skipped ones",
+                   reduced.contains("<datafield tag=\"LOC\""));
+    }
+
+    // Limits in all datafields, counting on unique datafield#tag=value
+    public void testLimitPerformanceCountPatterns() throws IOException, XMLStreamException {
+        final String SAMPLE = getSample(9423);
+        final int RUNS = 10;
+        final Map<Pattern, Integer> limits = new HashMap<Pattern, Integer>();
+        limits.put(Pattern.compile("/record/datafield#tag=.*"), 10);
+
+        Profiler profiler = new Profiler(RUNS);
+
+        XMLStepper.Limiter limiter = XMLStepper.createLimiter(limits, true, false, false);
+
+        String reduced = "";
+        for (int run = 0 ; run < RUNS ; run++) {
+            reduced = limiter.limit(SAMPLE);
+            profiler.beat();
+        }
+        log.info(String.format(
+                "Reduced %d blocks @ %dKB to %dKB at %.1f reductions/sec",
+                RUNS, SAMPLE.length() / 1024, reduced.length() / 1024, profiler.getBps(false)));
+        assertTrue("The reduced XML should contain datafields after the skipped ones",
+                   reduced.contains("<datafield tag=\"LOC\""));
+    }
+
+    private String getSample(int repeats) {
+        StringBuilder sb = new StringBuilder(10*1024*1024);
+        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                  "<record xmlns=\"http://www.loc.gov/MARC21/slim\" " +
+                  "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
+                  "  xmlns:null=\"http://www.loc.gov/MARC21/slim\" " +
+                  "  schemaLocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\">\n" +
+                  "  <leader>00000nap  1233400   6543</leader>\n" +
+                  "  <datafield tag=\"004\" ind1=\"0\" ind2=\"0\">\n" +
+                  "    <subfield code=\"r\">n</subfield>\n" +
+                  "    <subfield code=\"a\">e</subfield>\n" +
+                  "  </datafield>\n" +
+                  "  <datafield tag=\"001\" ind1=\" \" ind2=\" \">\n" +
+                  "    <subfield code=\"a\">4106186</subfield>\n" +
+                  "    <subfield code=\"f\">a</subfield>\n" +
+                  "  </datafield>\n");
+        for (int i = 0 ; i < repeats ; i++) {
+            sb.append("<datafield tag=\"Z30\" ind1=\"-\" ind2=\"2\">\n" +
+                      "    <subfield code=\"l\">SOL02</subfield>\n" +
+                      "    <subfield code=\"8\">20100327</subfield>\n" +
+                      "    <subfield code=\"m\">ISSUE</subfield>\n" +
+                      "    <subfield code=\"1\">UASB</subfield>\n" +
+                      "    <subfield code=\"2\">UASBH</subfield>\n" +
+                      "    <subfield code=\"3\">Bom</subfield>\n" +
+                      "    <subfield code=\"5\">").append("12345-67").append(i).append("</subfield>\n" +
+                      "    <subfield code=\"a\">2010</subfield>\n" +
+                      "    <subfield code=\"b\">1</subfield>\n" +
+                      "    <subfield code=\"c\">3456</subfield>\n" +
+                      "    <subfield code=\"f\">67</subfield>\n" +
+                      "    <subfield code=\"h\">2010 1  6543</subfield>\n" +
+                      "    <subfield code=\"i\">20100821</subfield>\n" +
+                      "    <subfield code=\"j\">20101025</subfield>\n" +
+                      "    <subfield code=\"k\">20100910</subfield>\n" +
+                      "  </datafield>\n");
+        }
+        sb.append(
+          "  <datafield tag=\"STS\" ind1=\" \" ind2=\" \">\n" +
+          "    <subfield code=\"a\">67</subfield>\n" +
+          "  </datafield>\n" +
+          "  <datafield tag=\"SBL\" ind1=\" \" ind2=\" \">\n" +
+          "    <subfield code=\"a\">FOOB</subfield>\n" +
+          "  </datafield>\n" +
+          "  <datafield tag=\"LOC\" ind1=\" \" ind2=\" \">\n" +
+          "    <subfield code=\"b\">FOOB</subfield>\n" +
+          "    <subfield code=\"c\">AUGHH</subfield>\n" +
+          "    <subfield code=\"h\">MPG</subfield>\n" +
+          "    <subfield code=\"o\">ISSUE</subfield>\n" +
+          "  </datafield>\n" +
+          "  <datafield tag=\"STS\" ind1=\" \" ind2=\" \">\n" +
+          "    <subfield code=\"a\">67</subfield>\n" +
+          "  </datafield>\n" +
+          "</record>");
+        return sb.toString();
     }
 
     private void assertLimit(String input, String expected, boolean countPatterns, boolean onlyElementMatch,
