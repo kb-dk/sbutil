@@ -292,8 +292,7 @@ public class Strings {
         try {
             return flush(r);
         } catch (IOException e) {
-            throw new RuntimeException("Unexpected IOException when "
-                                       + "reading character stream", e);
+            throw new RuntimeException("Unexpected IOException when reading character stream", e);
         }
     }
 

@@ -19,6 +19,7 @@
  */
 package dk.statsbiblioteket.util.reader;
 
+import dk.statsbiblioteket.util.Strings;
 import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.IOException;
@@ -48,8 +49,7 @@ public class BaselineReplacer extends ReplaceReader {
                 new Comparator<Map.Entry<String, String>>() {
                     public int compare(Map.Entry<String, String> o1,
                                        Map.Entry<String, String> o2) {
-                        return -1 * (new Integer(o1.getKey().length()).
-                                compareTo(o2.getKey().length()));
+                        return -1 * (new Integer(o1.getKey().length()).compareTo(o2.getKey().length()));
                     }
                 });
 
@@ -69,8 +69,7 @@ public class BaselineReplacer extends ReplaceReader {
      *
      * @return a clone of this ReplaceReader.
      */
-    @SuppressWarnings({"CloneDoesntCallSuperClone",
-                       "CloneDoesntDeclareCloneNotSupportedException"})
+    @SuppressWarnings({"CloneDoesntCallSuperClone", "CloneDoesntDeclareCloneNotSupportedException"})
     @Override
     public Object clone() {
         return new BaselineReplacer(rules);
@@ -104,6 +103,7 @@ public class BaselineReplacer extends ReplaceReader {
         return in.read(cbuf, off, len);
     }
 
+    @Override
     public String transform(String s) {
 //        System.out.println("In: " + s);
         int pos = 0;
@@ -139,18 +139,22 @@ public class BaselineReplacer extends ReplaceReader {
         return out.toString();
     }
 
+    @Override
     public char[] transformToChars(char c) {
         return transform(Character.toString(c)).toCharArray();
     }
 
+    @Override
     public char[] transformToChars(char[] chars) {
         return transform(new String(chars)).toCharArray();
     }
 
+    @Override
     public char[] transformToCharsAllowInplace(char[] chars) {
         return transformToChars(chars);
     }
 
+    @Override
     public int read(CircularCharBuffer cbuf, int length) throws IOException {
         if (length == 0) {
             return 0;
@@ -162,5 +166,10 @@ public class BaselineReplacer extends ReplaceReader {
             counter++;
         }
         return counter == 0 ? -1 : counter;
+    }
+
+    @Override
+    public String toString() {
+        return "BaselineReplacer(rules=" + Strings.join(rules, 10) + ")";
     }
 }

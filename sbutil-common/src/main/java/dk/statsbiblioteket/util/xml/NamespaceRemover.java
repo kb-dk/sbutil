@@ -53,33 +53,25 @@ import java.util.regex.Pattern;
 public class NamespaceRemover extends ReplaceReader {
 //    private static Log log = LogFactory.getLog(NamespaceRemover.class);
 
-    private enum Mode {
-        PLAIN, CDATA, COMMENT
-    }
+    private enum Mode {PLAIN, CDATA, COMMENT}
 
     private Mode mode = Mode.PLAIN;
-    private CircularCharBuffer inBuf =
-            new CircularCharBuffer(100, Integer.MAX_VALUE);
-    private CircularCharBuffer outBuf =
-            new CircularCharBuffer(100, Integer.MAX_VALUE);
+    private CircularCharBuffer inBuf = new CircularCharBuffer(100, Integer.MAX_VALUE);
+    private CircularCharBuffer outBuf = new CircularCharBuffer(100, Integer.MAX_VALUE);
 
-    private final Matcher declarationMatcher =
-            Pattern.compile("xmlns(\\:.+)? *\\= *\".*\"").matcher("");
+    private final Matcher declarationMatcher = Pattern.compile("xmlns(\\:.+)? *\\= *\".*\"").matcher("");
 
-    private final Matcher defaultDeclarationMatcher =
-            Pattern.compile("xmlns *\\= *\".*\"").matcher("");
+    private final Matcher defaultDeclarationMatcher = Pattern.compile("xmlns *\\= *\".*\"").matcher("");
 
     // Should be http://www.w3.org/TR/REC-xml/#NT-Name but we cheat
-    private final Matcher prefixMatcher =
-            Pattern.compile("[a-zA-Z_\\.\\-0-9]+\\:([a-zA-Z_\\.\\-0-9]+)").matcher("");
+    private final Matcher prefixMatcher = Pattern.compile("[a-zA-Z_\\.\\-0-9]+\\:([a-zA-Z_\\.\\-0-9]+)").matcher("");
 
     public NamespaceRemover(Reader in) {
         super(in);
     }
 
     public String transform(CharSequence s) {
-        CircularCharBuffer buf = new CircularCharBuffer(
-                s.length(), Integer.MAX_VALUE);
+        CircularCharBuffer buf = new CircularCharBuffer(s.length(), Integer.MAX_VALUE);
         removeNamespace(s, buf);
         return buf.toString();
     }
@@ -96,8 +88,7 @@ public class NamespaceRemover extends ReplaceReader {
 
     @Override
     public char[] transformToChars(char[] chars) {
-        CircularCharBuffer buf = new CircularCharBuffer(
-                chars.length, Integer.MAX_VALUE);
+        CircularCharBuffer buf = new CircularCharBuffer(chars.length, Integer.MAX_VALUE);
         removeNamespace(Strings.asCharSequence(chars), buf);
         return buf.takeAll();
     }
@@ -137,6 +128,7 @@ public class NamespaceRemover extends ReplaceReader {
         return outBuf.read(cbuf, off, len);
     }
 
+    @Override
     public int read(CircularCharBuffer cbuf, int len) throws IOException {
         ensureLength(len);
         return outBuf.read(cbuf, len);
@@ -160,8 +152,7 @@ public class NamespaceRemover extends ReplaceReader {
 
     @Override
     public void mark(int readAheadLimit) throws IOException {
-        throw new UnsupportedOperationException(
-                "No marking in NamespaceRemover");
+        throw new UnsupportedOperationException("No marking in NamespaceRemover");
     }
 
     // Quite ineffective...
@@ -191,8 +182,7 @@ public class NamespaceRemover extends ReplaceReader {
         outBuf.clear();
     }
 
-    @SuppressWarnings({"CloneDoesntCallSuperClone",
-                       "CloneDoesntDeclareCloneNotSupportedException"})
+    @SuppressWarnings({"CloneDoesntCallSuperClone", "CloneDoesntDeclareCloneNotSupportedException"})
     @Override
     public Object clone() {
         return new NamespaceRemover(null);
@@ -270,8 +260,7 @@ public class NamespaceRemover extends ReplaceReader {
                     break;
                 }
                 default:
-                    throw new IllegalStateException(String.format(
-                            "Mode %s is unknown", mode));
+                    throw new IllegalStateException(String.format("Mode %s is unknown", mode));
             }
         }
     }
@@ -297,13 +286,11 @@ public class NamespaceRemover extends ReplaceReader {
         int first = Strings.indexOf('"', tag);
         int next = Strings.indexOf('"', first + 1, tag);
         if (first != -1 && next > first) {
-            out.put(
-                    prefixMatcher.reset(tag.subSequence(0, first)).replaceAll("$1"));
+            out.put(prefixMatcher.reset(tag.subSequence(0, first)).replaceAll("$1"));
             out.put(tag.subSequence(first, next + 1));
             removeNamespace(tag.subSequence(next + 1, tag.length()), out);
         } else {
-            out.put(
-                    prefixMatcher.reset(tag).replaceAll("$1"));
+            out.put(prefixMatcher.reset(tag).replaceAll("$1"));
         }
     }
 
@@ -368,4 +355,9 @@ public class NamespaceRemover extends ReplaceReader {
         return count;
     }
 
+    @Override
+    public String toString() {
+        return "NamespaceRemover(mode=" + mode + ", ..., ..., inBuf=" + inBuf
+               + ", declarationMatcher=" + declarationMatcher + ", ..., prefixMatcher=" + prefixMatcher + ")";
+    }
 }
