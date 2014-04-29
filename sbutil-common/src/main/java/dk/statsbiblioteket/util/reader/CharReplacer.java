@@ -55,8 +55,7 @@ public class CharReplacer extends ReplaceReader {
      *
      * @param in    the character stream in which to replace substrings
      * @param rules the rules used for replacing chars
-     * @throws IllegalArgumentException if one or more of the reules are
-     *                                  illegal for this {@link TextTransformer}
+     * @throws IllegalArgumentException if one or more of the reules are illegal for this {@link TextTransformer}
      */
     public CharReplacer(Reader in, Map<String, String> rules) {
         super(in);
@@ -71,8 +70,7 @@ public class CharReplacer extends ReplaceReader {
             if (target.length != 1 || destination.length != 1) {
                 throw new IllegalArgumentException(String.format(
                         "The rule '" + entry.getKey() + "' => '"
-                        + entry.getValue() + "' was not single char to single"
-                        + " char. The input had length "
+                        + entry.getValue() + "' was not single char to single char. The input had length "
                         + entry.getKey().length()));
             }
             this.rules[target[0]] = destination[0];
@@ -110,8 +108,7 @@ public class CharReplacer extends ReplaceReader {
      *
      * @return a clone of this ReplaceReader.
      */
-    @SuppressWarnings({"CloneDoesntCallSuperClone",
-                       "CloneDoesntDeclareCloneNotSupportedException"})
+    @SuppressWarnings({"CloneDoesntCallSuperClone", "CloneDoesntDeclareCloneNotSupportedException"})
     @Override
     public Object clone() {
         return new CharReplacer(rules);
@@ -123,10 +120,12 @@ public class CharReplacer extends ReplaceReader {
         return rules[c];
     }
 
+    @Override
     public char[] transformToChars(char c) {
         return new char[]{rules[c]};
     }
 
+    @Override
     public char[] transformToChars(char[] chars) {
         char[] output = new char[chars.length];
         for (int i = 0; i < chars.length; i++) {
@@ -135,6 +134,7 @@ public class CharReplacer extends ReplaceReader {
         return output;
     }
 
+    @Override
     public char[] transformToCharsAllowInplace(char[] chars) {
         for (int i = 0; i < chars.length; i++) {
             chars[i] = rules[chars[i]];
@@ -143,6 +143,7 @@ public class CharReplacer extends ReplaceReader {
     }
 
     // No optimization here. Can we do it without conditionals?
+    @Override
     public String transform(String s) {
         return new String(transformToChars(s.toCharArray()));
     }
@@ -168,6 +169,7 @@ public class CharReplacer extends ReplaceReader {
         }
     }
 
+    @Override
     public int read(CircularCharBuffer cbuf, int length) throws IOException {
         int read = 0;
         try {
@@ -223,5 +225,9 @@ public class CharReplacer extends ReplaceReader {
             chars[off + i] = rules[chars[off + i]];
         }
     }
-}
 
+    @Override
+    public String toString() {
+        return "CharReplacer(...)";
+    }
+}

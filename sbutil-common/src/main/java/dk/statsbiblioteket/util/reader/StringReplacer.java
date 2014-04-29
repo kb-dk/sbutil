@@ -22,6 +22,7 @@
  */
 package dk.statsbiblioteket.util.reader;
 
+import dk.statsbiblioteket.util.Strings;
 import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.io.IOException;
@@ -42,14 +43,14 @@ import java.util.Map;
 public class StringReplacer extends ReplaceReader {
     private CircularCharBuffer readerBuffer;
     private CircularCharBuffer destinationBuffer;
-    private CircularCharBuffer tempInBuffer =
-            new CircularCharBuffer(10, Integer.MAX_VALUE);
-    private CircularCharBuffer tempOutBuffer =
-            new CircularCharBuffer(10, Integer.MAX_VALUE);
+    private CircularCharBuffer tempInBuffer = new CircularCharBuffer(10, Integer.MAX_VALUE);
+    private CircularCharBuffer tempOutBuffer = new CircularCharBuffer(10, Integer.MAX_VALUE);
     private Node tree = new Node();
     private int minBufferSize = 10;
     private boolean eof = false;
     private long replacementsFromCurrentSource = 0;
+
+    private final String rulesSample;
 
     /**
      * Create a new replacer replacing substrings in the {@code in} stream
@@ -60,10 +61,9 @@ public class StringReplacer extends ReplaceReader {
      */
     public StringReplacer(Reader in, Map<String, String> replacements) {
         super(in);
-
+        rulesSample = Strings.join(replacements.entrySet(), 10);
         for (Map.Entry<String, String> replacement : replacements.entrySet()) {
-            minBufferSize = Math.max(minBufferSize,
-                                     replacement.getKey().length());
+            minBufferSize = Math.max(minBufferSize, replacement.getKey().length());
             tree.addRule(replacement.getKey(), replacement.getValue(), 0);
         }
         initBuffers(minBufferSize);
@@ -72,8 +72,7 @@ public class StringReplacer extends ReplaceReader {
     private void initBuffers(int minBufferSize) {
         this.minBufferSize = minBufferSize;
         readerBuffer = new CircularCharBuffer(minBufferSize, minBufferSize);
-        destinationBuffer = new CircularCharBuffer(minBufferSize,
-                                                   Integer.MAX_VALUE);
+        destinationBuffer = new CircularCharBuffer(minBufferSize, Integer.MAX_VALUE);
     }
 
     /**
@@ -91,6 +90,7 @@ public class StringReplacer extends ReplaceReader {
 
     private StringReplacer(int minBufferSize, Node ruleTree) {
         super(null);
+        rulesSample = "";
         tree = ruleTree;
         initBuffers(minBufferSize);
     }
@@ -153,8 +153,7 @@ public class StringReplacer extends ReplaceReader {
 
     /* Stream based */
     @Override
-    public synchronized int read(CircularCharBuffer cbuf, int length)
-            throws IOException {
+    public synchronized int read(CircularCharBuffer cbuf, int length) throws IOException {
         ensureBuffers(length);
         return destinationBuffer.read(cbuf, length);
     }
@@ -169,8 +168,7 @@ public class StringReplacer extends ReplaceReader {
     }
 
     @Override
-    public synchronized int read(char cbuf[], int off, int len)
-            throws IOException {
+    public synchronized int read(char cbuf[], int off, int len) throws IOException {
         ensureBuffers(len); // Dangerous as we risk large buffer
         return destinationBuffer.read(cbuf, off, len);
     }
@@ -212,9 +210,7 @@ public class StringReplacer extends ReplaceReader {
         }
         // We're using a reader, so read up to minBufferSize is we can
         int next = 0;
-        while (readerBuffer.size() < minBufferSize
-               && !eof
-               && (next = in.read()) != -1) {
+        while (readerBuffer.size() < minBufferSize && !eof && (next = in.read()) != -1) {
             readerBuffer.put((char) next);
         }
         if (next == -1) {
@@ -322,5 +318,10 @@ public class StringReplacer extends ReplaceReader {
             }
             return null;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "StringReplacer(rules=" + rulesSample + ")";
     }
 }

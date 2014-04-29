@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -86,8 +87,7 @@ public class CharArrayReplacer extends ReplaceReader {
             char[] destination = entry.getValue().toCharArray();
             if (target.length != 1) {
                 throw new IllegalArgumentException(String.format(
-                        "The rule '" + entry.getKey() + "' => "
-                        + entry.getValue()
+                        "The rule '" + entry.getKey() + "' => " + entry.getValue()
                         + "' was not single char to char array"));
             }
             this.rules[target[0]] = destination;
@@ -124,8 +124,7 @@ public class CharArrayReplacer extends ReplaceReader {
      *
      * @return a clone of this ReplaceReader.
      */
-    @SuppressWarnings({"CloneDoesntCallSuperClone",
-                       "CloneDoesntDeclareCloneNotSupportedException"})
+    @SuppressWarnings({"CloneDoesntCallSuperClone", "CloneDoesntDeclareCloneNotSupportedException"})
     @Override
     public Object clone() {
         return new CharArrayReplacer(rules);
@@ -133,6 +132,7 @@ public class CharArrayReplacer extends ReplaceReader {
 
     /* TextTransformer interface implementations */
 
+    @Override
     public char[] transformToChars(char c) {
         return rules[c];
     }
@@ -148,6 +148,7 @@ public class CharArrayReplacer extends ReplaceReader {
      * @param chars the characters to replace.
      * @return the result of the replacing.
      */
+    @Override
     public char[] transformToChars(char[] chars) {
         CircularCharBuffer out = (CircularCharBuffer) bufferPool.get();
         out.clear();
@@ -157,10 +158,12 @@ public class CharArrayReplacer extends ReplaceReader {
         return out.takeAll();
     }
 
+    @Override
     public char[] transformToCharsAllowInplace(char[] chars) {
         return transformToChars(chars);
     }
 
+    @Override
     public String transform(String s) {
         StringWriter out = new StringWriter(s.length() * 4);
         for (int i = 0; i < s.length(); i++) {
@@ -239,6 +242,7 @@ public class CharArrayReplacer extends ReplaceReader {
      * @return the number of chars filled or -1 if there are no more chars.
      * @throws java.io.IOException if an I/O error occured.
      */
+    @Override
     public int read(CircularCharBuffer cbuf, int length) throws IOException {
         fillOutBuffer(length);
         return outBuffer.read(cbuf, length);
@@ -248,5 +252,10 @@ public class CharArrayReplacer extends ReplaceReader {
     public int read(char[] cbuf, int off, int length) throws IOException {
         fillOutBuffer(length);
         return outBuffer.read(cbuf, off, length);
+    }
+
+    @Override
+    public String toString() {
+        return "CharArrayReplacer(...)";
     }
 }

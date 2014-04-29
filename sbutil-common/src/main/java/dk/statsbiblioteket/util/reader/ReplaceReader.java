@@ -36,8 +36,7 @@ import java.io.StringReader;
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
-public abstract class ReplaceReader extends FilterReader
-        implements TextTransformer, Cloneable {
+public abstract class ReplaceReader extends FilterReader implements TextTransformer, Cloneable {
 
     protected CircularCharBuffer sourceBuffer = null;
 
@@ -62,12 +61,14 @@ public abstract class ReplaceReader extends FilterReader
      * @param source the new character stream to replace substrings in
      * @return always returns {@code this}
      */
+    @Override
     public ReplaceReader setSource(Reader source) {
         this.in = source;
         sourceBuffer = null;
         return this;
     }
 
+    @Override
     public ReplaceReader setSource(CircularCharBuffer charBuffer) {
         this.sourceBuffer = charBuffer;
         this.in = null;
@@ -85,4 +86,9 @@ public abstract class ReplaceReader extends FilterReader
     @SuppressWarnings({"CloneDoesntDeclareCloneNotSupportedException"})
     @Override
     public abstract Object clone();
+
+    @Override
+    public String toString() {
+        return "abstract ReplaceReader()";
+    }
 }
