@@ -13,7 +13,7 @@ import java.io.IOException;
         reviewers = {"abr, mke"})
 public class Bytes {
     /**
-     * The hexidecimal characters in numeric order from {@code 0-f}
+     * The hexadecimal characters in numeric order from {@code 0-f}
      */
     public static final char[] HEX_DIGITS =
             {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
@@ -54,10 +54,10 @@ public class Bytes {
      * Converts a byte array to a hex-string and write the result to an
      * {@code Appendable} (such as a {@code StringBuilder}).
      *
-     * @param buf the appendable to write to
-     * @param ba  the byte array to convert to a hex-string
-     * @return always returns {@code buf}
-     * @throws IOException upon errors writing to {@code buf}
+     * @param buf the appendable to write to.
+     * @param ba  the byte array to convert to a hex-string.
+     * @return always returns {@code buf}.
+     * @throws IOException upon errors writing to {@code buf}.
      */
     @SuppressWarnings("ForLoopReplaceableByForEach")
     public static Appendable toHex(Appendable buf, byte[] ba)
@@ -70,6 +70,4 @@ public class Bytes {
 
         return buf;
     }
-
-
 }

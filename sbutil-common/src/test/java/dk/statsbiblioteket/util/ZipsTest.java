@@ -164,14 +164,11 @@ public class ZipsTest {
         Zips.unzip(zipFile.toString(), zipDestFolder.toString(), false);
 
         File unpacked = new File(zipDestFolder, "myzip");
-        assertTrue("The unpacked folder '" + unpacked + "' should exist",
-                   unpacked.exists());
+        assertTrue("The unpacked folder '" + unpacked + "' should exist", unpacked.exists());
 
         for (String file : FILES) {
-            assertPermissionsEquals("The permissions for " + file
-                                    + " should be the same",
-                                    file, zipFolder,
-                                    new File(zipDestFolder, "myzip"));
+            assertPermissionsEquals("The permissions for " + file + " should be the same",
+                                    file, zipFolder, new File(zipDestFolder, "myzip"));
         }
         System.out.println("Unfortunately the group permissions for a File "
                            + "cannot be inspected from Java. Please compare the"
@@ -179,17 +176,14 @@ public class ZipsTest {
                            + "that they are equal");
         for (String file : FILES) {
             System.out.println(new File(zipFolder, file));
-            System.out.println(new File(new File(zipDestFolder, "myzip"),
-                                        file));
+            System.out.println(new File(new File(zipDestFolder, "myzip"), file));
             System.out.println("");
         }
 
         new File(zipFile.toString()).delete();
     }
 
-    private void assertPermissionsEquals(String message, String file,
-                                         File source,
-                                         File destination) {
+    private void assertPermissionsEquals(String message, String file, File source, File destination) {
         assertEquals(message,
                      permToString(new File(source, file)),
                      permToString(new File(destination, file)));

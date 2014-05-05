@@ -277,16 +277,13 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      *
      * @param ahead the number of characters to peek ahead.
      * @return the character at the offset ahead.
-     * @throws ArrayIndexOutOfBoundsException if {@code ahead} is past the
-     *                                        buffer end. That is, calling this
-     *                                        method on an empty buffer will
-     *                                        always throw this exception
+     * @throws ArrayIndexOutOfBoundsException if {@code ahead} is past the buffer end. That is, calling this
+     *                                        method on an empty buffer will always throw this exception
      */
     public char peek(int ahead) {
         if (ahead >= size()) {
             throw new ArrayIndexOutOfBoundsException(
-                    "Requesting a peek(" + ahead + ") when the size is only "
-                    + size());
+                    "Requesting a peek(" + ahead + ") when the size is only " + size());
         }
         return array[(first + ahead) % array.length];
     }
@@ -314,22 +311,18 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
 
     private void extendCapacity() {
         if (array.length == max) {
-            throw new ArrayIndexOutOfBoundsException(
-                    "The buffer if full and cannot be expanded further");
+            throw new ArrayIndexOutOfBoundsException("The buffer if full and cannot be expanded further");
         }
 
-        int newSize = Math.min(max, Math.max(array.length + 1,
-                                             array.length * GROWTH_FACTOR));
+        int newSize = Math.min(max, Math.max(array.length + 1, array.length * GROWTH_FACTOR));
         char[] newArray = new char[newSize];
         if (next == first) { // Empty
             array = newArray;
             return;
         }
         if (next < first) {
-            System.arraycopy(
-                    array, first, newArray, 0, array.length - first);
-            System.arraycopy(
-                    array, 0, newArray, array.length - first, next);
+            System.arraycopy(array, first, newArray, 0, array.length - first);
+            System.arraycopy(array, 0, newArray, array.length - first, next);
         } else {
             System.arraycopy(array, 0, newArray, first, next - first);
         }
@@ -428,8 +421,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
                     "Ending point of subSequence is past buffer end: " + end);
         }
 
-        CircularCharBuffer child = new CircularCharBuffer(length(),
-                                                          getMaximumCapacity());
+        CircularCharBuffer child = new CircularCharBuffer(length(), getMaximumCapacity());
         for (int i = start; i < end; i++) {
             child.put(charAt(i));
         }
@@ -647,8 +639,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      */
     public void skip(long n) throws IOException {
         if (n < 0) {
-            throw new IllegalArgumentException(
-                    "skip(" + n + ") failed: Only positive skips allowed");
+            throw new IllegalArgumentException("skip(" + n + ") failed: Only positive skips allowed");
         }
         int oldSize = size();
         if (n > oldSize) {

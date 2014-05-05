@@ -33,7 +33,6 @@ public class JobController<R> extends ExecutorCompletionService<R> {
     private final AtomicInteger issued = new AtomicInteger(0);
     private final AtomicInteger tasks = new AtomicInteger(0);
     private boolean autoEmpty = false;
-    private String threadName = "jobController_job-";
 
     /**
      * Shortcut for {@code JobController(maxConcurrentThreads, false, false, null)}.
@@ -79,7 +78,6 @@ public class JobController<R> extends ExecutorCompletionService<R> {
                                             threadNamePrefix == null ? "jobController_job-" : threadNamePrefix));
         ((CallbackThreadPoolExecutor)executor).setCallback(this);
         this.autoEmpty = autoEmpty;
-        threadName = threadNamePrefix == null ? threadName : threadNamePrefix;
     }
 
     /**

@@ -21,8 +21,7 @@ public class FilePermissionException extends IOException {
      */
     public FilePermissionException(String filename,
                                    Files.Permission required) {
-        super("Insufficient permissions for file '" + filename
-              + "'. File is not " + required);
+        super("Insufficient permissions for file '" + filename + "'. File is not " + required);
         this.filename = filename;
     }
 

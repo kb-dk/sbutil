@@ -151,7 +151,11 @@ public class LineReader implements DataInput, DataOutput {
     public LineReader(File file, String mode) throws IOException {
         if (mode != null && mode.contains("w") && !file.exists()) {
             log.trace("Creating file '" + file + "'");
-            file.createNewFile();
+            if (!file.createNewFile()) {
+                throw new IllegalStateException(
+                        "File '" + file + "' already exists even though it was checked that is wasn't. "
+                        + "Possible cause is concurrent access to the same file");
+            }
         }
         if (mode == null) {
             log.debug("Mode == null, defaulting to read-only");
@@ -167,9 +171,8 @@ public class LineReader implements DataInput, DataOutput {
             writable = true;
             synchronize = true;
         } else {
-            throw new IllegalArgumentException("The mode '" + mode + "' is "
-                                               + "illegal. Legal values are "
-                                               + "'r', 'rw', 'rws' and 'rwd");
+            throw new IllegalArgumentException(
+                    "The mode '" + mode + "' is " + "illegal. Legal values are " + "'r', 'rw', 'rws' and 'rwd");
         }
         if (writable && !file.canWrite()) {
             throw new IOException("The file '" + file + "' is read-only");
@@ -223,13 +226,11 @@ public class LineReader implements DataInput, DataOutput {
         //log.trace("seek(" + position + ") called");
         if (position > length()) {
             //noinspection DuplicateStringLiteralInspection
-            throw new EOFException("Cannot set position " + position
-                                   + " as the file size is only "
-                                   + length() + " bytes");
+            throw new EOFException(
+                    "Cannot set position " + position + " as the file size is only " + length() + " bytes");
         }
         if (position < 0) {
-            throw new IllegalArgumentException("The position cannot "
-                                               + "be negative");
+            throw new IllegalArgumentException("The position cannot be negative");
         }
         if (bufferStart != -1) {
             if (position < bufferStart ||
@@ -241,10 +242,8 @@ public class LineReader implements DataInput, DataOutput {
                     buffer.position((int) (position - bufferStart));
                 } catch (IllegalArgumentException e) {
                     throw new IllegalArgumentException(
-                            "Trying to set the buffer position to " + position
-                            + " - " + bufferStart + " = "
-                            + (position - bufferStart)
-                            + " with a buffer of size " + getBufferSize(), e);
+                            "Trying to set the buffer position to " + position + " - " + bufferStart + " = "
+                            + (position - bufferStart) + " with a buffer of size " + getBufferSize(), e);
                 }
             }
         }
@@ -260,8 +259,7 @@ public class LineReader implements DataInput, DataOutput {
         if (fileSize == -1) {
             fileSize = file.length();
         }
-        return Math.max(fileSize,
-                        dirty ? bufferStart + maxBufferPos : fileSize);
+        return Math.max(fileSize, dirty ? bufferStart + maxBufferPos : fileSize);
     }
 
     /**
@@ -300,8 +298,7 @@ public class LineReader implements DataInput, DataOutput {
      */
     private void checkOutputFile() throws IOException {
         if (!writable) {
-            throw new IllegalStateException(String.format(
-                    "The file '%s' has been opened in read-only mode", file));
+            throw new IllegalStateException(String.format("The file '%s' has been opened in read-only mode", file));
         }
         if (outOpen) {
             return;
@@ -359,8 +356,7 @@ public class LineReader implements DataInput, DataOutput {
     private void checkBuffer() throws IOException {
         if (bufferStart == -1) {
             if (dirty) {
-                log.error("The buffer should not be dirty when "
-                          + "bufferStart == -1");
+                log.error("The buffer should not be dirty when bufferStart == -1");
             }
             checkInputFile();
             log.trace("checkBuffer: Seeking to position " + position);
@@ -399,17 +395,14 @@ public class LineReader implements DataInput, DataOutput {
      */
     public void flush() throws IOException {
         if (dirty) {
-            assert bufferStart != -1 : "When the buffer is dirty, bufferStart "
-                                       + "should be >= 0";
+            assert bufferStart != -1 : "When the buffer is dirty, bufferStart should be >= 0";
             log.trace("Storing the buffer to disk");
             checkOutputFile();
 //            System.out.println(maxBufferPos + " " + bufferStart);
             if (log.isTraceEnabled()) {
                 //noinspection DuplicateStringLiteralInspection
-                log.trace("flush: bufferStart=" + bufferStart
-                          + ", maxBufferPos=" + maxBufferPos
-                          + ", buffer.limit=" + buffer.limit()
-                          + ", position=" + position);
+                log.trace("flush: bufferStart=" + bufferStart + ", maxBufferPos=" + maxBufferPos
+                          + ", buffer.limit=" + buffer.limit() + ", position=" + position);
             }
             buffer.position(maxBufferPos); // Limit instead?
             buffer.flip();
@@ -453,28 +446,34 @@ public class LineReader implements DataInput, DataOutput {
      * added where the behaviour is not as would be expected.                  *
      ************************************************************************ */
 
+    @Override
     public boolean readBoolean() throws IOException {
         return readByte() != 0;
     }
 
+    @Override
     public int readUnsignedByte() throws IOException {
         return readByte() & 0xFF;
     }
 
+    @Override
     public short readShort() throws IOException {
         return (short) (readByte() << 8 | readByte());
     }
 
+    @Override
     public int readUnsignedShort() throws IOException {
         return readByte() << 8 | readByte();
     }
 
+    @Override
     public char readChar() throws IOException {
         return (char) (readByte() << 8 | readByte());
     }
 
     private byte[] readBuf = new byte[8];
 
+    @Override
     public int readInt() throws IOException {
         readFully(readBuf, 0, 4);
         return (readBuf[0] & 0xFF) << 24
@@ -483,6 +482,7 @@ public class LineReader implements DataInput, DataOutput {
                | readBuf[3];
     }
 
+    @Override
     public long readLong() throws IOException {
         readFully(readBuf, 0, 8);
         return (long) (readBuf[0] & 0xFF) << 56
@@ -495,14 +495,17 @@ public class LineReader implements DataInput, DataOutput {
                | readBuf[7];
     }
 
+    @Override
     public float readFloat() throws IOException {
         return Float.intBitsToFloat(readInt());
     }
 
+    @Override
     public double readDouble() throws IOException {
         return Double.longBitsToDouble(readInt());
     }
 
+    @Override
     public byte readByte() throws IOException {
         //log.trace("readByte entered");
         checkInputFile();
@@ -532,6 +535,7 @@ public class LineReader implements DataInput, DataOutput {
      * @throws IOException  if a line could not be read.
      */
     // TODO: Extend this to handle different line breaks
+    @Override
     public String readLine() throws IOException {
 //        log.trace("readLine entered");
         lineBuffer.reset();
@@ -545,8 +549,7 @@ public class LineReader implements DataInput, DataOutput {
             }
             if (next == 0x0A) {
                 if (log.isTraceEnabled()) {
-                    log.trace("Read " + lineBuffer.size()
-                              + " bytes in readLine");
+                    log.trace("Read " + lineBuffer.size() + " bytes in readLine");
                 }
                 break;
             }
@@ -555,14 +558,17 @@ public class LineReader implements DataInput, DataOutput {
         return lineBuffer.toString("utf-8");
     }
 
+    @Override
     public String readUTF() throws IOException {
         return DataInputStream.readUTF(this);
     }
 
+    @Override
     public void readFully(byte[] buf) throws IOException {
         readFully(buf, 0, buf.length);
     }
 
+    @Override
     public void readFully(byte[] buf, int offset, int length)
             throws IOException {
         int got = read(buf, offset, length);
@@ -578,6 +584,7 @@ public class LineReader implements DataInput, DataOutput {
         }
     }
 
+    @Override
     public int skipBytes(int n) throws IOException {
         long skip = Math.min(n, length() - position);
         log.trace("Skipping " + skip + " bytes out of " + n + " wanted");
@@ -638,6 +645,7 @@ public class LineReader implements DataInput, DataOutput {
         write(str.getBytes("utf-8"));
     }
 
+    @Override
     public void write(int value) throws IOException {
         checkInputFile();
         checkBuffer();
@@ -648,10 +656,12 @@ public class LineReader implements DataInput, DataOutput {
         flushIfNeeded();
     }
 
+    @Override
     public void write(byte[] buffer) throws IOException {
         write(buffer, 0, buffer.length);
     }
 
+    @Override
     public void write(byte[] buf, int offset, int length) throws IOException {
         if (offset + length > buf.length) {
             throw new IllegalArgumentException("Out of bounds: buf.length="
@@ -697,28 +707,33 @@ public class LineReader implements DataInput, DataOutput {
         }
     }
 
+    @Override
     public void writeBoolean(boolean v) throws IOException {
         write(v ? 1 : 0);
     }
 
+    @Override
     public void writeByte(int v) throws IOException {
         write(v);
     }
 
     private byte[] outBytes = new byte[8];
 
+    @Override
     public void writeShort(int v) throws IOException {
         outBytes[0] = (byte) (0xff & v >> 8);
         outBytes[1] = (byte) (0xff & v);
         write(outBytes, 0, 2);
     }
 
+    @Override
     public void writeChar(int v) throws IOException {
         outBytes[0] = (byte) (0xff & v >> 8);
         outBytes[1] = (byte) (0xff & v);
         write(outBytes, 0, 2);
     }
 
+    @Override
     public void writeInt(int v) throws IOException {
         outBytes[0] = (byte) (0xff & v >> 24);
         outBytes[1] = (byte) (0xff & v >> 16);
@@ -727,6 +742,7 @@ public class LineReader implements DataInput, DataOutput {
         write(outBytes, 0, 4);
     }
 
+    @Override
     public void writeLong(long v) throws IOException {
         outBytes[0] = (byte) (0xff & v >> 56);
         outBytes[1] = (byte) (0xff & v >> 48);
@@ -739,14 +755,17 @@ public class LineReader implements DataInput, DataOutput {
         write(outBytes, 0, 8);
     }
 
+    @Override
     public void writeFloat(float v) throws IOException {
         writeInt(Float.floatToIntBits(v));
     }
 
+    @Override
     public void writeDouble(double v) throws IOException {
         writeLong(Double.doubleToLongBits(v));
     }
 
+    @Override
     public void writeBytes(String s) throws IOException {
         char[] cBuf = s.toCharArray();
         byte[] bBuf = new byte[s.length()];
@@ -756,6 +775,7 @@ public class LineReader implements DataInput, DataOutput {
         write(bBuf);
     }
 
+    @Override
     public void writeChars(String s) throws IOException {
         char[] cBuf = s.toCharArray();
         byte[] bBuf = new byte[s.length() * 2];
@@ -766,6 +786,7 @@ public class LineReader implements DataInput, DataOutput {
         write(bBuf);
     }
 
+    @Override
     public void writeUTF(String str) throws IOException {
         throw new UnsupportedEncodingException("This is not supported as the "
                                                + "necessary util is package "
@@ -796,13 +817,10 @@ public class LineReader implements DataInput, DataOutput {
      * most from relatively small values, while conventional harddisks are
      * better off with larger values as the minimize seeks.
      *
-     * @param comparator used for the binary search. If the comparator is null,
-     *                   the default String.compareTo is used.
+     * @param comparator used for the binary search. If the comparator is null, the default String.compareTo is used.
      *                   The comparator will be used with compare(query, line).
-     * @param query      the element to look for. If comparator is null, this
-     *                   should be a full line.
-     * @return the index of the query or {@code (-(insertion point) - 1)} if it
-     *         could not be found.
+     * @param query      the element to look for. If comparator is null, this should be a full line.
+     * @return the index of the query or {@code -(insertion point)-1} if it could not be found.
      * @throws IOException if reads of the underlying file failed.
      */
     public long binaryLineSearch(Comparator<String> comparator, String query)
@@ -816,9 +834,7 @@ public class LineReader implements DataInput, DataOutput {
 
             if (mid != 0) {
                 //noinspection StatementWithEmptyBody
-                while (!eof() && readByte() != '\n') {
-                    ;
-                }
+                while (!eof() && readByte() != '\n');
             }
             if (eof()) {
                 high = mid - 1;

@@ -93,15 +93,16 @@ public class Files {
         }
         if (path.isFile()) {
             if (!path.delete()) {
-                throw new IOException("Could not delete the file '"
-                                      + path + "'");
+                throw new IOException("Could not delete the file '" + path + "'");
             }
             return;
         }
         for (String child : path.list()) {
             delete(new File(path, child));
         }
-        path.delete();
+        if (!path.delete()) {
+            throw new IOException("Could not delete the folder '" + path + "'");
+        }
     }
 
     /**
@@ -200,22 +201,19 @@ public class Files {
             throw new FileAlreadyExistsException(dest);
         }
         if (!destParent.exists()) {
-            throw new FileNotFoundException("Parent directory of " + dest + " "
-                                            + "does not exist");
+            throw new FileNotFoundException("Parent directory of " + dest + " " + "does not exist");
         }
         if (destParent.isFile()) {
             throw new InvalidFileTypeException(destParent, Files.Type.file);
         }
         if (dest.isFile() && !destParent.canWrite()) {
-            throw new FilePermissionException(destParent,
-                                              Files.Permission.writable);
+            throw new FilePermissionException(destParent, Files.Permission.writable);
         }
 
         /* If dest is a dir, move the file into it, keeping the base name */
         if (dest.isDirectory()) {
             if (!dest.canWrite()) {
-                throw new FilePermissionException(dest,
-                                                  Files.Permission.writable);
+                throw new FilePermissionException(dest, Files.Permission.writable);
             }
             dest = new File(dest, source.getName());
         }
@@ -279,21 +277,17 @@ public class Files {
         }
     }
 
-    private static void copyDirectory(File path, File toPath,
-                                      boolean overwrite) throws IOException {
+    private static void copyDirectory(File path, File toPath, boolean overwrite) throws IOException {
         log.trace("copyDirectory(" + path + ", " + toPath + ", " + overwrite
                   + ") called");
         if (!toPath.exists()) {
             if (!toPath.mkdirs()) {
-                throw new IOException("Unable to create or verify the existence"
-                                      + " of the destination folder '"
+                throw new IOException("Unable to create or verify the existence" + " of the destination folder '"
                                       + toPath.getAbsoluteFile() + "'");
             }
         }
         if (!toPath.canWrite()) {
-            throw new IOException("The destination folder '"
-                                  + toPath.getAbsoluteFile()
-                                  + "' is not writable");
+            throw new IOException("The destination folder '" + toPath.getAbsoluteFile() + "' is not writable");
         }
 
         for (String filename : path.list()) {
@@ -378,15 +372,13 @@ public class Files {
      *       removed, but no files from the source will be deleted.
      * @param source      the file or directory to copy from.
      * @param destination the destination file or directory.
-     * @param overwrite   if false this method will throw a
-     *                    {@link FileAlreadyExistsException} if the operation
+     * @param overwrite   if false this method will throw a {@link FileAlreadyExistsException} if the operation
      *                    will overwrite an existing file.
      * @throws IOException if there was an error moving the file(s).
-     * @throws FileAlreadyExistsException if {@code overwrite=false} and the
-     *                  method is about to overwrite an existing file.
+     * @throws FileAlreadyExistsException if {@code overwrite=false} and the method is about to overwrite an
+     *                                    existing file.
      */
-    /*public static void move(File source, File destination, boolean overwrite)
-                                                            throws IOException {
+    /*public static void move(File source, File destination, boolean overwrite) throws IOException {
         copy(source, destination, overwrite);
         delete(source);
     }*/
@@ -439,11 +431,9 @@ public class Files {
      */
     public static void saveString(String content, File destination) throws
                                                                     IOException {
-        log.trace("saveString(String with length " + content.length() + ", "
-                  + destination + ") called");
+        log.trace("saveString(String with length " + content.length() + ", " + destination + ") called");
         if (destination.isDirectory()) {
-            throw new IOException("The destination '" + destination
-                                  + "' is a folder, while it should be a file");
+            throw new IOException("The destination '" + destination + "' is a folder, while it should be a file");
         }
         InputStream in = new ByteArrayInputStream(content.getBytes("UTF-8"));
         FileOutputStream out = new FileOutputStream(destination);
@@ -459,12 +449,10 @@ public class Files {
      */
     public static String loadString(File source) throws IOException {
         if (source.isDirectory()) {
-            throw new IOException("The source '" + source
-                                  + "' is a folder, while it should be a file");
+            throw new IOException("The source '" + source + "' is a folder, while it should be a file");
         }
         InputStream in = new FileInputStream(source);
-        ByteArrayOutputStream out =
-                new ByteArrayOutputStream((int) source.length());
+        ByteArrayOutputStream out = new ByteArrayOutputStream((int) source.length());
         Streams.pipe(in, out);
         return out.toString("UTF-8");
     }
@@ -508,21 +496,16 @@ public class Files {
      * will be thrown. Otherwise the file will be overwritten.</p>
      *
      * @param url       where the data should be downloaded from.
-     * @param target    the place to store the downloaded data. This can be
-     *                  either a file or a directory.
-     * @param overwrite whether or not to overwrite the target file if it
-     *                  already exist.
+     * @param target    the place to store the downloaded data. This can be either a file or a directory.
+     * @param overwrite whether or not to overwrite the target file if it already exist.
      * @return the resulting file.
-     * @throws ConnectException     if there was an error opening a stream to the
-     *                              url.
-     * @throws IOException          if there was an error downloading the file or
-     *                              writing it to disk.
+     * @throws ConnectException     if there was an error opening a stream to the url.
+     * @throws IOException          if there was an error downloading the file or writing it to disk.
      * @throws NullPointerException if one of the input arguments are null.
      */
     public static File download(URL url, File target, boolean overwrite)
             throws IOException {
-        log.trace("download(" + url + ", " + target + ", " + overwrite
-                  + ") called");
+        log.trace("download(" + url + ", " + target + ", " + overwrite + ") called");
         if (url == null) {
             throw new NullPointerException("url is null");
         }

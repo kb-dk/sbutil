@@ -20,10 +20,8 @@ public class InvalidFileTypeException extends IOException {
      *                 exception
      */
     public InvalidFileTypeException(String filename, Files.Type expected) {
-        super("File '" + filename + "' is a "
-              + (expected == Files.Type.directory ?
-                 Files.Type.file : Files.Type.directory)
-              + ", expected a " + expected);
+        super("File '" + filename + "' is a " + (expected == Files.Type.directory ?
+                 Files.Type.file : Files.Type.directory) + ", expected a " + expected);
         this.filename = filename;
     }
 

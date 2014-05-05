@@ -321,16 +321,19 @@ public class Strings {
     public static CharSequence asCharSequence(final char[] chars) {
         return new CharSequence() {
 
+            @Override
             public int length() {
                 return chars.length;
             }
 
+            @Override
             public char charAt(int index) {
                 // Note: This will indeed throw an exception of the type
                 // required by this method's contract
                 return chars[index];
             }
 
+            @Override
             public CharSequence subSequence(int start, int end) {
                 return asCharSequence(Arrays.copyOfRange(chars, start, end));
             }

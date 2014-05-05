@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -212,9 +211,8 @@ public class CharArrayReplacer extends ReplaceReader {
     private void fillOutBuffer(int min) throws IOException {
         try {
             if (in != null) {
-                int codePoint = -1;
-                while (outBuffer.size() < min
-                       && (codePoint = in.read()) != -1) {
+                int codePoint;
+                while (outBuffer.size() < min && (codePoint = in.read()) != -1) {
                     outBuffer.put(rules[codePoint]);
                 }
                 return;

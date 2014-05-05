@@ -49,17 +49,15 @@ public class Checksums {
      * @throws IOException              if there is an error reading the input stream
      * @throws NoSuchAlgorithmException if the algorithm requested in {@code algorithm} isn't known to the jvm.
      */
-    public static byte[] digest(String algorithm, InputStream in)
-            throws IOException, NoSuchAlgorithmException {
+    public static byte[] digest(String algorithm, InputStream in) throws IOException, NoSuchAlgorithmException {
         try {
             MessageDigest md = MessageDigest.getInstance(algorithm);
 
             byte[] buffer = new byte[bufferSize];
-            int count = 0;
+            int count;
             while ((count = in.read(buffer)) > 0) {
                 md.update(buffer, 0, count);
             }
-
             return md.digest();
         } finally {
             in.close();
@@ -67,17 +65,14 @@ public class Checksums {
     }
 
     /**
-     * Calculate the checksum of a byte array. The array will be read
-     * in one chunk. If you need a
+     * Calculate the checksum of a byte array. The array will be read in one chunk. If you need a
      * String version of the digest use {@link Bytes#toHex(byte[])}.
      *
-     * @param algorithm the algorithm to use to compute the digest.
-     *                  Possbile values can be found in the
-     *                  <a href="http://java.sun.com/j2se/1.5.0/docs/guide/security/CryptoSpec.html">Java CryptoSpec</a>.
-     * @param in        array the byte array to compute the digest of
-     * @return the computed digest in a byte array
-     * @throws NoSuchAlgorithmException if the algorithm requested in
-     *                                  {@code algorithm} isn't known to the jvm.
+     * @param algorithm the algorithm to use to compute the digest. Possible values can be found in the
+     *                 <a href="http://java.sun.com/j2se/1.5.0/docs/guide/security/CryptoSpec.html">Java CryptoSpec</a>.
+     * @param in        array the byte array to compute the digest of.
+     * @return the computed digest in a byte array.
+     * @throws NoSuchAlgorithmException if the algorithm requested in {@code algorithm} isn't known to the jvm.
      */
     public static byte[] digest(String algorithm, byte[] in)
             throws NoSuchAlgorithmException {
@@ -92,8 +87,7 @@ public class Checksums {
      *
      * @see #digest(String, java.io.InputStream)
      */
-    public static byte[] digest(String algorithm, String in)
-            throws NoSuchAlgorithmException {
+    public static byte[] digest(String algorithm, String in) throws NoSuchAlgorithmException {
         return digest(algorithm, in.getBytes());
     }
 
@@ -142,8 +136,8 @@ public class Checksums {
      * Calculate the {@code SHA-1} checksum of a {@link File}. If you need a
      * String version of the digest use {@link Bytes#toHex(byte[])}.
      *
-     * @throws IOException     if there is an error reading the file
-     * @throws DigestException if the JVM doesn't know the {@code SHA-1} algorithm
+     * @throws IOException     if there is an error reading the file.
+     * @throws DigestException if the JVM doesn't know the {@code SHA-1} algorithm.
      */
     public static byte[] sha1(File in) throws IOException {
         try {
@@ -157,8 +151,8 @@ public class Checksums {
      * Calculate the {@code MD5} checksum of a given stream. If you need a
      * String version of the digest use {@link Bytes#toHex(byte[])}.
      *
-     * @throws IOException     if there is an error reading the stream
-     * @throws DigestException if the JVM doesn't know the {@code MD5} algorithm
+     * @throws IOException     if there is an error reading the stream.
+     * @throws DigestException if the JVM doesn't know the {@code MD5} algorithm.
      */
     public static byte[] md5(InputStream in) throws IOException {
         try {
@@ -196,6 +190,4 @@ public class Checksums {
             throw new DigestException("Unknown algorithm: MD5");
         }
     }
-
-
 }

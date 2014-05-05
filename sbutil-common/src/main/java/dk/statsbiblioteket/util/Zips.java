@@ -49,8 +49,7 @@ public class Zips {
      * @throws FileAlreadyExistsException Thrown if <code>overwrite</code> is
      *                                    <code>true</code> and <code>outputFilename</code> already exists.
      */
-    public static void zip(String path, String outputFilename,
-                           boolean overwrite) throws IOException {
+    public static void zip(String path, String outputFilename, boolean overwrite) throws IOException {
         File outFile = new File(outputFilename);
         if (!overwrite) {
             if (outFile.exists()) {
@@ -61,8 +60,7 @@ public class Zips {
         // Ensure parent dir exists
         if (!outFile.getParentFile().exists() &&
             !outFile.getParentFile().mkdirs()) {
-            throw new IOException("Error creating '" + outFile.getParentFile()
-                                  + "'");
+            throw new IOException("Error creating '" + outFile.getParentFile() + "'");
         }
 
         //validate();
@@ -92,12 +90,10 @@ public class Zips {
      *                                    <code>true</code> and <code>outpuDir</code> contains a file that would be
      *                                    overwritten by the extraction of the input zip file.
      */
-    public static void unzip(String zipFilename, String outputDir,
-                             boolean overwrite) throws IOException {
+    public static void unzip(String zipFilename, String outputDir, boolean overwrite) throws IOException {
         File outputFileDir = new File(outputDir);
         if (!outputFileDir.exists() && !outputFileDir.mkdirs()) {
-            throw new IOException("Error creating output directory '"
-                                  + outputDir + "'");
+            throw new IOException("Error creating output directory '" + outputDir + "'");
         }
 
         BufferedOutputStream dest;
@@ -116,11 +112,18 @@ public class Zips {
             }
 
             // Create parent dir
-            new File(newFile).getParentFile().mkdirs();
+            File parent = new File(newFile).getParentFile();
+            if (!parent.exists()) {
+                if (!parent.mkdirs()) {
+                    throw new IOException("Unable to create folder '" + parent + "'");
+                }
+            }
 
             if (newFile.endsWith(File.separator)) {
                 // this is a directory entry
-                new File(newFile).mkdir();
+                if (!new File(newFile).mkdir()) {
+                    throw new IOException("Unable to create folder '" + new File(newFile).mkdir() + "'");
+                }
                 continue;
             }
 
@@ -149,8 +152,7 @@ public class Zips {
      * @throws IOException Thrown if error handling the input file or output
      *                     ZIP stream.
      */
-    private static void addToZip(String parentPath, String filename,
-                                 ZipOutputStream zipStream) throws IOException {
+    private static void addToZip(String parentPath, String filename, ZipOutputStream zipStream) throws IOException {
         File file = new File(filename);
 
         if (file.isDirectory()) {
@@ -162,9 +164,7 @@ public class Zips {
             if (parentPath.equals("")) {
                 zipStream.putNextEntry(new ZipEntry(file.getName()));
             } else {
-                zipStream.putNextEntry(new ZipEntry(parentPath
-                                                    + File.separator
-                                                    + file.getName()));
+                zipStream.putNextEntry(new ZipEntry(parentPath + File.separator + file.getName()));
             }
 
 
@@ -193,8 +193,7 @@ public class Zips {
 
         for (String child : folder.list()) {
             if (parentPath.equals("")) {
-                addToZip(folder.getName(), filename + File.separator
-                                           + child, zipStream);
+                addToZip(folder.getName(), filename + File.separator + child, zipStream);
             } else {
                 addToZip(parentPath + File.separator + folder.getName(),
                          filename + File.separator + child, zipStream);
@@ -213,8 +212,7 @@ public class Zips {
     public static byte[] gunzipBuffer(byte[] data) {
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            GZIPInputStream in = new GZIPInputStream(
-                    new ByteArrayInputStream(data));
+            GZIPInputStream in = new GZIPInputStream(new ByteArrayInputStream(data));
             byte[] buf = new byte[2048];
             while (true) {
                 int size = in.read(buf);
@@ -226,8 +224,7 @@ public class Zips {
             out.close();
             return out.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException("IOException while gzipping buffer."
-                                       + " This should never happen", e);
+            throw new RuntimeException("IOException while gzipping buffer. This should never happen", e);
         }
     }
 
@@ -245,8 +242,7 @@ public class Zips {
             zip.close();
             return buf.toByteArray();
         } catch (IOException e) {
-            throw new RuntimeException("IOException while gunzipping buffer."
-                                       + " This should never happen", e);
+            throw new RuntimeException("IOException while gunzipping buffer. This should never happen", e);
         }
     }
 
@@ -279,5 +275,4 @@ public class Zips {
         }
         return null;
     }
-
 }

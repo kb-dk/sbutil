@@ -35,8 +35,7 @@ public class CharSequenceReader extends Reader {
      */
     public CharSequenceReader setSource(CharSequence seq) {
         if (seq == null) {
-            throw new NullPointerException("Can not reset internal CharSequence"
-                                           + " to null");
+            throw new NullPointerException("Can not reset internal CharSequence to null");
         }
 
         this.seq = seq;

@@ -436,6 +436,7 @@ public class ConnectionManager<E> {
         isClosed = true;
     }
 
+    @Override
     protected void finalize() throws Throwable {
         close();
         super.finalize();

@@ -63,8 +63,7 @@ import java.util.*;
 @QAInfo(state = QAInfo.State.QA_NEEDED,
         level = QAInfo.Level.NORMAL,
         author = "te",
-        comment = "getCollationKey is poorly implemented due to the CollationKey"
-                  + "class being final")
+        comment = "getCollationKey is poorly implemented due to the CollationKeyclass being final")
 public class CachedCollator extends Collator {
     private static Log log = LogFactory.getLog(CachedCollator.class);
 
@@ -142,8 +141,7 @@ public class CachedCollator extends Collator {
      * @param locale the wanted locale for the Collator.
      */
     public CachedCollator(Locale locale) {
-        log.debug("Creating default character collator for locale '" + locale
-                  + "'");
+        log.debug("Creating default character collator for locale '" + locale + "'");
         subCollator = Collator.getInstance(locale);
         buildCache(getBasicChars());
     }
@@ -160,8 +158,7 @@ public class CachedCollator extends Collator {
      *                   Example: "eaoi 0ntr1"...
      */
     public CachedCollator(Locale locale, String mostCommon) {
-        log.debug("Creating collator for locale '" + locale
-                  + "' with most common characters '" + mostCommon + "'");
+        log.debug("Creating collator for locale '" + locale + "' with most common characters '" + mostCommon + "'");
         subCollator = Collator.getInstance(locale);
         buildCache(mostCommon);
     }
@@ -240,8 +237,7 @@ public class CachedCollator extends Collator {
         try {
             return Streams.getUTF8Resource(CHARSTATS);
         } catch (IOException e) {
-            log.debug("Could not fetch the resource '" + CHARSTATS
-                      + "'. Defaulting to 0x20-0xFF");
+            log.debug("Could not fetch the resource '" + CHARSTATS + "'. Defaulting to 0x20-0xFF");
         }
 
         int START = 0x20;
@@ -281,9 +277,7 @@ public class CachedCollator extends Collator {
         char lastChar = 0;
         for (String cString : sorted) {
             if (cString.length() != 1) {
-                log.warn("The expected character '" + cString
-                         + "' was of length " + cString.length()
-                         + ". Skipping");
+                log.warn("The expected character '" + cString + "' was of length " + cString.length() + ". Skipping");
                 continue;
             }
             char c = cString.charAt(0);
@@ -291,16 +285,13 @@ public class CachedCollator extends Collator {
                 lastChar = c;
             }
             cachedPositions[c] = position;
-            if (subCollator.compare(
-                    Character.toString(lastChar), Character.toString(c)) != 0) {
+            if (subCollator.compare(Character.toString(lastChar), Character.toString(c)) != 0) {
                 position++;
             }
             lastChar = c;
         }
-        log.debug("Finished building cache for " + position
-                  + " characters (" + (mostCommon.length() - position)
-                  + " duplicates removed, " + position + " unique positions) "
-                  + "of which the highest was " + highest);
+        log.debug("Finished building cache for " + position + " characters (" + (mostCommon.length() - position)
+                  + " duplicates removed, " + position + " unique positions) " + "of which the highest was " + highest);
     }
 
     protected int getPosition(char c) {
@@ -328,20 +319,15 @@ public class CachedCollator extends Collator {
                     return subCollator.compare(source, target);
                 }
                 if (sPos != tPos) {
-                    return source.charAt(i + 1) == ' '
-                           || target.charAt(i + 1) == ' ' ?
-                           subCollator.compare(source, target) :
-                           sPos - tPos;
+                    return source.charAt(i + 1) == ' ' || target.charAt(i + 1) == ' ' ?
+                           subCollator.compare(source, target) : sPos - tPos;
                 }
             } catch (IndexOutOfBoundsException e) { // Non-handled char
                 log.debug(String.format(
-                        "Got an IndexOutOfBoundsException, which should not be "
-                        + "possible as cachedPositions should hold entries for "
-                        + "all possible char valued. The length of "
-                        + "cachedPositions is %d, source.charAt(%d) == '%s', "
-                        + "target.charAt(%d) == '%s'",
-                        cachedPositions.length, i, source.charAt(i), i,
-                        source.charAt(i)), e);
+                        "Got an IndexOutOfBoundsException, which should not be possible as cachedPositions should hold "
+                        + "entries for all possible char valued. The length of cachedPositions is %d, "
+                        + "source.charAt(%d) == '%s', target.charAt(%d) == '%s'",
+                        cachedPositions.length, i, source.charAt(i), i, source.charAt(i)), e);
                 return subCollator.compare(source, target);
             }
         }
@@ -385,25 +371,22 @@ public class CachedCollator extends Collator {
     private static Collator fixCollator(Collator collator, boolean check) {
         if (!(collator instanceof RuleBasedCollator)) {
             log.warn(String.format(
-                    "fixCollator expected a RuleBasedCollator but got %s. "
-                    + "Unable to update Collator", collator.getClass()));
+                    "fixCollator expected a RuleBasedCollator but got %s. Unable to update Collator",
+                    collator.getClass()));
             return collator;
         }
         String rules = ((RuleBasedCollator) collator).getRules();
-        if (check && rules.indexOf("<' '<'\u005f'") == -1) {
-            log.debug("fixCollator: The received Collator already sorts spaces"
-                      + " first");
+        if (check && !rules.contains("<' '<'\u005f'")) {
+            log.debug("fixCollator: The received Collator already sorts spaces first");
             return collator;
         }
         try {
             RuleBasedCollator newCollator = new RuleBasedCollator(
                     rules.replace("<'\u005f'", "<' '<'\u005f'"));
-            log.trace("Successfully updated Collator to prioritize spaces "
-                      + "before other characters");
+            log.trace("Successfully updated Collator to prioritize spaces before other characters");
             return newCollator;
         } catch (ParseException e) {
-            throw new RuntimeException(
-                    "ParseException while parsing\n" + rules, e);
+            throw new RuntimeException("ParseException while parsing\n" + rules, e);
         }
     }
 
