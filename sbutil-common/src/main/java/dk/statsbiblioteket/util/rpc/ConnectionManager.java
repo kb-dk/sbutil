@@ -153,44 +153,59 @@ public class ConnectionManager<E> {
             return thread != null;
         }
 
+        @Override
         public void run() {
             log.trace("Starting with linger time: " + owner.getLingerTime());
             while (mayRun) {
                 try {
                     Thread.sleep(owner.getLingerTime() * 1000);
                 } catch (InterruptedException e) {
-                    log.warn("Interrupted. Forcing connection scan.");
+                    safeWarn("Interrupted. Forcing connection scan.");
                 }
 
                 long now = System.currentTimeMillis();
 
                 /* Scan the connections for all with refCount zero that are
                  * also timed out and purge them */
-                log.trace("Doing connection scan of "
-                          + owner.getConnections().size()
-                          + " connections");
+                safeTrace("Doing connection scan of " + owner.getConnections().size() + " connections");
                 long timeout = owner.getLingerTime() * 1000;
                 for (ConnectionContext<? extends T> ctx : owner.getConnections()) {
                     long inactiveTime = now - ctx.getLastUse();
                     if (inactiveTime > timeout &&
                         ctx.getRefCount() == 0) {
-                        log.debug("Connection " + ctx + " reached idle timeout.");
+                        safeDebug("Connection " + ctx + " reached idle timeout.");
                         owner.purgeConnection(ctx.getConnectionId());
                     } else {
-                        if (log.isTraceEnabled()) {
-                            log.trace("Connection "
-                                      + ctx + " still active, timeout in "
-                                      + (timeout - inactiveTime) + "ms "
-                                      + "and refCount: " + ctx.getRefCount());
-                        }
+                        safeTrace("Connection " + ctx + " still active, timeout in "
+                                  + (timeout - inactiveTime) + "ms " + "and refCount: " + ctx.getRefCount());
                     }
                 }
-                log.trace("Connection scan complete. "
-                          + owner.getConnections().size()
+                safeTrace("Connection scan complete. " + owner.getConnections().size()
                           + " connections remaining in cache");
 
             }
-            log.debug("Thread terminated");
+            safeDebug("Thread terminated");
+        }
+    }
+    private void safeTrace(String message) {
+        try {
+            log.trace(message);
+        } catch (NullPointerException e) {
+            // Ignore as this is only trace
+        }
+    }
+    private void safeDebug(String message) {
+        try {
+            log.debug(message);
+        } catch (NullPointerException e) {
+            // Ignore as this is only debug
+        }
+    }
+    private void safeWarn(String message) {
+        try {
+            log.warn(message);
+        } catch (NullPointerException e) {
+            System.err.println("Unable to log on warn: " + message);
         }
     }
 

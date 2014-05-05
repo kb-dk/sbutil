@@ -51,8 +51,7 @@ import java.util.Map;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class XSLT {
-    private static Log warnlog = LogFactory.getLog(
-            XSLT.class.getName() + "#warnings");
+    private static Log warnlog = LogFactory.getLog(XSLT.class.getName() + "#warnings");
     private static Log log = LogFactory.getLog(XSLT.class);
 
     /**
@@ -60,14 +59,12 @@ public class XSLT {
      *
      * @param xslt the location of the XSLT.
      * @return a Transformer based on the given XSLT.
-     * @throws javax.xml.transform.TransformerException
-     *          thrown if for some
+     * @throws javax.xml.transform.TransformerException thrown if for some
      *          reason a Transformer could not be instantiated.
      *          This is normally due to problems with the {@code xslt} URL
      * @see {@link #getLocalTransformer} for reusing Transformers.
      */
-    public static Transformer createTransformer(URL xslt) throws
-                                                          TransformerException {
+    public static Transformer createTransformer(URL xslt) throws TransformerException {
 
         log.debug("Requesting and compiling XSLT from '" + xslt + "'");
 
@@ -79,33 +76,23 @@ public class XSLT {
                 throw new NullPointerException("xslt URL is null");
             }
             in = xslt.openStream();
-            transformer = tfactory.newTransformer(
-                    new StreamSource(in, xslt.toString()));
+            transformer = tfactory.newTransformer(new StreamSource(in, xslt.toString()));
             transformer.setErrorListener(getErrorListener());
 
-        } catch (MalformedURLException e) {
-            throw new TransformerException(String.format(
-                    "The URL to the XSLT is not a valid URL: '%s'",
-                    xslt), e);
-        } catch (IOException e) {
-            throw new TransformerException(String.format(
-                    "Unable to open the XSLT resource '%s'", xslt), e);
-        } catch (TransformerConfigurationException e) {
-            throw new TransformerException(String.format(
-                    "Wrongly configured transformer for XSLT at '%s'",
-                    xslt), e);
         } catch (TransformerException e) {
-            throw new TransformerException(
-                    "Unable to instantiate Transformer, a system configuration"
-                    + " error?", e);
+            throw new TransformerException(String.format(
+                    "Unable to instantiate Transformer, a system configuration error for XSLT at '%s'", xslt), e);
+        } catch (MalformedURLException e) {
+            throw new TransformerException(String.format("The URL to the XSLT is not a valid URL: '%s'", xslt), e);
+        } catch (IOException e) {
+            throw new TransformerException(String.format("Unable to open the XSLT resource '%s'", xslt), e);
         } finally {
             try {
                 if (in != null) {
                     in.close();
                 }
             } catch (IOException e) {
-                log.warn("Non-fatal IOException while closing stream to '"
-                         + xslt + "'");
+                log.warn("Non-fatal IOException while closing stream to '" + xslt + "'");
             }
         }
         return transformer;
@@ -140,8 +127,7 @@ public class XSLT {
         return ERRORLISTENER;
     }
 
-    private static ThreadLocal<Map<String, Transformer>> localMapCache =
-            createLocalMapCache();
+    private static ThreadLocal<Map<String, Transformer>> localMapCache = createLocalMapCache();
 
     private static ThreadLocal<Map<String, Transformer>> createLocalMapCache() {
         return new ThreadLocal<Map<String, Transformer>>() {
@@ -164,8 +150,7 @@ public class XSLT {
      * @return a Transformer using the given XSLT.
      * @throws TransformerException if the Transformor could not be constructed.
      */
-    public static Transformer getLocalTransformer(URL xslt)
-            throws TransformerException {
+    public static Transformer getLocalTransformer(URL xslt) throws TransformerException {
         return getLocalTransformer(xslt, null);
     }
 
@@ -178,13 +163,11 @@ public class XSLT {
      * the list.
      *
      * @param xslt       the location of the XSLT.
-     * @param parameters for the Transformer. The keys must be Strings.
-     *                   If the map is null, it will be ignored.
+     * @param parameters for the Transformer. The keys must be Strings. If the map is null, it will be ignored.
      * @return a Transformer using the given XSLT.
-     * @throws TransformerException if the Transformor could not be constructed.
+     * @throws TransformerException if the Transformer could not be constructed.
      */
-    public static Transformer getLocalTransformer(URL xslt, Map parameters)
-            throws TransformerException {
+    public static Transformer getLocalTransformer(URL xslt, Map parameters) throws TransformerException {
         if (xslt == null) {
             throw new NullPointerException("The xslt was null");
         }
@@ -198,8 +181,7 @@ public class XSLT {
         if (parameters != null) {
             for (Object entryObject : parameters.entrySet()) {
                 Map.Entry entry = (Map.Entry) entryObject;
-                transformer.setParameter((String) entry.getKey(),
-                                         entry.getValue());
+                transformer.setParameter((String) entry.getKey(), entry.getValue());
             }
         }
         return transformer;
@@ -229,8 +211,7 @@ public class XSLT {
      * @return the transformed content.
      * @throws TransformerException if the transformation failed.
      */
-    public static String transform(URL xslt, String in)
-            throws TransformerException {
+    public static String transform(URL xslt, String in) throws TransformerException {
         return transform(xslt, in, null, false);
     }
 
@@ -240,16 +221,13 @@ public class XSLT {
      *
      * @param xslt                the location of the XSLT to use.
      * @param in                  the content to transform.
-     * @param ignoreXMLNamespaces if true, namespaces in the input content will
-     *                            be stripped. This is not recommended, but a lot of XML and XSLTs
-     *                            does not match namespaces correctly. Setting this to true will
-     *                            have an impact on performance.
+     * @param ignoreXMLNamespaces if true, namespaces in the input content will be stripped. This is not recommended,
+     *                            but a lot of XML and XSLTs does not match namespaces correctly. Setting this to true
+     *                            will have an impact on performance.
      * @return the transformed content.
      * @throws TransformerException if the transformation failed.
      */
-    public static String transform(URL xslt, String in,
-                                   boolean ignoreXMLNamespaces)
-            throws TransformerException {
+    public static String transform(URL xslt, String in, boolean ignoreXMLNamespaces) throws TransformerException {
         return transform(xslt, in, null, ignoreXMLNamespaces);
     }
 
@@ -259,19 +237,16 @@ public class XSLT {
      *
      * @param xslt       the location of the XSLT to use.
      * @param in         the content to transform.
-     * @param parameters for the Transformer. The keys must be Strings.
-     *                   If the map is null, it will be ignored.
+     * @param parameters for the Transformer. The keys must be Strings. If the map is null, it will be ignored.
      * @return the transformed content.
      * @throws TransformerException if the transformation failed.
      */
-    public static String transform(URL xslt, String in, Map parameters)
-            throws TransformerException {
+    public static String transform(URL xslt, String in, Map parameters) throws TransformerException {
         return transform(xslt, in, parameters, false);
     }
 
     /**
-     * Requests a cached ThreadLocal Transformer and performs the
-     * transformation.
+     * Requests a cached ThreadLocal Transformer and performs the transformation.
      *
      * @param xslt                the location of the XSLT to use.
      * @param in                  the content to transform.
@@ -284,8 +259,7 @@ public class XSLT {
      * @return the transformed content.
      * @throws TransformerException if the transformation failed.
      */
-    public static String transform(URL xslt, String in, Map parameters,
-                                   boolean ignoreXMLNamespaces)
+    public static String transform(URL xslt, String in, Map parameters, boolean ignoreXMLNamespaces)
             throws TransformerException {
         StringWriter sw = new StringWriter();
         if (!ignoreXMLNamespaces) {
@@ -333,107 +307,91 @@ public class XSLT {
      * @return the transformed content.
      * @throws TransformerException if the transformation failed.
      */
-    public static String transform(URL xslt, Reader in, Map parameters)
-            throws TransformerException {
+    public static String transform(URL xslt, Reader in, Map parameters) throws TransformerException {
         return transform(xslt, in, parameters, false);
     }
 
     /**
-     * Requests a cached ThreadLocal Transformer and performs the
-     * transformation.
+     * Requests a cached ThreadLocal Transformer and performs the transformation.
      *
      * @param xslt                the location of the XSLT to use.
      * @param in                  the content to transform.
      * @param parameters          for the Transformer. The keys must be Strings.
      *                            If the map is null, it will be ignored.
-     * @param ignoreXMLNamespaces if true, namespaces in the input content will
-     *                            be stripped. This is not recommended, but a lot of XML and XSLTs
-     *                            does not match namespaces correctly. Setting this to true will
-     *                            have an impact on performance.
+     * @param ignoreXMLNamespaces if true, namespaces in the input content will be stripped. This is not recommended,
+     *                            but a lot of XML and XSLTs does not match namespaces correctly. Setting this to true
+     *                            will have an impact on performance.
      * @return the transformed content.
      * @throws TransformerException if the transformation failed.
      */
-    public static String transform(URL xslt, Reader in, Map parameters,
-                                   boolean ignoreXMLNamespaces)
+    public static String transform(URL xslt, Reader in, Map parameters, boolean ignoreXMLNamespaces)
             throws TransformerException {
         StringWriter sw = new StringWriter();
         if (!ignoreXMLNamespaces) {
             transform(xslt, in, sw, parameters);
         } else {
-            transform(getLocalTransformer(
-                    xslt, parameters), new NamespaceRemover(in), sw);
+            transform(getLocalTransformer(xslt, parameters), new NamespaceRemover(in), sw);
         }
         return sw.toString();
     }
 
     /**
-     * Requests a cached ThreadLocal Transformer and performs the
-     * transformation.
+     * Requests a cached ThreadLocal Transformer and performs the transformation.
      *
      * @param xslt       the location of the XSLT to use.
      * @param in         the content to transform.
-     * @param parameters for the Transformer. The keys must be Strings.
-     *                   If the map is null, it will be ignored.
+     * @param parameters for the Transformer. The keys must be Strings. If the map is null, it will be ignored.
      * @return the transformed content. Note that the correct charset must be
      *         supplied to toString("charset") to get proper String results.
      *         The charset is specified by the XSLT.
      * @throws TransformerException if the transformation failed.
      */
-    public static ByteArrayOutputStream transform(URL xslt, byte[] in,
-                                                  Map parameters)
-            throws TransformerException {
+    public static ByteArrayOutputStream transform(URL xslt, byte[] in, Map parameters) throws TransformerException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         transform(xslt, new ByteArrayInputStream(in), out, parameters);
         return out;
     }
 
     /**
-     * Requests a cached ThreadLocal Transformer and performs the
-     * transformation.
+     * Requests a cached ThreadLocal Transformer and performs the transformation.
      *
      * @param xslt                the location of the XSLT to use.
      * @param in                  the content to transform.
      * @param parameters          for the Transformer. The keys must be Strings.
      *                            If the map is null, it will be ignored.
-     * @param ignoreXMLNamespaces if true, namespaces in the input content will
-     *                            be stripped. This is not recommended, but a lot of XML and XSLTs
-     *                            does not match namespaces correctly. Setting this to true will
-     *                            have an impact on performance.
+     * @param ignoreXMLNamespaces if true, namespaces in the input content will be stripped. This is not recommended,
+     *                            but a lot of XML and XSLTs does not match namespaces correctly. Setting this to true
+     *                            will have an impact on performance.
      * @return the transformed content. Note that the correct charset must be
      *         supplied to toString("charset") to get proper String results.
      *         The charset is specified by the XSLT.
      * @throws TransformerException if the transformation failed.
      */
-    public static ByteArrayOutputStream transform(
-            URL xslt, byte[] in, Map parameters, boolean ignoreXMLNamespaces)
+    public static ByteArrayOutputStream transform(URL xslt, byte[] in, Map parameters, boolean ignoreXMLNamespaces)
             throws TransformerException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         if (!ignoreXMLNamespaces) {
             transform(xslt, new ByteArrayInputStream(in), out, parameters);
         } else {
             Writer writer = new OutputStreamWriter(out);
-            Reader reader = new NamespaceRemover(
-                    new InputStreamReader(new ByteArrayInputStream(in)));
+            Reader reader = new NamespaceRemover(new InputStreamReader(new ByteArrayInputStream(in)));
             transform(getLocalTransformer(xslt, parameters), reader, writer);
         }
         return out;
     }
 
     /**
-     * Requests a cached ThreadLocal Transformer and performs the
-     * transformation.
+     * Requests a cached ThreadLocal Transformer and performs the transformation.
      *
      * @param xslt       the location of the XSLT to use.
      * @param in         the content to transform.
-     * @param parameters for the Transformer. The keys must be Strings.
-     *                   If the map is null, it will be ignored.
+     * @param parameters for the Transformer. The keys must be Strings. If the map is null, it will be ignored.
      * @return the transformed content. Note that the correct charset must be
      *         supplied to toString("charset") to get proper String results.
      *         The charset is specified by the XSLT.
      * @throws TransformerException if the transformation failed.
      */
-    public static ByteArrayOutputStream transform(URL xslt, InputStream in,
-                                                  Map parameters)
+    public static ByteArrayOutputStream transform(URL xslt, InputStream in, Map parameters)
             throws TransformerException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         transform(getLocalTransformer(xslt, parameters), in, out);
@@ -446,20 +404,17 @@ public class XSLT {
      *
      * @param xslt                the location of the XSLT to use.
      * @param in                  the content to transform.
-     * @param parameters          for the Transformer. The keys must be Strings.
-     *                            If the map is null, it will be ignored.
-     * @param ignoreXMLNamespaces if true, namespaces in the input content will
-     *                            be stripped. This is not recommended, but a lot of XML and XSLTs
-     *                            does not match namespaces correctly. Setting this to true will
-     *                            have an impact on performance.
+     * @param parameters          for the Transformer. The keys must be Strings. If the map is null, it will be ignored.
+     * @param ignoreXMLNamespaces if true, namespaces in the input content will be stripped. This is not recommended,
+     *                            but a lot of XML and XSLTs does not match namespaces correctly. Setting this to true
+     *                            will have an impact on performance.
      * @return the transformed content. Note that the correct charset must be
      *         supplied to toString("charset") to get proper String results.
      *         The charset is specified by the XSLT.
      * @throws TransformerException if the transformation failed.
      */
-    public static ByteArrayOutputStream transform(
-            URL xslt, InputStream in, Map parameters,
-            boolean ignoreXMLNamespaces) throws TransformerException {
+    public static ByteArrayOutputStream transform(URL xslt, InputStream in, Map parameters,
+                                                  boolean ignoreXMLNamespaces) throws TransformerException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         if (!ignoreXMLNamespaces) {
             transform(getLocalTransformer(xslt, parameters), in, out);
@@ -472,29 +427,24 @@ public class XSLT {
     }
 
     /**
-     * Requests a cached ThreadLocal Transformer and performs the
-     * transformation.
+     * Requests a cached ThreadLocal Transformer and performs the transformation.
      *
      * @param xslt       the location of the XSLT to use.
      * @param dom        the content to transform.
-     * @param parameters for the Transformer. The keys must be Strings.
-     *                   If the map is null, it will be ignored.
+     * @param parameters for the Transformer. The keys must be Strings. If the map is null, it will be ignored.
      * @return the transformed content. Note that the correct charset must be
      *         supplied to toString("charset") to get proper String results.
      *         The charset is specified by the XSLT.
      * @throws TransformerException if the transformation failed.
      */
-    public static ByteArrayOutputStream transform(URL xslt, Document dom,
-                                                  Map parameters)
-            throws TransformerException {
+    public static ByteArrayOutputStream transform(URL xslt, Document dom, Map parameters) throws TransformerException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         transform(getLocalTransformer(xslt, parameters), dom, out);
         return out;
     }
 
     /**
-     * Requests a cached ThreadLocal Transformer and performs a transformation
-     * from Stream to Stream.
+     * Requests a cached ThreadLocal Transformer and performs a transformation from Stream to Stream.
      *
      * @param xslt       the location of the XSLT to use.
      * @param in         input Stream.
@@ -503,15 +453,13 @@ public class XSLT {
      *                   If the map is null, it will be ignored.
      * @throws TransformerException if the transformation failed.
      */
-    public static void transform(URL xslt, InputStream in, OutputStream out,
-                                 Map parameters)
+    public static void transform(URL xslt, InputStream in, OutputStream out, Map parameters)
             throws TransformerException {
         transform(getLocalTransformer(xslt, parameters), in, out);
     }
 
     /**
-     * Requests a cached ThreadLocal Transformer and performs a transformation
-     * from Reader to Writer.
+     * Requests a cached ThreadLocal Transformer and performs a transformation from Reader to Writer.
      *
      * @param xslt       the location of the XSLT to use.
      * @param in         input.
@@ -520,9 +468,7 @@ public class XSLT {
      *                   If the map is null, it will be ignored.
      * @throws TransformerException if the transformation failed.
      */
-    public static void transform(URL xslt, Reader in, Writer out,
-                                 Map parameters)
-            throws TransformerException {
+    public static void transform(URL xslt, Reader in, Writer out, Map parameters) throws TransformerException {
         transform(getLocalTransformer(xslt, parameters), in, out);
     }
 
@@ -538,8 +484,7 @@ public class XSLT {
      * @param out         output.
      * @throws TransformerException if the transformation failed.
      */
-    public static void transform(Transformer transformer, Document dom,
-                                 OutputStream out) throws TransformerException {
+    public static void transform(Transformer transformer, Document dom, OutputStream out) throws TransformerException {
         transformer.transform(new DOMSource(dom), new StreamResult(out));
     }
 
@@ -551,9 +496,8 @@ public class XSLT {
      * @param out         output Stream.
      * @throws TransformerException if the transformation failed.
      */
-    public static void transform(Transformer transformer,
-                                 InputStream in, OutputStream out) throws
-                                                                   TransformerException {
+    public static void transform(Transformer transformer, InputStream in, OutputStream out)
+            throws TransformerException {
         transformer.transform(new StreamSource(in), new StreamResult(out));
     }
 
@@ -565,8 +509,7 @@ public class XSLT {
      * @param out         output.
      * @throws TransformerException if the transformation failed.
      */
-    public static void transform(Transformer transformer, Reader in, Writer out)
-            throws TransformerException {
+    public static void transform(Transformer transformer, Reader in, Writer out) throws TransformerException {
         transformer.transform(new StreamSource(in), new StreamResult(out));
     }
 
@@ -578,8 +521,7 @@ public class XSLT {
      * @param out         output.
      * @throws TransformerException if the transformation failed.
      */
-    public static void transform(Transformer transformer, Document dom,
-                                 Writer out) throws TransformerException {
+    public static void transform(Transformer transformer, Document dom, Writer out) throws TransformerException {
         transformer.transform(new DOMSource(dom), new StreamResult(out));
     }
 
@@ -590,9 +532,8 @@ public class XSLT {
     static URL NAMESPACE_XSLT;
 
     static {
-        NAMESPACE_XSLT =
-                Thread.currentThread().getContextClassLoader().getResource(
-                        "dk/statsbiblioteket/util/xml/namespace_remover.xslt");
+        NAMESPACE_XSLT = Thread.currentThread().getContextClassLoader().getResource(
+                "dk/statsbiblioteket/util/xml/namespace_remover.xslt");
     }
     /*static ByteArrayOutputStream removeNamespaces(InputStream in) throws
                                                           TransformerException {
