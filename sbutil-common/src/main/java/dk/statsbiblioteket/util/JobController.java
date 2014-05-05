@@ -33,36 +33,53 @@ public class JobController<R> extends ExecutorCompletionService<R> {
     private final AtomicInteger issued = new AtomicInteger(0);
     private final AtomicInteger tasks = new AtomicInteger(0);
     private boolean autoEmpty = false;
+    private String threadName = "jobController_job-";
 
     /**
-     * Shortcut for {@code JobController(maxConcurrentThreads, false, false)}.
+     * Shortcut for {@code JobController(maxConcurrentThreads, false, false, null)}.
      * @param maxConcurrentThreads the maximum number of active threads.
      */
     public JobController(int maxConcurrentThreads) {
-        this(maxConcurrentThreads, false, false);
+        this(maxConcurrentThreads, false, false, null);
     }
 
     /**
-     * Shortcut for {@code JobController(maxConcurrentThreads, false, autoEmpty)}.<br/>
+     * Shortcut for {@code JobController(maxConcurrentThreads, false, false, threadNamePrefix)}.
+     * @param maxConcurrentThreads the maximum number of active threads.
+     * @param threadNamePrefix the name for a constructed Thread will be this concatenated with a counter.
+     */
+    public JobController(int maxConcurrentThreads, String threadNamePrefix) {
+        this(maxConcurrentThreads, false, false, threadNamePrefix);
+    }
+
+    /**
+     * Shortcut for {@code JobController(maxConcurrentThreads, false, autoEmpty, null)}.<br/>
      * Constructs a JobController that automatically empties the queue for finished jobs.<br/>
      * Post-finish processing of the results from the jobs are handled by overriding
      * {@link #afterExecute(java.util.concurrent.Future)}.
+     * @param autoEmpty if true, finished jobs are automatically removed.
      * @param maxConcurrentThreads the maximum number of active threads.
      */
     public JobController(int maxConcurrentThreads, boolean autoEmpty) {
-        this(maxConcurrentThreads, false, autoEmpty);
+        this(maxConcurrentThreads, false, autoEmpty, null);
     }
 
     /**
      *
+     * @param autoEmpty if true, finished jobs are automatically removed.
      * @param maxConcurrentThreads the maximum number of active threads.
      * @param daemonThreads if true, exiting the main thread will end JVM execution.
      *                      If false, active threads will finish before exiting the JVM.
+     * @param threadNamePrefix the name for a constructed Thread will be this concatenated with a counter.
+     *                         If this is null, the default will be used.
      */
-    public JobController(int maxConcurrentThreads, final boolean daemonThreads, final boolean autoEmpty) {
-        this(new CallbackThreadPoolExecutor(maxConcurrentThreads, daemonThreads));
+    public JobController(int maxConcurrentThreads, final boolean daemonThreads, final boolean autoEmpty,
+                         String threadNamePrefix) {
+        this(new CallbackThreadPoolExecutor(maxConcurrentThreads, daemonThreads,
+                                            threadNamePrefix == null ? "jobController_job-" : threadNamePrefix));
         ((CallbackThreadPoolExecutor)executor).setCallback(this);
         this.autoEmpty = autoEmpty;
+        threadName = threadNamePrefix == null ? threadName : threadNamePrefix;
     }
 
     /**
@@ -254,19 +271,23 @@ public class JobController<R> extends ExecutorCompletionService<R> {
     private static class CallbackThreadPoolExecutor extends ThreadPoolExecutor {
         private JobController callback;
 
-        public CallbackThreadPoolExecutor( int maxConcurrentThreads, final boolean daemonThreads) {
+        public CallbackThreadPoolExecutor( int maxConcurrentThreads, final boolean daemonThreads, final String prefix) {
             super(maxConcurrentThreads, maxConcurrentThreads,
                   10, TimeUnit.MINUTES,
                   new ArrayBlockingQueue<Runnable>(100),
                   new ThreadFactory() {
                       @Override
                       public Thread newThread(Runnable r) {
-                          Thread t = new Thread(r);
+                          Thread t = new Thread(r, prefix + getNextThreadCount());
                           t.setDaemon(daemonThreads);
                           return t;
                       }
+
+                      private int getNextThreadCount() {
+                          return threadCreateCount.getAndIncrement();
+                      }
                   });
-            }
+        }
         @Override
         protected void afterExecute(Runnable r, Throwable t) {
             super.afterExecute(r, t);
@@ -280,5 +301,5 @@ public class JobController<R> extends ExecutorCompletionService<R> {
             this.callback = callback;
         }
     }
-
+    private static final AtomicInteger threadCreateCount = new AtomicInteger(0); // TODO: Make non-unique
 }
