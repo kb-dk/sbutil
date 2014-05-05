@@ -5,7 +5,7 @@
     <parent>
         <groupId>dk.statsbiblioteket.sbutil</groupId>
         <artifactId>sbutil</artifactId>
-        <version>0.5.20</version>
+        <version>0.5.21-SNAPSHOT</version>
     </parent>
 
     <artifactId>sbutil-webservices</artifactId>
