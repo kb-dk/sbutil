@@ -112,15 +112,13 @@ public class XSLT {
                 @Override
                 public void error(TransformerException exception)
                         throws TransformerException {
-                    throw new TransformerException(
-                            "A Transformer error occured", exception);
+                    throw new TransformerException("A Transformer error occured", exception);
                 }
 
                 @Override
                 public void fatalError(TransformerException exception)
                         throws TransformerException {
-                    throw new TransformerException(
-                            "A Transformer exception occured", exception);
+                    throw new TransformerException("A Transformer exception occurred", exception);
                 }
             };
         }

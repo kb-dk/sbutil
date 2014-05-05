@@ -63,26 +63,24 @@ public class XSLTTest {
     }
 
     @Test
-    public void testSimpletransformation() throws TransformerException,
-                                                  IOException {
+    public void testSimpletransformation() throws TransformerException, IOException {
         URL xslt1 = getURL("data/xml/trivial_transform1.xslt");
-        String input = Files.loadString(new File(getURL(
-                "data/xml/trivial_input.xml").getFile()));
-        String expected1 = Files.loadString(new File(getURL(
-                "data/xml/expected1.xml").getFile()));
-        input = input.replaceAll("\\s+", " ");
-        expected1 = expected1.replaceAll("\\s+", " ");
-        String result = XSLT.transform(xslt1, input).replaceAll("\\s+", " ");
+        String input = Files.loadString(new File(getURL("data/xml/trivial_input.xml").getFile()));
+        String expected1 = Files.loadString(new File(getURL("data/xml/expected1.xml").getFile()));
+        String result = XSLT.transform(xslt1, input);
         assertEquals("Sample 1 should transform correctly",
-                     expected1.trim(), result.trim());
+                     trim(expected1), trim(result));
 
         URL xslt2 = getURL("data/xml/trivial_transform2.xslt");
-        String expected2 = Files.loadString(new File(getURL(
-                "data/xml/expected2.xml").getFile()));
-        expected2 = expected2.replaceAll("\\s+", " ");
-        result = XSLT.transform(xslt2, input).replaceAll("\\s+", " ");
+        String expected2 = Files.loadString(new File(getURL("data/xml/expected2.xml").getFile()));
+        result = XSLT.transform(xslt2, input);
         assertEquals("Sample 2 should transform correctly",
-                     expected2.trim(), result.trim());
+                     trim(expected2), trim(result));
+    }
+
+    // XML trimmer, removing white space
+    private String trim(String xml) {
+        return xml.trim().replaceAll("\\s+", " ").replaceAll("> +<", "><");
     }
 
     @Test
@@ -90,13 +88,10 @@ public class XSLTTest {
         Properties properties = new Properties();
         properties.put("keyword", "foo");
         URL xslt1 = getURL("data/xml/parameter_transform.xslt");
-        String input = Files.loadString(new File(getURL(
-                "data/xml/trivial_input.xml").getFile()));
-        String expected1 = Files.loadString(new File(getURL(
-                "data/xml/parameter_expected.xml").getFile()));
+        String input = Files.loadString(new File(getURL("data/xml/trivial_input.xml").getFile()));
+        String expected1 = Files.loadString(new File(getURL("data/xml/parameter_expected.xml").getFile()));
         assertEquals("Parameter should transform correctly",
-                     expected1.trim().replaceAll("\\s+", " "),
-                     XSLT.transform(xslt1, input, properties).trim().replaceAll("\\s+", " "));
+                     trim(expected1), trim(XSLT.transform(xslt1, input, properties)));
 
     }
     @Test
@@ -113,15 +108,13 @@ public class XSLTTest {
         testThread(200, 5, 20);
     }
 
-    public void testThread(int threadCount, int runs, int maxPause) throws
-                                                                    Exception {
+    public void testThread(int threadCount, int runs, int maxPause) throws Exception {
         int TESTS = 2;
         Random random = new Random();
         transformationCount.set(0);
         fullStop = false;
 
-        String input = Files.loadString(new File(getURL(
-                "data/xml/trivial_input.xml").getFile()));
+        String input = Files.loadString(new File(getURL("data/xml/trivial_input.xml").getFile()));
         List<URL> xslts = new ArrayList<URL>(TESTS);
         List<String> expected = new ArrayList<String>(TESTS);
         for (int i = 1; i <= TESTS; i++) {
@@ -163,8 +156,7 @@ public class XSLTTest {
         private int maxPause;
         private Random random = new Random();
 
-        private ThreadTransformer(URL xslt, String xmlInput, String expected,
-                                  int runs, int maxPause) {
+        private ThreadTransformer(URL xslt, String xmlInput, String expected, int runs, int maxPause) {
             this.xslt = xslt;
             this.xmlInput = xmlInput;
             this.expected = expected;
@@ -177,37 +169,32 @@ public class XSLTTest {
             int transforms = 0;
             for (int count = 0; count < runs; count++) {
                 if (fullStop) {
-                    log.debug("Exiting thread " + Thread.currentThread()
-                              + " due to full stop");
+                    log.debug("Exiting thread " + Thread.currentThread() + " due to full stop");
                     break;
                 }
                 try {
-                    String actual = XSLT.transform(xslt, xmlInput).trim();
+                    String actual = trim(XSLT.transform(xslt, xmlInput));
                     transforms++;
-                    if (!expected.trim().replaceAll("\\s+", " ").equals(actual.replaceAll("\\s+", " "))) {
+                    if (!trim(expected).equals(actual)) {
                         fullStop = true;
-                        fail("Not the expected result for '" + xslt
-                             + "'. Expected:\n" + expected + "\nActual:\n"
+                        fail("Not the expected result for '" + xslt + "'. Expected:\n" + expected + "\nActual:\n"
                              + actual);
 
                     }
                     transformationCount.addAndGet(1);
                 } catch (TransformerException e) {
                     fullStop = true;
-                    fail("Error transforming with '" + xslt + "': "
-                         + e.getMessage());
+                    fail("Error transforming with '" + xslt + "': " + e.getMessage());
                 }
                 try {
                     Thread.sleep(random.nextInt(maxPause));
                 } catch (InterruptedException e) {
-                    System.err.println("Exception sleeping with '" + xslt
-                                       + "': ");
+                    System.err.println("Exception sleeping with '" + xslt + "': ");
                     //noinspection CallToPrintStackTrace
                     e.printStackTrace();
                 }
             }
-            log.debug("Exiting thread " + Thread.currentThread() + " with "
-                      + transforms + " transformations");
+            log.debug("Exiting thread " + Thread.currentThread() + " with " + transforms + " transformations");
         }
     }
 
@@ -237,24 +224,20 @@ public class XSLTTest {
     @Test
     public void testFaultyRemoveNamespace() throws Exception {
         URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
-        String input = Files.loadString(new File(XSLTTest.getURL(
-                "data/xml/namespace_input.xml").getFile()));
+        String input = Files.loadString(new File(XSLTTest.getURL("data/xml/namespace_input.xml").getFile()));
         String expected = Files.loadString(new File(XSLTTest.getURL(
                 "data/xml/namespace_expected_faulty.xml").getFile()));
         assertEquals("Fault namespaces should give faulty output",
-                     expected.trim().replaceAll("\\s+", " "),
-                     XSLT.transform(xslt, input).trim().replaceAll("\\s+", " "));
+                     trim(expected), trim(XSLT.transform(xslt, input)));
     }
     @Test
     public void testCorrectRemoveNamespace() throws Exception {
         URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
-        String input = Files.loadString(new File(XSLTTest.getURL(
-                "data/xml/namespace_input.xml").getFile()));
+        String input = Files.loadString(new File(XSLTTest.getURL("data/xml/namespace_input.xml").getFile()));
         String expected = Files.loadString(new File(XSLTTest.getURL(
                 "data/xml/namespace_expected_correct.xml").getFile()));
         assertEquals("Fault namespaces should give faulty output",
-                     expected.trim().replaceAll("\\s+", " "),
-                     XSLT.transform(xslt, input, true).trim().replaceAll("\\s+", " "));
+                     trim(expected), trim(XSLT.transform(xslt, input, true)));
     }
 
     @Test
@@ -263,8 +246,7 @@ public class XSLTTest {
         int OUTER = 10;
         int RUNS = 5000;
         URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
-        String input = Files.loadString(new File(XSLTTest.getURL(
-                "data/xml/namespace_input.xml").getFile()));
+        String input = Files.loadString(new File(XSLTTest.getURL("data/xml/namespace_input.xml").getFile()));
 
         Profiler profiler = new Profiler(RUNS);
         for (int outer = 0; outer < OUTER; outer++) {
@@ -314,16 +296,14 @@ public class XSLTTest {
     public void tsestBurnNoNamespace() throws Exception {
         int RUNS = 50000;
         URL xslt = XSLTTest.getURL("data/xml/namespace_transform.xslt");
-        String input = Files.loadString(new File(XSLTTest.getURL(
-                "data/xml/namespace_input.xml").getFile()));
+        String input = Files.loadString(new File(XSLTTest.getURL("data/xml/namespace_input.xml").getFile()));
 
         Profiler profiler = new Profiler(RUNS);
         for (int i = 0; i < RUNS; i++) {
             XSLT.transform(xslt, input, true);
             profiler.beat();
         }
-        System.out.println("Speed: " + profiler.getBps(false)
-                           + " namespace-ignoring transformation/second");
+        System.out.println("Speed: " + profiler.getBps(false) + " namespace-ignoring transformation/second");
     }
 
     /*public void testNamespaceRemove() throws Exception {
