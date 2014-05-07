@@ -52,6 +52,26 @@ public class XMLStepperTest extends TestCase {
     private XMLOutputFactory xmlOutFactory = XMLOutputFactory.newInstance();
 
 
+    public void testIsWellformed() {
+        final String[] FINE = new String[]{
+                "<foo xmlns=\"http://www.example.com/foo_ns/\"><bar>simple bar</bar></foo>",
+                "<foo/>"
+        };
+        final String[] FAULTY = new String[]{
+                "<foo xmlns=\"http://www.example.com/foo_ns/\"><bar>simple bar<bar></bar></foo>",
+                "<foo xmlns=\"http://www.example.com/foo_ns/\"><bar>simple bar</bar>",
+                "<foo xmlns=\"http://www.example.com/foo_ns/\"><bar>simple bar</bar></doo>",
+                "<foo xmlns=\"http://www.example.com/foo_ns/><bar>simple bar</bar></foo>",
+        };
+        for (String fine: FINE) {
+            assertTrue("The XML should be well-formed: " + fine, XMLStepper.isWellformed(fine));
+        }
+        for (String faulty: FAULTY) {
+            assertFalse("The XML should not be well-formed: " + faulty, XMLStepper.isWellformed(faulty));
+        }
+
+    }
+
     private final static String LIMIT_BARS =
             "<foo><bar zoo=\"true\"></bar><bar zoo=\"true\"></bar><bar zoo=\"false\"></bar><baz></baz></foo>";
 

@@ -66,6 +66,35 @@ public class XMLStepper {
         }
     }
 
+    /**
+     * Shorthand for {@link #isWellformed(javax.xml.stream.XMLStreamReader)}.
+     */
+    public static boolean isWellformed(String xml) {
+        try {
+            return isWellformed(xmlFactory.createXMLStreamReader(new StringReader(xml)));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    /**
+     * Iterates the given XML stream and checks if it is well-formed (basic syntax check).
+     * No check for validity is performed.
+     * @param xml the input to be checked. This will be iterated all the way through and closed, unless an
+     *            error is encountered during iteration.
+     * @return true if the XML is well-formed, else false.
+     */
+    public static boolean isWellformed(XMLStreamReader xml) {
+        try {
+            while (xml.hasNext()) {
+                xml.next();
+            }
+            xml.close();
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
     private static final XMLOutputFactory xmlOutFactory = XMLOutputFactory.newInstance();
 
     /**
