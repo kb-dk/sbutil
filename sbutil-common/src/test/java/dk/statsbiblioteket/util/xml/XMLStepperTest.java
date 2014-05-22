@@ -14,6 +14,7 @@
  */
 package dk.statsbiblioteket.util.xml;
 
+import dk.statsbiblioteket.util.Files;
 import dk.statsbiblioteket.util.Profiler;
 import dk.statsbiblioteket.util.Strings;
 import junit.framework.TestCase;
@@ -82,6 +83,25 @@ public class XMLStepperTest extends TestCase {
                     "/foo/bar", 1);
         assertLimit(LIMIT_BARS, "<foo><bar zoo=\"true\" /><bar zoo=\"true\" /><baz /></foo>", false, true, false,
                     "/foo/bar", 2);
+    }
+
+    // TODO: Replace this with a proper unit test when the problem has been pinpointed
+    public void testSpecificProblem() throws IOException, XMLStreamException {
+        final File INPUT = new File("/home/te/tmp/xmlstepper_test.xml");
+        if (!INPUT.canRead()) {
+            return;
+        }
+        String xml = Files.loadString(INPUT);
+        Map<Pattern, Integer> limits = new HashMap<Pattern, Integer>();
+        limits.put(Pattern.compile("/record/datafield#tag=Z30"), 50);
+        limits.put(Pattern.compile("/record/datafield#tag=PST"), 50);
+        limits.put(Pattern.compile("/record/datafield#tag=LOC"), 50);
+        XMLStepper.Limiter limiter = XMLStepper.createLimiter(limits, false, false, false);
+
+        int limitedLength = limiter.limit(xml).length();
+//        System.out.println("Before: " + xml.length() + ", after: " + limitedLength);
+//        System.out.println(limiter.limit(xml));
+        assertTrue("The length of the limited XML should be > 2000 but was " + limitedLength, limitedLength > 2000);
     }
 
     public void testLimitPositiveList() throws XMLStreamException {
