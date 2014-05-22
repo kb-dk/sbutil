@@ -557,6 +557,13 @@ public class XMLStepper {
         public void limit(XMLStreamReader in, XMLStreamWriter out) throws XMLStreamException {
             limitXML(in, out, limits, countPatterns, onlyCheckElementPaths, discardNonMatched);
         }
+
+        @Override
+        public String toString() {
+            return "XMLStepper.Limiter(#limits=" + limits.size() + ", countPatterns=" + countPatterns
+                   + ", onlyCheckElementPaths=" + onlyCheckElementPaths + ", discardNonMatched=" + discardNonMatched
+                   + ")";
+        }
     }
 
     /**
