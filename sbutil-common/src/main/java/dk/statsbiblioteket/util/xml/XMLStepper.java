@@ -263,7 +263,7 @@ public class XMLStepper {
                             out.writeNamespace(in.getNamespacePrefix(i), in.getNamespaceURI(i));
                         }
                         for (int i = 0 ; i < in.getAttributeCount() ; i++) {
-                            if (in.getAttributeNamespace(i) == null) {
+                            if (in.getAttributeNamespace(i) == null || in.getAttributeNamespace(i).isEmpty()) {
                                 out.writeAttribute(in.getAttributeLocalName(i), in.getAttributeValue(i));
                             } else {
                                 out.writeAttribute(in.getAttributeNamespace(i), in.getAttributeLocalName(i),
@@ -640,7 +640,7 @@ public class XMLStepper {
                                 final boolean countPatterns, final boolean onlyCheckElementPaths,
                                 final boolean discardNonMatched) throws XMLStreamException {
         final Map<Object, Integer> counters = new HashMap<Object, Integer>();
-        pipeXML(in, out, true, false, new Callback() {
+        pipeXML(in, out, false, false, new Callback() {
             @Override
             public boolean elementStart(
                     XMLStreamReader xml, List<String> tags, String current) throws XMLStreamException {
