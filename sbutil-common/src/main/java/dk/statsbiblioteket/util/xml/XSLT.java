@@ -85,6 +85,9 @@ public class XSLT {
         } catch (MalformedURLException e) {
             throw new TransformerException(String.format("The URL to the XSLT is not a valid URL: '%s'", xslt), e);
         } catch (IOException e) {
+            throw new TransformerException(String.format("Unable to open the XSLT resource due to IOException '%s'",
+                                                         xslt), e);
+        } catch (Exception e) {
             throw new TransformerException(String.format("Unable to open the XSLT resource '%s'", xslt), e);
         } finally {
             try {
