@@ -126,6 +126,20 @@ public class XMLStepperTest extends TestCase {
                    reduced.contains("<datafield tag=\"LOC\""));
     }
 
+    public void testLimitException() throws XMLStreamException {
+        Map<Pattern, Integer> lims = new HashMap<Pattern, Integer>();
+        lims.put(Pattern.compile("/foo/bar"), 1);
+        XMLStreamReader in = xmlFactory.createXMLStreamReader(new StringReader("<foo><bar s=\"t\" /><<</foo>"));
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        XMLStreamWriter out = xmlOutFactory.createXMLStreamWriter(os);
+        try {
+            XMLStepper.limitXML(in, out, lims, true, true, false);
+            fail("An XMLStreamException was expected here due to invalid input XML");
+        } catch (XMLStreamException e) {
+            // Intended
+        }
+    }
+
     // Limits in all datafields, counting on unique datafield#tag=value
     public void testLimitPerformanceCountPatterns() throws IOException, XMLStreamException {
         final String SAMPLE = getSample(9423);
