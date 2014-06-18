@@ -3,7 +3,7 @@
 
     <groupId>dk.statsbiblioteket.sbutil</groupId>
     <artifactId>sbutil</artifactId>
-    <version>0.5.23-SNAPSHOT</version>
+    <version>0.5.23</version>
     <packaging>pom</packaging>
 
     <name>sbutil</name>
