@@ -99,6 +99,14 @@ public class XMLStepperTest extends TestCase {
                     "/foo/bar#zoo=true", 1);
     }
 
+    public void testLimitXMLAttributeNamespace() throws XMLStreamException {
+        final String NS =
+                "<n:foo xmlns:n=\"sjfk\" xmlns=\"myDefault\"><bar n:zoo=\"true\"></bar><bar zoo=\"true\"></bar>"
+                + "<bar zoo=\"false\"></bar><baz></baz></n:foo>";
+        assertLimit(NS, "<n:foo xmlns:n=\"sjfk\" xmlns=\"myDefault\"><bar zoo=\"false\"></bar><baz></baz></n:foo>",
+                    false, false, false, "/foo/bar#zoo=true", 0);
+    }
+
     public void testLimitCountPatterns() throws XMLStreamException {
         assertLimit(LIMIT_BARS,
                     "<foo><bar zoo=\"true\"></bar><bar zoo=\"true\"></bar><baz></baz></foo>", true, true, false,
