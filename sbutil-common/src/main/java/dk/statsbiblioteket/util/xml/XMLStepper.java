@@ -219,6 +219,8 @@ public class XMLStepper {
                         "onlyInner == true, but the input was not positioned at START_ELEMENT. Current element is "
                         + XMLUtil.eventID2String(in.getEventType()));
             }
+            String element = in.getLocalName();
+            elementStack.add(element);
             in.next();
         }
 
@@ -301,7 +303,7 @@ public class XMLStepper {
                                 element, elementStack.get(elementStack.size()-1), Strings.join(elementStack, ", ")));
                     }
                     String popped = elementStack.remove(elementStack.size()-1);
-                    if (callback != null) {
+                    if (callback != null && !(elementStack.isEmpty() && onlyInner)) {
                         callback.elementEnd(popped);
                     }
 

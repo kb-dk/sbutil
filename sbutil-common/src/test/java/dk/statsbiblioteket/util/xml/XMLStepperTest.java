@@ -330,11 +330,21 @@ public class XMLStepperTest extends TestCase {
                      SAMPLE, os.toString());
     }
 
+    public void testGetSubXML_DoubleContent() throws XMLStreamException {
+        final String XML = "<field><content foo=\"bar\"/><content foo=\"zoo\"/></field>";
+        final String EXPECTED = "<content foo=\"bar\"></content><content foo=\"zoo\"></content>";
+
+        XMLStreamReader in = xmlFactory.createXMLStreamReader(new StringReader(XML));
+        in.next();
+        String piped = XMLStepper.getSubXML(in, false, true);
+        assertEquals("The output should contain the inner XML", EXPECTED, piped);
+    }
+
     public void testGetSubXML_NoOuter() throws XMLStreamException {
         XMLStreamReader in = xmlFactory.createXMLStreamReader(new StringReader(OUTER_FULL));
         assertTrue("The first 'foo' should be findable", XMLStepper.findTagStart(in, "foo"));
         String piped = XMLStepper.getSubXML(in, false, true);
-        assertEquals("The output should contain the inner XML", "<bar>bar1</bar>", piped);
+        assertEquals("The output should contain the inner XML", OUTER_SNIPPET, piped);
     }
 
     public void testGetSubXML_Outer() throws XMLStreamException {
