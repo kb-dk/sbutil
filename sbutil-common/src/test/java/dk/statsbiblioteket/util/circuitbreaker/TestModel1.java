@@ -6,10 +6,7 @@ public class TestModel1 {
   private static int count=0;
   boolean failMode=false;
  
-  // Simpel metode
-  //Gør godt på kald 1..10
-  //Fejl kald 11..20
-  //Gør godt på kald 21..30
+  // Simpel metode der kan flagges til at fejle og tæller op når den ikke er i fejlmode
      
   public int getNumber() throws Exception{
     count++;
