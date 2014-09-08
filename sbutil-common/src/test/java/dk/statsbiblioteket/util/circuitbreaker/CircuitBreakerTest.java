@@ -1,16 +1,45 @@
 package dk.statsbiblioteket.util.circuitbreaker;
 
+import java.util.Date;
+
 import junit.framework.TestCase;
 
 
 public class CircuitBreakerTest extends TestCase {
 
+    
+    //This unittest shows how to apply the circuitbreaker pattern.
+    //The method we want to call is new Date(long). Think of this a remote method call.   
+    public void testShowTwoDifferentWaytoUseCircuitBreaker(){        
+ 
+        final long now = System.currentTimeMillis(); //Value we want to use for method call
+        
+        //method 1. Implement interface in a seperate class
+        CircuitBreakerDateTask dateTask = new CircuitBreakerDateTask();
+        CircuitBreaker<Long,Date> cb = new CircuitBreaker<Long,Date> ("TestHowToUse",5,20,5000); //Values not important, not used in this test                
+        
+        Date date1= cb.attemptTask(dateTask,now);
+        
+        //method 2. Construct via inner class syntax. (I prefer method1...)
+        Date date2= cb.attemptTask(        
+          new CircuitBreakerTask<Long,Date>() {            
+            @Override
+            public Date invoke(Long input) throws Exception {
+               Date date2= new Date(input);                
+               return date2;
+            }        
+         }
+        ,now);                
+        assertEquals(date1.getTime(),date2.getTime());       
+        assertEquals(2,cb.getStatus().getCurrentSucceeded()); //2 calls total        
+    }
+    
 
     public void testModel1(){
 
         Model1Task task = new Model1Task();
 
-        CircuitBreaker cb = CircuitBreaker.getInstance("CircuitBreakModel1Test",5,20,5000);
+        CircuitBreaker cb = new CircuitBreaker("CircuitBreakModel1Test",5,20,5000);
         assertTrue("State ikke CLOSED som forventet",cb.isClosedState());    
 
         //kald går godt    
@@ -121,7 +150,7 @@ public class CircuitBreakerTest extends TestCase {
 
 
     public void testStatus() {
-        CircuitBreaker breaker = CircuitBreaker.getInstance("testStatus",5,10,3000);
+        CircuitBreaker breaker = new CircuitBreaker("testStatus",5,10,3000);
 
         assertEquals("testStatus",breaker.getStatus().getName());
         assertEquals(0,breaker.getStatus().getTotalSucceeded());
@@ -142,20 +171,17 @@ public class CircuitBreakerTest extends TestCase {
         breaker.attemptTask(successTask);
 
         System.out.println(breaker.getStatus());
-
-
-
     }
 
     public void testInstantiation() {
 
-        CircuitBreaker cb1 = CircuitBreaker.getInstance("inst1",1,2,3);      
+        CircuitBreaker cb1 = new CircuitBreaker("inst1",1,2,3);      
         assertEquals(1,cb1.getStatus().getMaxFailures());
         assertEquals(2,cb1.getStatus().getMaxConcurrent());      
         assertEquals(3,cb1.getStatus().getCooldownTime());
 
-        CircuitBreaker cb2 = CircuitBreaker.getInstance("inst2",4,5,6);      
-        CircuitBreaker cb3 = CircuitBreaker.getInstance("inst3",7,8,9);
+        CircuitBreaker cb2 = new CircuitBreaker("inst2",4,5,6);      
+        CircuitBreaker cb3 = new CircuitBreaker("inst3",7,8,9);
 
 
         // Make sure instances are reused
@@ -168,7 +194,7 @@ public class CircuitBreakerTest extends TestCase {
     }
 
     public void testFailures() {
-        CircuitBreaker breaker = CircuitBreaker.getInstance("test",5,10,3000);
+        CircuitBreaker breaker = new CircuitBreaker("test",5,10,3000);
         assertTrue(breaker.isClosedState());
         assertEquals(0, breaker.getFailures());
 
@@ -242,9 +268,11 @@ public class CircuitBreakerTest extends TestCase {
 
     }
 
+    
+    
     public void testConcurrent() {
 
-        CircuitBreaker breaker = CircuitBreaker.getInstance("testConcurrent",5,10,3000);
+        CircuitBreaker breaker = new CircuitBreaker("testConcurrent",5,10,3000);
 
         assertTrue(breaker.isClosedState());
 
@@ -355,17 +383,17 @@ public class CircuitBreakerTest extends TestCase {
             }
         }.start();
     }  
-    private static class TestTask implements CircuitBreakerTask {
+    private static class TestTask implements CircuitBreakerTask<Object,Object> {
         private Exception toThrow;
         private int timeout;
-        public void invoke() throws Exception {
+        public Object invoke(Object in) throws Exception {
             if ( timeout > 0 ) {
                 Thread.sleep(timeout);
             }
             if ( toThrow != null ) {
                 throw toThrow;
             }
-
+          return new Object();
         }
         public void setToThrow(Exception toThrow) {
             this.toThrow = toThrow;

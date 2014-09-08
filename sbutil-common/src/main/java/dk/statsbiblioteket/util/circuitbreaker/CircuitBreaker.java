@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
  *
  *
  */
-public class CircuitBreaker {
+public class CircuitBreaker<IN,OUT> {
     
   /* **************************************************************************  
    * AVAILABLE STATES 
@@ -76,23 +76,40 @@ public class CircuitBreaker {
   private long totalFailed;
   private long totalRejected;
   
-  protected static Log log = LogFactory.getLog(CircuitBreaker.class);
+  private static Log log = LogFactory.getLog(CircuitBreaker.class);
+  
+  private static Map<String,CircuitBreaker<Object,Object>> circuitBreakerMap = new HashMap<String,CircuitBreaker<Object,Object>>();
   
   /* **************************************************************************
    * CONSTRUCTION
    ****************************************************************************/
   /**
-   * Should only be instantiated using getInstance methods.
+   * Will create a new Circuitbreaker with the given name. 
+   * If trying to create another Circuitbreaker with the same name it will throw an error
+   * 
+   * @param name
+   * @param maxFailures
+   * @param maxConcurrent
+   * @param timeCoolDownInMillis 
    */
-  private CircuitBreaker(String name, int maxFailures, int maxConcurrent, int timeCooldown) {
+  public CircuitBreaker(String name, int maxFailures, int maxConcurrent, int timeCooldown) {
     super();
+  
+    synchronized (circuitBreakerMap) {
+        if ( circuitBreakerMap.containsKey(name) ) {          
+            throw new IllegalArgumentException("There already is circuitbreaker with name:"+name);
+        }
+    }
+    
     this.name = name;
     this.maxFailures = maxFailures;
     this.maxConcurrent = maxConcurrent;
-    this.timeCooldown = timeCooldown;     
+    this.timeCooldown = timeCooldown;         
+    
+    circuitBreakerMap.put(name,(CircuitBreaker<Object,Object>)this);    
   }
 
-  private static Map<String,CircuitBreaker> circuitBreakerMap = new HashMap<String,CircuitBreaker>();
+  
 
   /**
    * Method for getting a circuit breaker based on a name. Will create a new with default properties if name does not exist
@@ -104,34 +121,15 @@ public class CircuitBreaker {
    * @param name Name of the circuit breaker to be created.
    * @return Circuit breaker configured and ready for use
    */
-  public static CircuitBreaker getInstance(String name) {
+  public static CircuitBreaker<Object,Object> getInstance(String name) {
     synchronized (circuitBreakerMap) {
       if ( !circuitBreakerMap.containsKey(name) ) {          
           throw new IllegalArgumentException("There is no circuitbreaker with name:"+name);
       }
-      return (CircuitBreaker) circuitBreakerMap.get(name);
+      return (CircuitBreaker<Object,Object>) circuitBreakerMap.get(name);
     }
   }
 
-  /**
-   * Will create a new Circuitbreaker with the given name. 
-   * If trying to create another Circuitbreaker with the same name it will throw an error
-   * 
-   * @param name
-   * @param maxFailures
-   * @param maxConcurrent
-   * @param timeCoolDownInMillis
-   * @return
-   */
-  public static CircuitBreaker getInstance(String name,int maxFailures, int maxConcurrent,int timeCoolDownInMillis) {
-    synchronized (circuitBreakerMap) {
-      if ( circuitBreakerMap.containsKey(name) ) {
-        throw new IllegalArgumentException("There is already a circuitbreaker with name:"+name);
-      }
-      circuitBreakerMap.put(name,new CircuitBreaker(name,maxFailures,maxConcurrent,timeCoolDownInMillis));
-      return (CircuitBreaker) circuitBreakerMap.get(name);
-    }
-  }
   
   
   /* **************************************************************************
@@ -146,11 +144,32 @@ public class CircuitBreaker {
    * @throws CircuitBreakerException if the task threw an exception. The original exception will be wrapped inside
    * @throws CircuitBreakerOpenException if the circuit breaker is open.
    */
-  public void attemptTask(CircuitBreakerTask task) throws CircuitBreakerOpenException, CircuitBreakerException {
+  public OUT attemptTask(CircuitBreakerTask<IN,OUT> task, IN input) throws CircuitBreakerOpenException, CircuitBreakerException {
     State state = getState();
     try {
         state.preInvoke(this);
-        task.invoke();
+        OUT out = task.invoke(input);  
+        state.onSucces(this);
+        return out;
+        
+    } catch(CircuitBreakerOpenException t) { // Not catching Errors
+      state.onError(this, t);
+      throw t;   
+    } catch(Exception t) { // Not catching Errors
+      state.onError(this, t);
+      throw new CircuitBreakerException(t);
+    }
+  }
+  /**
+   * Same as:
+   * public void attemptTask(CircuitBreakerTask<Object,Object> task, Object input)
+   * Just no input object
+   */
+  public void attemptTask(CircuitBreakerTask<IN,OUT> task) throws CircuitBreakerOpenException, CircuitBreakerException {
+    State state = getState();
+    try {
+        state.preInvoke(this);
+        task.invoke(null); //This input is not used  
         state.onSucces(this);
     } catch(CircuitBreakerOpenException t) { // Not catching Errors
       state.onError(this, t);
@@ -160,7 +179,6 @@ public class CircuitBreaker {
       throw new CircuitBreakerException(t);
     }
   }
-  
  
   public CircuitBreakerStatus getStatus() {
     CircuitBreakerStatus status = new CircuitBreakerStatus();

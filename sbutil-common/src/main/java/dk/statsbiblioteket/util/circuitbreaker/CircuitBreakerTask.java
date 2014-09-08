@@ -1,5 +1,5 @@
 package dk.statsbiblioteket.util.circuitbreaker;
 
-    public interface CircuitBreakerTask {
-        public void invoke() throws Exception;              
-  }
+    public interface CircuitBreakerTask <IN extends Object,OUT extends Object>{
+           public OUT invoke(IN input) throws Exception;              
+    }             
