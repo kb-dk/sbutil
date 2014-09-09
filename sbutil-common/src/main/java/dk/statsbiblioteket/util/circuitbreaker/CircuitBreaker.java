@@ -85,7 +85,7 @@ public class CircuitBreaker<IN,OUT> {
   private static Log log = LogFactory.getLog(CircuitBreaker.class);
   
   private static Map<String,CircuitBreaker<Object,Object>> circuitBreakerMap = new HashMap<String,CircuitBreaker<Object,Object>>();
-  
+
   /* **************************************************************************
    * CONSTRUCTION
    ****************************************************************************/
@@ -112,9 +112,10 @@ public class CircuitBreaker<IN,OUT> {
     this.maxConcurrent = maxConcurrent;
     this.timeCooldown = timeCooldown;         
     
-    circuitBreakerMap.put(name,(CircuitBreaker<Object,Object>)this);    
+  
+    circuitBreakerMap.put(name,(CircuitBreaker<Object,Object>) this);    
   }
-
+     
   
 
   /**
@@ -132,7 +133,7 @@ public class CircuitBreaker<IN,OUT> {
       if ( !circuitBreakerMap.containsKey(name) ) {          
           throw new IllegalArgumentException("There is no circuitbreaker with name:"+name);
       }
-      return (CircuitBreaker<Object,Object>) circuitBreakerMap.get(name);
+      return  circuitBreakerMap.get(name);
     }
   }
 
