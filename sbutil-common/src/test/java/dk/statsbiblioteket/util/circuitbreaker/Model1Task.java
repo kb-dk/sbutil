@@ -23,8 +23,5 @@ public class Model1Task implements CircuitBreakerTask<Object, Integer>{
   public TestModel1 getModel() {
     return model;
   }
-
-   
-  
   
 }

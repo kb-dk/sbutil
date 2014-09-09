@@ -28,9 +28,11 @@ import org.apache.commons.logging.LogFactory;
  * The cooldown timeout is specified in milliseconds
  * 
  * 
- * To create a new curcuitbreaker use:
- * public static CircuitBreaker getInstance(String name,int maxFailures, int maxConcurrent,int timeCoolDownInMillis)
+ * To create a new circuitbreaker use:
+ * public CircuitBreaker(String name, int maxFailures, int maxConcurrent, int timeCooldown)
  *  
+ * To get an existing circuitbreaker use:
+ * public static CircuitBreaker<Object,Object> getInstance(String name)
  * 
  * Based loosly on Michael Nygards idea.
  * 
