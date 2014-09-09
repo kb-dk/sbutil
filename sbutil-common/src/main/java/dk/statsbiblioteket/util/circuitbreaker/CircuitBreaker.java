@@ -138,15 +138,14 @@ public class CircuitBreaker<IN,OUT> {
 
   /**   
    * 
-   * @return list of all registered circuitbreakers.
+   * @return list of status for all registered circuitbreakers.
    */
-  public static  List<CircuitBreaker<Object,Object>> getCircuitBreakers() {  
-      ArrayList<CircuitBreaker<Object, Object>>   circuitBreakerList = new ArrayList<CircuitBreaker<Object, Object>> ();
+  public static  List<CircuitBreakerStatus> getCircuitBreakersStatus() {  
+      ArrayList<CircuitBreakerStatus>   circuitBreakerList = new ArrayList<CircuitBreakerStatus> ();
         
       for (String name : circuitBreakerMap.keySet()){
-          circuitBreakerList.add(circuitBreakerMap.get(name)); 
-      }
-            
+          circuitBreakerList.add(circuitBreakerMap.get(name).getStatus()); 
+      }            
       return circuitBreakerList;
   }
 
