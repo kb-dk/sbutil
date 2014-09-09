@@ -8,3 +8,5 @@ testfile
 tmp/
 **/*~
 *~
+/.settings
+/.project

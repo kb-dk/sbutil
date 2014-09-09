@@ -17,6 +17,7 @@ RELEASING
 When code has been added or changed, do the following:
 
 mvn release:prepare
+This will release the current snapshot version and increase the snapshot version in the pom automatic.
 
   Or speed up the process if you are a test-hating villain:
 mvn -Darguments='-Dmaven.test.skip=true' release:prepare

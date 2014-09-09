@@ -3,7 +3,7 @@
 
     <groupId>dk.statsbiblioteket.sbutil</groupId>
     <artifactId>sbutil</artifactId>
-    <version>0.5.25-SNAPSHOT</version>
+    <version>0.5.26-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>sbutil</name>
@@ -89,7 +89,8 @@
       <url>git@github.com:statsbiblioteket/sbutil.git</url>
       <connection>scm:git:https://github.com/statsbiblioteket/sbutil.git</connection>
       <developerConnection>scm:git:git@github.com:statsbiblioteket/sbutil.git</developerConnection>
-    </scm>
+      <tag>HEAD</tag>
+  </scm>
 
     <build>
         <plugins>
