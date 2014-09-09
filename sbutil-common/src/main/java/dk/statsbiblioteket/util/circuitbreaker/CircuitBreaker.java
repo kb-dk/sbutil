@@ -1,7 +1,11 @@
 package dk.statsbiblioteket.util.circuitbreaker;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map; 
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -130,6 +134,20 @@ public class CircuitBreaker<IN,OUT> {
       }
       return (CircuitBreaker<Object,Object>) circuitBreakerMap.get(name);
     }
+  }
+
+  /**   
+   * 
+   * @return list of all registered circuitbreakers.
+   */
+  public static  List<CircuitBreaker<Object,Object>> getCircuitBreakers() {  
+      ArrayList<CircuitBreaker<Object, Object>>   circuitBreakerList = new ArrayList<CircuitBreaker<Object, Object>> ();
+        
+      for (String name : circuitBreakerMap.keySet()){
+          circuitBreakerList.add(circuitBreakerMap.get(name)); 
+      }
+            
+      return circuitBreakerList;
   }
 
   
