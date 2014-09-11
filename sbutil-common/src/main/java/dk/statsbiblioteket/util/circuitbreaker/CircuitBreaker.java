@@ -119,12 +119,8 @@ public class CircuitBreaker<IN,OUT> {
   
 
   /**
-   * Method for getting a circuit breaker based on a name. Will create a new with default properties if name does not exist
-   * 
-   * The name will be used when loading the configuration from properties, as well as for logging,
-   * and if a circuit breaker has been previously created for the name, the old instance will be
-   * returned.
-   * 
+   * Method for getting a circuit breaker based on a name.
+   *  
    * @param name Name of the circuit breaker to be created.
    * @return Circuit breaker configured and ready for use
    */
