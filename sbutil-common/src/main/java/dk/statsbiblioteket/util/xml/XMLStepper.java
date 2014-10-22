@@ -36,6 +36,17 @@ public class XMLStepper {
      * @param callback called for each start element.
      */
     public static void iterateTags(XMLStreamReader xml, Callback callback) throws XMLStreamException {
+        iterateTags(xml, false, callback);
+    }
+
+    /**
+     * Iterates through the start tags in the stream until the current sub tree in the DOM is depleted
+     * Leaves the cursor after END_ELEMENT.
+     * @param xml the stream to iterate.
+     * @param lenient if true, the iterator tries to compensate for element-exceeding advances in the XML stream by the callback.
+     * @param callback called for each start element.
+     */
+    public static void iterateTags(XMLStreamReader xml, boolean lenient, Callback callback) throws XMLStreamException {
         List<String> tagStack = new ArrayList<String>(10);
         while (true) {
             if (xml.getEventType() == XMLStreamReader.START_ELEMENT) {
@@ -53,17 +64,42 @@ public class XMLStepper {
                     return;
                 }
                 if (!currentTag.equals(tagStack.get(tagStack.size()-1))) {
-                    throw new IllegalStateException(String.format(
-                            "Encountered end tag '%s' where '%s' from the stack %s were expected",
-                            currentTag, tagStack.get(tagStack.size()-1), Strings.join(tagStack, ", ")));
+                    boolean fail = true;
+                    if (lenient) {
+                        fail = !reduceStack(tagStack, currentTag);
+                    }
+                    if (fail) {
+                        throw new IllegalStateException(String.format(
+                                "Encountered end tag '%s' where '%s' from the stack %s were expected",
+                                currentTag, tagStack.get(tagStack.size() - 1), Strings.join(tagStack, ", ")));
+                    }
                 }
-                callback.elementEnd(tagStack.remove(tagStack.size()-1));
+                callback.elementEnd(tagStack.remove(tagStack.size() - 1));
             } else if (xml.getEventType() == XMLStreamReader.END_DOCUMENT) {
                 callback.end();
                 return;
             }
             xml.next();
         }
+    }
+
+   /**
+     * Reduce the stack from the end until the last element is equal to tag.
+     * @param stack a stack of tags.
+     * @param tag    the tag to reduce to
+     * @return true if it was possible to reduce the stack.
+     */
+    private static boolean reduceStack(List<String> stack, String tag) {
+        for (int i = 0 ; i < stack.size() ; i++) {
+            if (stack.get(i).equals(tag)) {
+                // Found a match, so we know we can reduce
+                while (!tag.equals(stack.get(stack.size()-1))) {
+                   stack.remove(stack.size()-1);
+                }
+                return true;
+            }
+        }
+        return false;  // TODO: Implement this
     }
 
     /**
