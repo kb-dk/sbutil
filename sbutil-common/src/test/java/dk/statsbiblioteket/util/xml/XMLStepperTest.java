@@ -20,6 +20,7 @@ import dk.statsbiblioteket.util.Strings;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.xml.sax.XMLReader;
 
 import javax.xml.stream.*;
 import java.io.*;
@@ -71,6 +72,31 @@ public class XMLStepperTest extends TestCase {
             assertFalse("The XML should not be well-formed: " + faulty, XMLStepper.isWellformed(faulty));
         }
 
+    }
+
+    public void testLenient() throws XMLStreamException {
+        final String XML = "<foo><bar><zoo>Hello</zoo></bar></foo>";
+        XMLStreamReader xml = xmlFactory.createXMLStreamReader(new StringReader(XML));
+        try {
+            lenientHelper(xml, false);
+            fail("Stepping past the current element with lenient==false should raise an exception");
+        } catch (IllegalStateException e) {
+            // Expected
+        }
+        lenientHelper(xml, true);
+    }
+    private void lenientHelper(XMLStreamReader xml, boolean lenient) throws XMLStreamException {
+        XMLStepper.iterateTags(xml, lenient, new XMLStepper.Callback() {
+            @Override
+            public boolean elementStart(XMLStreamReader xml, List<String> tags, String current)
+                    throws XMLStreamException {
+                if ("zoo".equals(current)) {
+                    XMLStepper.findTagEnd(xml, "bar");
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     private final static String LIMIT_BARS =
@@ -196,33 +222,33 @@ public class XMLStepperTest extends TestCase {
                       "    <subfield code=\"2\">UASBH</subfield>\n" +
                       "    <subfield code=\"3\">Bom</subfield>\n" +
                       "    <subfield code=\"5\">").append("12345-67").append(i).append("</subfield>\n" +
-                      "    <subfield code=\"a\">2010</subfield>\n" +
-                      "    <subfield code=\"b\">1</subfield>\n" +
-                      "    <subfield code=\"c\">3456</subfield>\n" +
-                      "    <subfield code=\"f\">67</subfield>\n" +
-                      "    <subfield code=\"h\">2010 1  6543</subfield>\n" +
-                      "    <subfield code=\"i\">20100821</subfield>\n" +
-                      "    <subfield code=\"j\">20101025</subfield>\n" +
-                      "    <subfield code=\"k\">20100910</subfield>\n" +
-                      "  </datafield>\n");
+                                                                                       "    <subfield code=\"a\">2010</subfield>\n" +
+                                                                                       "    <subfield code=\"b\">1</subfield>\n" +
+                                                                                       "    <subfield code=\"c\">3456</subfield>\n" +
+                                                                                       "    <subfield code=\"f\">67</subfield>\n" +
+                                                                                       "    <subfield code=\"h\">2010 1  6543</subfield>\n" +
+                                                                                       "    <subfield code=\"i\">20100821</subfield>\n" +
+                                                                                       "    <subfield code=\"j\">20101025</subfield>\n" +
+                                                                                       "    <subfield code=\"k\">20100910</subfield>\n" +
+                                                                                       "  </datafield>\n");
         }
         sb.append(
-          "  <datafield tag=\"STS\" ind1=\" \" ind2=\" \">\n" +
-          "    <subfield code=\"a\">67</subfield>\n" +
-          "  </datafield>\n" +
-          "  <datafield tag=\"SBL\" ind1=\" \" ind2=\" \">\n" +
-          "    <subfield code=\"a\">FOOB</subfield>\n" +
-          "  </datafield>\n" +
-          "  <datafield tag=\"LOC\" ind1=\" \" ind2=\" \">\n" +
-          "    <subfield code=\"b\">FOOB</subfield>\n" +
-          "    <subfield code=\"c\">AUGHH</subfield>\n" +
-          "    <subfield code=\"h\">MPG</subfield>\n" +
-          "    <subfield code=\"o\">ISSUE</subfield>\n" +
-          "  </datafield>\n" +
-          "  <datafield tag=\"STS\" ind1=\" \" ind2=\" \">\n" +
-          "    <subfield code=\"a\">67</subfield>\n" +
-          "  </datafield>\n" +
-          "</record>");
+                "  <datafield tag=\"STS\" ind1=\" \" ind2=\" \">\n" +
+                "    <subfield code=\"a\">67</subfield>\n" +
+                "  </datafield>\n" +
+                "  <datafield tag=\"SBL\" ind1=\" \" ind2=\" \">\n" +
+                "    <subfield code=\"a\">FOOB</subfield>\n" +
+                "  </datafield>\n" +
+                "  <datafield tag=\"LOC\" ind1=\" \" ind2=\" \">\n" +
+                "    <subfield code=\"b\">FOOB</subfield>\n" +
+                "    <subfield code=\"c\">AUGHH</subfield>\n" +
+                "    <subfield code=\"h\">MPG</subfield>\n" +
+                "    <subfield code=\"o\">ISSUE</subfield>\n" +
+                "  </datafield>\n" +
+                "  <datafield tag=\"STS\" ind1=\" \" ind2=\" \">\n" +
+                "    <subfield code=\"a\">67</subfield>\n" +
+                "  </datafield>\n" +
+                "</record>");
         return sb.toString();
     }
 
