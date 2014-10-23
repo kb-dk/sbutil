@@ -75,23 +75,31 @@ public class XMLStepperTest extends TestCase {
     }
 
     public void testLenient() throws XMLStreamException {
-        final String XML = "<foo><bar><zoo>Hello</zoo></bar></foo>";
-        XMLStreamReader xml = xmlFactory.createXMLStreamReader(new StringReader(XML));
-        try {
-            lenientHelper(xml, false);
-            fail("Stepping past the current element with lenient==false should raise an exception");
-        } catch (IllegalStateException e) {
-            // Expected
+        final String[][] TESTS = new String[][]{
+                new String[]{"<foo><bar><zoo>Hello</zoo></bar></foo>", "zoo", "bar"},
+                new String[]{"<foo><bar><zoo>Hello</zoo></bar></foo>", "zoo", "foo"},
+                new String[]{"<foo><bar>Hello</bar></foo>", "bar", "foo"}
+        };
+        for (String[] test: TESTS) {
+            try {
+                XMLStreamReader xml = xmlFactory.createXMLStreamReader(new StringReader(test[0]));
+                lenientHelper(xml, false, test[1], test[2]);
+                fail("Stepping past the current element with lenient==false should raise an exception for " + test[0]);
+            } catch (IllegalStateException e) {
+                // Expected
+            }
+            XMLStreamReader xml = xmlFactory.createXMLStreamReader(new StringReader(test[0]));
+            lenientHelper(xml, true, test[1], test[2]);
         }
-        lenientHelper(xml, true);
     }
-    private void lenientHelper(XMLStreamReader xml, boolean lenient) throws XMLStreamException {
+    private void lenientHelper(XMLStreamReader xml, boolean lenient, final String startTag, final String skipToEndTag)
+            throws XMLStreamException {
         XMLStepper.iterateTags(xml, lenient, new XMLStepper.Callback() {
             @Override
             public boolean elementStart(XMLStreamReader xml, List<String> tags, String current)
                     throws XMLStreamException {
-                if ("zoo".equals(current)) {
-                    XMLStepper.findTagEnd(xml, "bar");
+                if (startTag.equals(current)) {
+                    XMLStepper.findTagEnd(xml, skipToEndTag);
                     return true;
                 }
                 return false;
