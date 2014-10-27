@@ -71,6 +71,36 @@ public class XMLStepperTest extends TestCase {
         for (String faulty: FAULTY) {
             assertFalse("The XML should not be well-formed: " + faulty, XMLStepper.isWellformed(faulty));
         }
+    }
+
+    public void testMultipleInner() throws XMLStreamException {
+        final String XML = "<foo><bar><zoo>z1</zoo><zoo>z2</zoo></bar></foo>";
+        for (final Boolean step: new boolean[]{Boolean.FALSE, Boolean.TRUE}) {
+            XMLStreamReader xml = xmlFactory.createXMLStreamReader(new StringReader(XML));
+            XMLStepper.findTagStart(xml, "zoo");
+            final AtomicInteger zooCount = new AtomicInteger(0);
+            XMLStepper.iterateTags(xml, new XMLStepper.Callback() {
+                @Override
+                public boolean elementStart(XMLStreamReader xml, List<String> tags, String current)
+                        throws XMLStreamException {
+                    if ("zoo".equals(current)) {
+                        zooCount.incrementAndGet();
+                    }
+                    if (step) {
+                        xml.next();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            assertEquals("After iteration with step==" + step
+                         + ", the stepper should have encountered 'zoo' the right number of times",
+                         2, zooCount.get());
+            assertEquals("After iteration with step==" + step
+                         + ", the reader should be positioned at the correct end tag", "bar",
+                         xml.getLocalName());
+        }
+
 
     }
 
@@ -229,16 +259,17 @@ public class XMLStepperTest extends TestCase {
                       "    <subfield code=\"1\">UASB</subfield>\n" +
                       "    <subfield code=\"2\">UASBH</subfield>\n" +
                       "    <subfield code=\"3\">Bom</subfield>\n" +
-                      "    <subfield code=\"5\">").append("12345-67").append(i).append("</subfield>\n" +
-                                                                                       "    <subfield code=\"a\">2010</subfield>\n" +
-                                                                                       "    <subfield code=\"b\">1</subfield>\n" +
-                                                                                       "    <subfield code=\"c\">3456</subfield>\n" +
-                                                                                       "    <subfield code=\"f\">67</subfield>\n" +
-                                                                                       "    <subfield code=\"h\">2010 1  6543</subfield>\n" +
-                                                                                       "    <subfield code=\"i\">20100821</subfield>\n" +
-                                                                                       "    <subfield code=\"j\">20101025</subfield>\n" +
-                                                                                       "    <subfield code=\"k\">20100910</subfield>\n" +
-                                                                                       "  </datafield>\n");
+                      "    <subfield code=\"5\">").append("12345-67").append(i).append(
+                    "</subfield>\n" +
+                    "    <subfield code=\"a\">2010</subfield>\n" +
+                    "    <subfield code=\"b\">1</subfield>\n" +
+                    "    <subfield code=\"c\">3456</subfield>\n" +
+                    "    <subfield code=\"f\">67</subfield>\n" +
+                    "    <subfield code=\"h\">2010 1  6543</subfield>\n" +
+                    "    <subfield code=\"i\">20100821</subfield>\n" +
+                    "    <subfield code=\"j\">20101025</subfield>\n" +
+                    "    <subfield code=\"k\">20100910</subfield>\n" +
+                    "  </datafield>\n");
         }
         sb.append(
                 "  <datafield tag=\"STS\" ind1=\" \" ind2=\" \">\n" +
