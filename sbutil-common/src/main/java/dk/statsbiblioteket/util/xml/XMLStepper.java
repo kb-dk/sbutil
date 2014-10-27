@@ -18,6 +18,7 @@ import dk.statsbiblioteket.util.MutablePair;
 import dk.statsbiblioteket.util.Strings;
 import dk.statsbiblioteket.util.reader.CharSequenceReader;
 
+import javax.xml.XMLConstants;
 import javax.xml.stream.*;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
@@ -79,7 +80,15 @@ public class XMLStepper {
                 callback.end();
                 return;
             }
-            xml.next();
+            try {
+                xml.next();
+            } catch (XMLStreamException e) {
+                throw new XMLStreamException(String.format(
+                        "XMLStreamException with lenient=%b, stack=[%s], type=%s, content='%s'",
+                        lenient, Strings.join(tagStack), XMLUtil.eventID2String(xml.getEventType()),
+                        xml.getEventType() == XMLStreamReader.CHARACTERS ? xml.getText() : "N/A"),
+                        e);
+            }
         }
     }
 
