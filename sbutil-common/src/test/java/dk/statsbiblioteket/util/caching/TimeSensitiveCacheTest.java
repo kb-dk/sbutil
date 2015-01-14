@@ -176,6 +176,24 @@ public class TimeSensitiveCacheTest extends TestCase {
 
     }
 
+    public void testReinsert() {
+        TimeSensitiveCache<String, String> usersOnCase = new TimeSensitiveCache<String, String>(2 * 1000, false);
+
+        usersOnCase.put("foo", "foo");
+        usersOnCase.put("bar", "bar");
+
+        for (int i = 0; i < 2; i++) {
+            System.out.println("Put foo but not really");
+            usersOnCase.put("foo", "foo"); //Reinserting should update the timestamp
+            sleep(1000);
+        }
+
+
+        assertEquals("foo", usersOnCase.get("foo"));
+        assertNull(usersOnCase.get("bar"));
+    }
+
+
 
     private void sleep(long millis) {
         synchronized (this) {

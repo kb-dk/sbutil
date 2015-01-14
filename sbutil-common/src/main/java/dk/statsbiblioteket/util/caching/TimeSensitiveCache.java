@@ -334,6 +334,17 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
             return super.size();
         }
 
+        @Override
+        public C put(K key, C value) {
+            if (super.containsKey(key)){
+                C oldvalue = super.remove(key);
+                super.put(key,value);
+                return oldvalue;
+            } else {
+                return super.put(key, value);
+            }
+        }
+
         /**
          * Remove the eldest entry, if the size grows above and fixedSize is set.
          * Performs a cleanup
@@ -343,8 +354,11 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
          */
         @Override
         protected boolean removeEldestEntry(Map.Entry<K, C> eldest) {
-            if (fixedSize && size() > capacity) {
-                remove(eldest.getKey());
+            if (fixedSize && super.size() > capacity) {
+                return true;
+            }
+            if (isTooOld(eldest.getValue().getCacheTime(),timeToLive)){
+                return true;
             }
             cleanup();
             return false;
@@ -361,7 +375,7 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
                 return;
             }
             lastClean = System.currentTimeMillis();
-            if (elements.isEmpty()) {
+            if (super.isEmpty()) {
                 return;
             }
 
