@@ -1,34 +1,33 @@
 package dk.statsbiblioteket.util.caching;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Map;
 import java.util.Set;
 
+import static org.junit.Assert.*;
+
 @QAInfo(state = QAInfo.State.QA_NEEDED,
         level = QAInfo.Level.NORMAL,
         author = "abr")
-public class TimeSensitiveCacheTest extends TestCase {
+public class TimeSensitiveCacheTest {
 
     long timeout;
 
-    public TimeSensitiveCacheTest(String name) {
-        super(name);
-    }
-
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
-
         timeout = 100;
 
     }
 
+    @After
     public void tearDown() throws Exception {
-        super.tearDown();
     }
 
-
+    @Test
     public void testAccessOrderTrueSizeFixed() {
         Map<String, String> cache
                 = new TimeSensitiveCache<String, String>(timeout, true, 3);
@@ -57,6 +56,7 @@ public class TimeSensitiveCacheTest extends TestCase {
         assertEquals("The cache should have timed out and cleared, but test2 should still remain", 1, cache.size());
     }
 
+    @Test
     public void testAccessOrderTrueSizeFluid() {
 
         Map<String, String> cache
@@ -88,6 +88,7 @@ public class TimeSensitiveCacheTest extends TestCase {
 
     }
 
+    @Test
     public void testAccessOrderFalseSizeFluid() {
 
         Map<String, String> cache
@@ -123,7 +124,7 @@ public class TimeSensitiveCacheTest extends TestCase {
 
     }
 
-
+    @Test
     public void testAccessOrderFalseSizeFixed() {
         Map<String, String> cache
                 = new TimeSensitiveCache<String, String>(timeout, false, 3);
@@ -159,6 +160,7 @@ public class TimeSensitiveCacheTest extends TestCase {
 
     }
 
+    @Test
     public void testMapSpecificMethods() {
         Map<String, String> cache
                 = new TimeSensitiveCache<String, String>(timeout, false, 3);
@@ -176,6 +178,7 @@ public class TimeSensitiveCacheTest extends TestCase {
 
     }
 
+    @Test
     public void testReinsert() {
         TimeSensitiveCache<String, String> usersOnCase = new TimeSensitiveCache<String, String>(2 * 1000, false);
 
