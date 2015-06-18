@@ -49,7 +49,7 @@ import java.util.*;
         author = "abr, te")
 public class TimeSensitiveCache<K, V> implements Map<K, V> {
 
-    private BackingCache<K, Cachable<V>> elements;
+    private BackingCache<K, V, Cachable<V>> elements;
 
 
     /**
@@ -65,7 +65,7 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
     public TimeSensitiveCache(long timeToLive,
                               boolean accessOrder,
                               int fixedSize) {
-        elements = new BackingCache<K, Cachable<V>>(timeToLive, timeToLive / 10, fixedSize, accessOrder, true);
+        elements = new BackingCache<K,V,  Cachable<V>>(timeToLive, timeToLive / 10, fixedSize, accessOrder, true);
     }
 
     /**
@@ -77,7 +77,7 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
      */
     public TimeSensitiveCache(long timeToLive,
                               boolean accessOrder) {
-        elements = new BackingCache<K, Cachable<V>>(timeToLive, timeToLive / 10, 10, accessOrder, false);
+        elements = new BackingCache<K, V, Cachable<V>>(timeToLive, timeToLive / 10, 10, accessOrder, false);
     }
 
 
@@ -246,7 +246,7 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
      * @param <K> key type
      * @param <C> cacheable type
      */
-    private class BackingCache<K, C extends Cachable<V>> extends LinkedHashMap<K, C> {
+    public static class BackingCache<K, V, C extends Cachable<V>> extends LinkedHashMap<K, C> {
         private int capacity;
         private boolean fixedSize;
         private boolean accessOrder;
@@ -370,27 +370,29 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
          * be not to old, all the others are assumed to be not to old, and the
          * cleanup is over.
          */
-        private void cleanup() {
+        protected List<C> cleanup() {
             if (!isTooOld(lastClean, timeBetweenGC)) {
-                return;
+                return null;
             }
             lastClean = System.currentTimeMillis();
             if (super.isEmpty()) {
-                return;
+                return null;
             }
 
 
             Iterator<C> iterator = values().iterator();
 
-
+            ArrayList<C> result = new ArrayList<C>();
             while (iterator.hasNext()) {
                 C element = iterator.next();
                 if (isTooOld(element.getCacheTime(), timeToLive)) {
                     iterator.remove();
+                    result.add(element);
                 } else {
                     break;
                 }
             }
+            return result;
         }
 
         /**
@@ -412,7 +414,7 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
      *
      * @param <T> the type of the element
      */
-    private class Cachable<T> {
+    public static class Cachable<T> {
 
         /**
          * The elemnt to store
@@ -470,6 +472,30 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
          */
         public void refreshCacheTime() {
             this.cacheTime = System.currentTimeMillis();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Cachable)) return false;
+
+            Cachable<?> cachable = (Cachable<?>) o;
+
+            return getObject().equals(cachable.getObject());
+
+        }
+
+        @Override
+        public int hashCode() {
+            return getObject().hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "Cachable{" +
+                    "object=" + object +
+                    ", cacheTime=" + cacheTime +
+                    '}';
         }
     }
 
