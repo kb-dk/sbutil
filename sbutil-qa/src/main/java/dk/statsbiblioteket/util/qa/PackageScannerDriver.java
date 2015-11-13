@@ -22,7 +22,12 @@
  */
 package dk.statsbiblioteket.util.qa;
 
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,8 +41,6 @@ public final class PackageScannerDriver {
      */
     private PackageScannerDriver() {
     }
-
-    ;
 
     /**
      * Print help.

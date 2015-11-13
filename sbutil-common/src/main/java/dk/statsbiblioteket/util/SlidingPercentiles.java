@@ -81,8 +81,8 @@ public class SlidingPercentiles {
         }
         if (continuousSort) {
             int insertionPoint = Arrays.binarySearch(sortedValues, 0, windowSize, value);
-            insertionPoint = insertionPoint >= 0 ? insertionPoint : -1 * (insertionPoint +1);
-            System.arraycopy(sortedValues, insertionPoint, sortedValues, insertionPoint+1, windowSize-insertionPoint);
+            insertionPoint = insertionPoint >= 0 ? insertionPoint : -1 * (insertionPoint + 1);
+            System.arraycopy(sortedValues, insertionPoint, sortedValues, insertionPoint + 1, windowSize - insertionPoint);
             sortedValues[insertionPoint] = value;
         } else {
             sortedDirty = true;
@@ -105,9 +105,9 @@ public class SlidingPercentiles {
             if (removalPoint < 0) {
                 throw new IllegalStateException("The value " + value + " did not exist in the window");
             }
-            if (removalPoint != size()-1) {
+            if (removalPoint != size() - 1) {
                 System.arraycopy(
-                        sortedValues, removalPoint+1, sortedValues, removalPoint, sortedValues.length-removalPoint);
+                        sortedValues, removalPoint + 1, sortedValues, removalPoint, sortedValues.length - removalPoint);
             }
         } else {
             sortedDirty = true;
@@ -164,12 +164,12 @@ public class SlidingPercentiles {
         if (pos < 0) {
             return sortedValues[0];
         }
-        if (pos >= values.length()-1) {
-            return sortedValues[values.length()-1];
+        if (pos >= values.length() - 1) {
+            return sortedValues[values.length() - 1];
         }
-        int valLeft = sortedValues[(int)pos];
-        int valRight = sortedValues[((int)pos)+1];
-        double fraction = pos - ((int)pos);
+        int valLeft = sortedValues[(int) pos];
+        int valRight = sortedValues[((int) pos) + 1];
+        double fraction = pos - ((int) pos);
         return valLeft + (valRight - valLeft) * fraction;
     }
 
@@ -183,7 +183,7 @@ public class SlidingPercentiles {
      * @return {code sum/count} aka the unweighted mean or 0 if there are no values. Response time is O(1).
      */
     public double getAverage() {
-        return values.length() == 0 ? 0 : ((double)sum)/values.length();
+        return values.length() == 0 ? 0 : ((double) sum) / values.length();
     }
 
     /**

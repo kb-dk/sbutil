@@ -59,12 +59,12 @@ public class SynchronousXPathSelector extends XPathSelectorImpl {
             }
             try {
                 Document doc = dom.getOwnerDocument();
-                if (doc != null){
-                    synchronized (doc){
+                if (doc != null) {
+                    synchronized (doc) {
                         retval = exp.evaluate(dom, returnType);
                     }
                 } else {
-                    synchronized (dom){
+                    synchronized (dom) {
                         retval = exp.evaluate(dom, returnType);
                     }
                 }

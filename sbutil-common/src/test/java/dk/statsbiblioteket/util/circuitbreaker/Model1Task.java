@@ -1,27 +1,27 @@
 package dk.statsbiblioteket.util.circuitbreaker;
 
 
-public class Model1Task implements CircuitBreakerTask<Object, Integer>{
+public class Model1Task implements CircuitBreakerTask<Object, Integer> {
 
-  
-  int result=0;
-  private TestModel1 model= new TestModel1();
 
-  public Integer invoke(Object in) throws Exception{
-      
-    result=model.getNumber();
+    int result = 0;
+    private TestModel1 model = new TestModel1();
 
-    return result;
-  }
-  
-  public int getResult(){
-    return result;
-    
-  }
+    public Integer invoke(Object in) throws Exception {
 
-  
-  public TestModel1 getModel() {
-    return model;
-  }
-  
+        result = model.getNumber();
+
+        return result;
+    }
+
+    public int getResult() {
+        return result;
+
+    }
+
+
+    public TestModel1 getModel() {
+        return model;
+    }
+
 }

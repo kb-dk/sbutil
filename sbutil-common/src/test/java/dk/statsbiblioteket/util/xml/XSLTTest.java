@@ -255,7 +255,7 @@ public class XSLTTest {
             System.gc();
             profiler.reset();
             for (int i = 0; i < RUNS; i++) {
-                Document dom = DOM.stringToDOM(input,false);
+                Document dom = DOM.stringToDOM(input, false);
                 XSLT.transform(xslt, dom, null);
                 profiler.beat();
             }
@@ -265,7 +265,7 @@ public class XSLTTest {
             System.gc();
             profiler.reset();
             for (int i = 0; i < RUNS; i++) {
-                Document dom = DOM.stringToDOM(input,true);
+                Document dom = DOM.stringToDOM(input, true);
                 XSLT.transform(xslt, dom, null);
                 profiler.beat();
             }

@@ -18,7 +18,15 @@ import dk.statsbiblioteket.util.qa.QAInfo;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -76,7 +84,7 @@ public class JobController<R> extends ExecutorCompletionService<R> {
                          String threadNamePrefix) {
         this(new CallbackThreadPoolExecutor(maxConcurrentThreads, daemonThreads,
                                             threadNamePrefix == null ? "jobController_job-" : threadNamePrefix));
-        ((CallbackThreadPoolExecutor)executor).setCallback(this);
+        ((CallbackThreadPoolExecutor) executor).setCallback(this);
         this.autoEmpty = autoEmpty;
     }
 
@@ -246,7 +254,7 @@ public class JobController<R> extends ExecutorCompletionService<R> {
             throw new IllegalStateException("The executor was a " + executor.getClass().getCanonicalName()
                                             + " but must be a ThreadPoolExecutor for this call to succeed");
         }
-        return ((ThreadPoolExecutor)executor).getActiveCount();
+        return ((ThreadPoolExecutor) executor).getActiveCount();
     }
 
     /**
@@ -269,7 +277,7 @@ public class JobController<R> extends ExecutorCompletionService<R> {
     private static class CallbackThreadPoolExecutor extends ThreadPoolExecutor {
         private JobController callback;
 
-        public CallbackThreadPoolExecutor( int maxConcurrentThreads, final boolean daemonThreads, final String prefix) {
+        public CallbackThreadPoolExecutor(int maxConcurrentThreads, final boolean daemonThreads, final String prefix) {
             super(maxConcurrentThreads, maxConcurrentThreads,
                   10, TimeUnit.MINUTES,
                   new ArrayBlockingQueue<Runnable>(100),

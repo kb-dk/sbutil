@@ -1,6 +1,6 @@
 package dk.statsbiblioteket.util;
 
-public class MutablePair<L,R> {
+public class MutablePair<L, R> {
 
     L left;
     R right;

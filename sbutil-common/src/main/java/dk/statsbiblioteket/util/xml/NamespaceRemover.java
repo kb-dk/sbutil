@@ -53,7 +53,9 @@ import java.util.regex.Pattern;
 public class NamespaceRemover extends ReplaceReader {
 //    private static Log log = LogFactory.getLog(NamespaceRemover.class);
 
-    private enum Mode {PLAIN, CDATA, COMMENT}
+    private enum Mode {
+        PLAIN, CDATA, COMMENT
+    }
 
     private Mode mode = Mode.PLAIN;
     private CircularCharBuffer inBuf = new CircularCharBuffer(100, Integer.MAX_VALUE);

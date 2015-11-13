@@ -25,7 +25,12 @@ package dk.statsbiblioteket.util.qa;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A {@link Report} implementation printing html to its output stream.

@@ -1,14 +1,12 @@
 package dk.statsbiblioteket.util.circuitbreaker;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map; 
-import java.util.Set;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The circuit breaker has three states, Closed, Open and Half-Open
@@ -45,7 +43,7 @@ import org.apache.commons.logging.LogFactory;
  *
  *
  */
-public class CircuitBreaker<IN,OUT> {
+public class CircuitBreaker<IN, OUT> {
     
   /* **************************************************************************  
    * AVAILABLE STATES 
@@ -83,8 +81,8 @@ public class CircuitBreaker<IN,OUT> {
   private long totalRejected;
   
   private static Log log = LogFactory.getLog(CircuitBreaker.class);
-  
-  private static Map<String,CircuitBreaker<Object,Object>> circuitBreakerMap = new HashMap<String,CircuitBreaker<Object,Object>>();
+
+  private static Map<String, CircuitBreaker<Object, Object>> circuitBreakerMap = new HashMap<String, CircuitBreaker<Object, Object>>();
 
   /* **************************************************************************
    * CONSTRUCTION
@@ -96,24 +94,24 @@ public class CircuitBreaker<IN,OUT> {
    * @param name
    * @param maxFailures
    * @param maxConcurrent
-   * @param timeCoolDownInMillis 
+   * @param timeCooldown
    */
   public CircuitBreaker(String name, int maxFailures, int maxConcurrent, int timeCooldown) {
     super();
   
     synchronized (circuitBreakerMap) {
-        if ( circuitBreakerMap.containsKey(name) ) {          
-            throw new IllegalArgumentException("There already is circuitbreaker with name:"+name);
-        }
+      if (circuitBreakerMap.containsKey(name)) {
+        throw new IllegalArgumentException("There already is circuitbreaker with name:" + name);
+      }
     }
     
     this.name = name;
     this.maxFailures = maxFailures;
     this.maxConcurrent = maxConcurrent;
-    this.timeCooldown = timeCooldown;         
-    
-  
-    circuitBreakerMap.put(name,(CircuitBreaker<Object,Object>) this);    
+    this.timeCooldown = timeCooldown;
+
+
+    circuitBreakerMap.put(name, (CircuitBreaker<Object, Object>) this);
   }
      
   
@@ -124,10 +122,10 @@ public class CircuitBreaker<IN,OUT> {
    * @param name Name of the circuit breaker to be created.
    * @return Circuit breaker configured and ready for use
    */
-  public static CircuitBreaker<Object,Object> getInstance(String name) {
+  public static CircuitBreaker<Object, Object> getInstance(String name) {
     synchronized (circuitBreakerMap) {
-      if ( !circuitBreakerMap.containsKey(name) ) {          
-          throw new IllegalArgumentException("There is no circuitbreaker with name:"+name);
+      if (!circuitBreakerMap.containsKey(name)) {
+        throw new IllegalArgumentException("There is no circuitbreaker with name:" + name);
       }
       return  circuitBreakerMap.get(name);
     }
@@ -139,10 +137,10 @@ public class CircuitBreaker<IN,OUT> {
    */
   public static  List<CircuitBreakerStatus> getCircuitBreakersStatus() {  
       ArrayList<CircuitBreakerStatus>   circuitBreakerList = new ArrayList<CircuitBreakerStatus> ();
-        
-      for (String name : circuitBreakerMap.keySet()){
-          circuitBreakerList.add(circuitBreakerMap.get(name).getStatus()); 
-      }            
+
+      for (String name : circuitBreakerMap.keySet()) {
+          circuitBreakerList.add(circuitBreakerMap.get(name).getStatus());
+      }
       return circuitBreakerList;
   }
 
@@ -160,7 +158,7 @@ public class CircuitBreaker<IN,OUT> {
    * @throws CircuitBreakerException if the task threw an exception. The original exception will be wrapped inside
    * @throws CircuitBreakerOpenException if the circuit breaker is open.
    */
-  public OUT attemptTask(CircuitBreakerTask<IN,OUT> task, IN input) throws CircuitBreakerOpenException, CircuitBreakerException {
+  public OUT attemptTask(CircuitBreakerTask<IN, OUT> task, IN input) throws CircuitBreakerOpenException, CircuitBreakerException {
     State state = getState();
     try {
         state.preInvoke(this);
@@ -168,10 +166,10 @@ public class CircuitBreaker<IN,OUT> {
         state.onSucces(this);
         return out;
         
-    } catch(CircuitBreakerOpenException t) { // Not catching Errors
+    } catch (CircuitBreakerOpenException t) { // Not catching Errors
       state.onError(this, t);
       throw t;   
-    } catch(Exception t) { // Not catching Errors
+    } catch (Exception t) { // Not catching Errors
       state.onError(this, t);
       throw new CircuitBreakerException(t);
     }
@@ -181,16 +179,16 @@ public class CircuitBreaker<IN,OUT> {
    * public void attemptTask(CircuitBreakerTask<Object,Object> task, Object input)
    * Just no input object
    */
-  public void attemptTask(CircuitBreakerTask<IN,OUT> task) throws CircuitBreakerOpenException, CircuitBreakerException {
+  public void attemptTask(CircuitBreakerTask<IN, OUT> task) throws CircuitBreakerOpenException, CircuitBreakerException {
     State state = getState();
     try {
         state.preInvoke(this);
         task.invoke(null); //This input is not used  
         state.onSucces(this);
-    } catch(CircuitBreakerOpenException t) { // Not catching Errors
+    } catch (CircuitBreakerOpenException t) { // Not catching Errors
       state.onError(this, t);
       throw t;   
-    } catch(Exception t) { // Not catching Errors
+    } catch (Exception t) { // Not catching Errors
       state.onError(this, t);
       throw new CircuitBreakerException(t);
     }
@@ -217,10 +215,10 @@ public class CircuitBreaker<IN,OUT> {
     return status;
   }
   
-  public static void logAllCircuitBreakerStatus(){
+  public static void logAllCircuitBreakerStatus() {
       log.info("--------- Circuitbreakers info start----------------");
-      for (String name : circuitBreakerMap.keySet()){                 
-             log.info( circuitBreakerMap.get(name).toString());
+      for (String name : circuitBreakerMap.keySet()) {
+             log.info(circuitBreakerMap.get(name).toString());
      //  System.out.println(circuitBreakerMap.get(name).getStatus().toString());  
       }
       log.info("--------- Circuitbreakers end start----------------");            
@@ -243,24 +241,24 @@ public class CircuitBreaker<IN,OUT> {
    * Method used by unit tests to determing the circuit breakers state
    * @return
    */
-  protected synchronized boolean isClosedState(){
-    return state==STATE_CLOSED;     
+  protected synchronized boolean isClosedState() {
+    return state == STATE_CLOSED;
   }
 
   /**
    * Method used by unit tests to determing the circuit breakers state
    * @return
    */
-  protected synchronized boolean isOpenState(){
-    return state==STATE_OPEN;     
+  protected synchronized boolean isOpenState() {
+    return state == STATE_OPEN;
   }
 
   /**
    * Method used by unit tests to determing the circuit breakers state
    * @return
    */
-  protected synchronized boolean isHalfOpenState(){
-    return state==STATE_HALFOPEN;     
+  protected synchronized boolean isHalfOpenState() {
+    return state == STATE_HALFOPEN;
   }
 
   /**
@@ -277,7 +275,7 @@ public class CircuitBreaker<IN,OUT> {
   private synchronized void setStateClosed() {
     resetStatsSucceeded();
     resetStatsFailed();
-    log.warn("Changing state on "+name+" to Closed/Sluttet - "+currentRejected+" rejected attempts during open state");
+    log.warn("Changing state on " + name + " to Closed/Sluttet - " + currentRejected + " rejected attempts during open state");
     state = STATE_CLOSED;
     lastChangeToClosed = System.currentTimeMillis();
   }
@@ -287,11 +285,11 @@ public class CircuitBreaker<IN,OUT> {
    * Will also reset the counter of calls made during the open state if the state is changed from closed.
    */
   private synchronized void setStateOpen() {
-    if ( state == STATE_CLOSED ) {
+    if (state == STATE_CLOSED) {
       resetStatsRejected();
-      log.warn("Changing state on "+name+" to Open/Brudt - "+getConcurrent()+" concurrent and "+getFailures()+" failures");
+      log.warn("Changing state on " + name + " to Open/Brudt - " + getConcurrent() + " concurrent and " + getFailures() + " failures");
     } else {
-      log.warn("Extending state Open/Brudt for "+name+" - "+getConcurrent()+" concurrent and "+getFailures()+" failures");
+      log.warn("Extending state Open/Brudt for " + name + " - " + getConcurrent() + " concurrent and " + getFailures() + " failures");
     }
     state = STATE_OPEN;
     lastChangeToOpen = System.currentTimeMillis();
@@ -301,7 +299,7 @@ public class CircuitBreaker<IN,OUT> {
    * Will change the current state to half-open, make a log statement and note the current time.
    */
   private synchronized void setStateHalfOpen() {
-    log.warn("Changing state on "+name+" to HalfOpen");
+    log.warn("Changing state on " + name + " to HalfOpen");
     state = STATE_HALFOPEN;
     lastChangeToHalfOpen = System.currentTimeMillis();
   }
@@ -431,7 +429,7 @@ public class CircuitBreaker<IN,OUT> {
      */
     public void preInvoke(CircuitBreaker cb) {
       cb.incConcurrent();
-      if ( !(cb.getConcurrent() <= cb.maxConcurrent && cb.getFailures() <= cb.maxFailures) ) {
+      if (!(cb.getConcurrent() <= cb.maxConcurrent && cb.getFailures() <= cb.maxFailures)) {
         cb.setStateOpen();
         throw new CircuitBreakerOpenException();
       }
@@ -453,7 +451,7 @@ public class CircuitBreaker<IN,OUT> {
       cb.incStatsFailed();
       cb.decConcurrent();
       cb.incFailures();
-      if (cb.getFailures ()> cb.maxFailures){ //Limit exceeded
+      if (cb.getFailures() > cb.maxFailures) { //Limit exceeded
         cb.setStateOpen();
       }
     
@@ -483,8 +481,8 @@ public class CircuitBreaker<IN,OUT> {
      */
     public void preInvoke(CircuitBreaker cb) {  
         cb.incConcurrent();
-      if ( System.currentTimeMillis() - cb.lastChangeToOpen >= cb.timeCooldown ) { // Vi har ventet længe nok
-        if ( cb.concurrent <= cb.maxConcurrent ) { // Ikke for mange samtidige kald
+      if (System.currentTimeMillis() - cb.lastChangeToOpen >= cb.timeCooldown) { // Vi har ventet laenge nok
+        if (cb.concurrent <= cb.maxConcurrent) { // Ikke for mange samtidige kald
           // Allow future calls to pass thru.   
             cb.setStateHalfOpen();
           // This call will also be allowed, since we do not throw an exception
@@ -519,7 +517,7 @@ public class CircuitBreaker<IN,OUT> {
     public void onError(CircuitBreaker cb, Throwable t) {
       cb.decConcurrent();
       cb.incFailures();
-      if (!cb.isOpenState()){
+      if (!cb.isOpenState()) {
         cb.setStateOpen();
       }
     }
@@ -549,8 +547,8 @@ public class CircuitBreaker<IN,OUT> {
      */
     public void preInvoke(CircuitBreaker cb) { 
         cb.incConcurrent();
-      if ( !(cb.getConcurrent() <= cb.maxConcurrent && cb.getFailures() <= cb.maxFailures) ) {          
-          cb.setStateOpen();
+      if (!(cb.getConcurrent() <= cb.maxConcurrent && cb.getFailures() <= cb.maxFailures)) {
+        cb.setStateOpen();
         throw new CircuitBreakerOpenException();
       }
     }

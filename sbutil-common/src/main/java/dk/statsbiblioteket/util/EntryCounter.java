@@ -24,7 +24,9 @@ package dk.statsbiblioteket.util;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Keeps track of named counters with auto-creation of new counters.

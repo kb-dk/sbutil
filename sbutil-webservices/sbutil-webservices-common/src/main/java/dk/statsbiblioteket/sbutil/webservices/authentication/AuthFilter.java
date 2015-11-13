@@ -61,22 +61,22 @@ public class AuthFilter implements Filter {
                     || httpServletRequest.getQueryString().matches("^xsd=\\d+$"))) {
                 //if the url was GET $WARFILENAME/$BINDING/?wsdl
                 //do not request credentials
-            } else{
+            } else {
 
                 try {
                     Credentials creds = ExtractCredentials.extract(httpServletRequest);
-                    request.setAttribute("Credentials",creds);
+                    request.setAttribute("Credentials", creds);
                 } catch (CredentialsException e) {        //else send request for authenticate
                     if (response instanceof HttpServletResponse) {
                         HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-                        httpServletResponse.addHeader("WWW-Authenticate","BASIC "+realm);
+                        httpServletResponse.addHeader("WWW-Authenticate", "BASIC " + realm);
                         httpServletResponse.sendError(401);
                         return;
                     }
                 }
             }
         }
-        chain.doFilter(request,response);
+        chain.doFilter(request, response);
     }
 
     public void destroy() {

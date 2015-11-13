@@ -24,7 +24,7 @@ public class ExternalConfigLoaderContextListener implements ServletContextListen
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        String configdir = getClass().getCanonicalName()+".configDir";
+        String configdir = getClass().getCanonicalName() + ".configDir";
         String configLocation = sce.getServletContext().getInitParameter(configdir);
         if (configLocation == null) {
             configLocation = System.getenv(configdir);

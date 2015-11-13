@@ -24,7 +24,12 @@ package dk.statsbiblioteket.util;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.ByteBuffer;
 

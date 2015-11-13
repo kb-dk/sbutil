@@ -8,8 +8,21 @@ package dk.statsbiblioteket.util.console;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 
 
@@ -50,7 +63,7 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
 
     private final int MAXINITIALBUFFER = 1000000;
     private final int THREADTIMEOUT = 1000; // Milliseconds
-    private final int POLLING_INTERVAL = 100;//milli
+    private final int POLLING_INTERVAL = 100; //milli
 
     private final ProcessBuilder pb;
 

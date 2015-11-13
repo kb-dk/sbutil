@@ -54,7 +54,7 @@ public class FilesTest extends TestCase {
         File rootProject = resources.getParentFile().getParentFile().getParentFile();
 
         inputDir = myFolder.getAbsolutePath() + File.separator + "target";
-        inputFile = rootProject.getAbsolutePath()+ File.separator + "README";
+        inputFile = rootProject.getAbsolutePath() + File.separator + "README";
         tmpDir = new File(System.getProperty("java.io.tmpdir"), "filestest");
         outputFile = tmpDir + File.separator + "test";
 

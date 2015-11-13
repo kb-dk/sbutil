@@ -24,7 +24,13 @@ package dk.statsbiblioteket.util.caching;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This is a time sensitive cache. It can store elements for a specified time,
@@ -336,9 +342,9 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
 
         @Override
         public C put(K key, C value) {
-            if (super.containsKey(key)){
+            if (super.containsKey(key)) {
                 C oldvalue = super.remove(key);
-                super.put(key,value);
+                super.put(key, value);
                 return oldvalue;
             } else {
                 return super.put(key, value);
@@ -357,7 +363,7 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
             if (fixedSize && super.size() > capacity) {
                 return true;
             }
-            if (isTooOld(eldest.getValue().getCacheTime(),timeToLive)){
+            if (isTooOld(eldest.getValue().getCacheTime(), timeToLive)) {
                 return true;
             }
             cleanup();

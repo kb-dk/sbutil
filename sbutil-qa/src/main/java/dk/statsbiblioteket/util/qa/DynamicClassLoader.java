@@ -22,7 +22,11 @@
  */
 package dk.statsbiblioteket.util.qa;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Package private class to help load class files on the fly.

@@ -28,12 +28,24 @@ import junit.framework.TestSuite;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.io.StringWriter;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class LineReaderTest extends TestCase {
@@ -48,7 +60,7 @@ public class LineReaderTest extends TestCase {
     public LineReaderTest(String name) throws URISyntaxException {
         super(name);
         logfile = new File(Thread.currentThread().getContextClassLoader().getResource("data/website-performance-info.log.2007-04-01").toURI());
-        tempFolder= logfile.getParentFile();
+        tempFolder = logfile.getParentFile();
     }
 
     @Override
@@ -426,7 +438,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWrite() throws Exception {
-        File temp = new File(tempFolder,"temp.tmp");
+        File temp = new File(tempFolder, "temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -650,7 +662,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWrite2Bytes() throws Exception {
-        File temp = new File(tempFolder,"temp.tmp");
+        File temp = new File(tempFolder, "temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -671,7 +683,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteCloseReadWrite() throws Exception {
-        File temp = new File(tempFolder,"temp.tmp");
+        File temp = new File(tempFolder, "temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -703,7 +715,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteCloseNewWrite() throws Exception {
-        File temp = new File(tempFolder,"temp.tmp");
+        File temp = new File(tempFolder, "temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -728,7 +740,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteSeekWrite() throws Exception {
-        File temp = new File(tempFolder,"temp.tmp");
+        File temp = new File(tempFolder, "temp.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");

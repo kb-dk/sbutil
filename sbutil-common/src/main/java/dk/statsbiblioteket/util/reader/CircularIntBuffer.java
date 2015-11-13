@@ -568,7 +568,7 @@ public class CircularIntBuffer implements Iterable<Integer> {
         // Wrap-around case
         int copied = array.length - first;
         System.arraycopy(array, first, dest, offset, copied);
-        System.arraycopy(array, 0, dest, offset + copied, realLength-copied);
+        System.arraycopy(array, 0, dest, offset + copied, realLength - copied);
         return realLength;
     }
 }

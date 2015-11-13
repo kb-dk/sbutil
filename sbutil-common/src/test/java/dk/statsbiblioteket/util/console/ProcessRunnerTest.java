@@ -28,11 +28,14 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -111,7 +114,7 @@ public class ProcessRunnerTest extends TestCase {
         assertEquals("The execution of 'false' should return 0",
                      0, runner.getReturnCode());
         assertEquals("The length of the output should be as expected",
-                     MAX_OUT-1, runner.getProcessOutputAsString().length());
+                     MAX_OUT - 1, runner.getProcessOutputAsString().length());
     }
 
     public void testProblemsNotError() throws Exception {
@@ -163,8 +166,8 @@ public class ProcessRunnerTest extends TestCase {
 
         Thread.setDefaultUncaughtExceptionHandler(new DebugExceptionHandler());
 
-        for (int r = 0 ; r < RUNS ; r++) {
-            for (int i = 0 ; i < JOBS ; i++) {
+        for (int r = 0; r < RUNS; r++) {
+            for (int i = 0; i < JOBS; i++) {
                 ProcessRunner runner = new ProcessRunner(Arrays.asList("bash", "-c", COMMAND));
                 try {
                     controller.submit(runner);
@@ -174,7 +177,7 @@ public class ProcessRunnerTest extends TestCase {
                 }
             }
 
-            for (int t = 0 ; t < JOBS ; t++) {
+            for (int t = 0; t < JOBS; t++) {
                 String result = controller.take().get().getProcessOutputAsString();
                 assertEquals("The output from run " + r + ", take " + t + " should be as expected", EXPECTED, result);
             }

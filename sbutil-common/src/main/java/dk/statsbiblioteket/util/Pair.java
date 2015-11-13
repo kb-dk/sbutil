@@ -7,10 +7,10 @@ package dk.statsbiblioteket.util;
  * This implementation is immutable, ie, there are no setter methods. Equals and hashcode have
  * been overridden to delegate the work the the contained elements.
  */
-public class Pair<L,R> {
+public class Pair<L, R> {
 
-    final private L left;
-    final private R right;
+    private final L left;
+    private final R right;
 
     public Pair(L left, R right) {
         this.left = left;

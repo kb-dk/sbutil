@@ -16,10 +16,9 @@ package dk.statsbiblioteket.util;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 import junit.framework.TestCase;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +42,7 @@ public class JobControllerTest extends TestCase {
                 counter.incrementAndGet();
             }
         };
-        for (int i = 0 ; i < JOBS ; i++) {
+        for (int i = 0; i < JOBS; i++) {
             synchronized (Thread.currentThread()) {
                 Thread.currentThread().wait(10);
             }
@@ -71,7 +70,7 @@ public class JobControllerTest extends TestCase {
                 counter.incrementAndGet();
             }
         };
-        for (int i = 0 ; i < JOBS ; i++) {
+        for (int i = 0; i < JOBS; i++) {
             synchronized (Thread.currentThread()) {
                 Thread.currentThread().wait(10);
             }
@@ -104,7 +103,7 @@ public class JobControllerTest extends TestCase {
                 counter.incrementAndGet();
             }
         };
-        for (int i = 0 ; i < JOBS ; i++) {
+        for (int i = 0; i < JOBS; i++) {
             synchronized (Thread.currentThread()) {
                 Thread.currentThread().wait(10);
             }
@@ -128,7 +127,7 @@ public class JobControllerTest extends TestCase {
                 counter.incrementAndGet();
             }
         };
-        for (int i = 0 ; i < JOBS ; i++) {
+        for (int i = 0; i < JOBS; i++) {
             controller.submit(new Shout(10));
         }
         synchronized (Thread.currentThread()) {
@@ -147,14 +146,14 @@ public class JobControllerTest extends TestCase {
                 counter.incrementAndGet();
             }
         };
-        for (int i = 0 ; i < JOBS ; i++) {
-            controller.submit(new Shout(JOBS/4));
+        for (int i = 0; i < JOBS; i++) {
+            controller.submit(new Shout(JOBS / 4));
             synchronized (Thread.currentThread()) {
-                Thread.currentThread().wait(JOBS/10);
+                Thread.currentThread().wait(JOBS / 10);
             }
         }
         synchronized (Thread.currentThread()) {
-            Thread.currentThread().wait(JOBS/4+1);
+            Thread.currentThread().wait(JOBS / 4 + 1);
         }
         assertEquals("The auto removed count should be all the jobs", JOBS, counter.get());
         assertEquals("The JobController should be empty", 0, controller.getTaskCount());
@@ -169,17 +168,17 @@ public class JobControllerTest extends TestCase {
                 counter.incrementAndGet();
             }
         };
-        for (int i = 0 ; i < JOBS ; i++) {
-            controller.submit(new Shout(JOBS/4));
+        for (int i = 0; i < JOBS; i++) {
+            controller.submit(new Shout(JOBS / 4));
             synchronized (Thread.currentThread()) {
-                Thread.currentThread().wait(JOBS/10);
+                Thread.currentThread().wait(JOBS / 10);
             }
         }
         int popped = controller.popAll().size();
         assertEquals("The auto removed count should be all the jobs", JOBS, counter.get());
         assertEquals("The JobController should be empty", 0, controller.getTaskCount());
         assertTrue("The number of explicit popped jobs should be > 0 and < " + JOBS + " but was " + popped,
-                   popped >0 && popped < JOBS);
+                   popped > 0 && popped < JOBS);
     }
 
     private class Shout implements Callable<Long> {

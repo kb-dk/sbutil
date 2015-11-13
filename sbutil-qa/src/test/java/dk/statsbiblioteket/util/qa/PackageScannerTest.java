@@ -42,7 +42,7 @@ public class PackageScannerTest extends TestCase {
     Report report;
 
     public PackageScannerTest() throws URISyntaxException {
-        CLASS_DIR = new File(new File(Thread.currentThread().getContextClassLoader().getResource("placeholder").toURI()).getParentFile().getParentFile().getAbsolutePath(),"classes").getAbsolutePath();
+        CLASS_DIR = new File(new File(Thread.currentThread().getContextClassLoader().getResource("placeholder").toURI()).getParentFile().getParentFile().getAbsolutePath(), "classes").getAbsolutePath();
     }
 
     public void setUp() throws Exception {

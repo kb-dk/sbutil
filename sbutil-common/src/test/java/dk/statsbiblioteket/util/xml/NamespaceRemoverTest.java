@@ -26,7 +26,11 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringReader;
 
 @SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class NamespaceRemoverTest extends TestCase {

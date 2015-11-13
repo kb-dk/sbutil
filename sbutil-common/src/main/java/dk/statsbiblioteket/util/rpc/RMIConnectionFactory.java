@@ -51,8 +51,8 @@ public class RMIConnectionFactory<E extends Remote> extends ConnectionFactory<E>
             } catch (RemoteException e) {
                 lastError = e;
             }
-            log.warn("Attempt #" + (attempt+1) + " of connection creation to endpoint '" + connectionId + "' failed",
-                     lastError);
+            log.warn("Attempt #" + (attempt + 1) + " of connection creation to endpoint '" + connectionId + "' failed",
+                    lastError);
             if (attempt == getNumRetries(initial)) {
                 break; // No need to sleep when we're not trying anymore
             }

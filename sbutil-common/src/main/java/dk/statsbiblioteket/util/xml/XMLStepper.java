@@ -18,11 +18,19 @@ import dk.statsbiblioteket.util.MutablePair;
 import dk.statsbiblioteket.util.Strings;
 import dk.statsbiblioteket.util.reader.CharSequenceReader;
 
-import javax.xml.XMLConstants;
-import javax.xml.stream.*;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,7 +72,7 @@ public class XMLStepper {
                     callback.end();
                     return;
                 }
-                if (!currentTag.equals(tagStack.get(tagStack.size()-1))) {
+                if (!currentTag.equals(tagStack.get(tagStack.size() - 1))) {
                     boolean fail = true;
                     if (lenient) {
                         fail = !reduceStack(tagStack, currentTag);
@@ -99,11 +107,11 @@ public class XMLStepper {
      * @return true if it was possible to reduce the stack.
      */
     private static boolean reduceStack(List<String> stack, String tag) {
-        for (int i = 0 ; i < stack.size() ; i++) {
+        for (int i = 0; i < stack.size(); i++) {
             if (stack.get(i).equals(tag)) {
                 // Found a match, so we know we can reduce
-                while (!tag.equals(stack.get(stack.size()-1))) {
-                   stack.remove(stack.size()-1);
+                while (!tag.equals(stack.get(stack.size() - 1))) {
+                    stack.remove(stack.size() - 1);
                 }
                 return true;
             }
@@ -306,10 +314,10 @@ public class XMLStepper {
                                 out.writeStartElement(in.getPrefix(), in.getLocalName(), in.getNamespaceURI());
                             }
                         }
-                        for (int i = 0 ; i < in.getNamespaceCount() ; i++) {
+                        for (int i = 0; i < in.getNamespaceCount(); i++) {
                             out.writeNamespace(in.getNamespacePrefix(i), in.getNamespaceURI(i));
                         }
-                        for (int i = 0 ; i < in.getAttributeCount() ; i++) {
+                        for (int i = 0; i < in.getAttributeCount(); i++) {
                             if (in.getAttributeNamespace(i) == null || in.getAttributeNamespace(i).isEmpty()) {
                                 out.writeAttribute(in.getAttributeLocalName(i), in.getAttributeValue(i));
                             } else {
@@ -329,7 +337,7 @@ public class XMLStepper {
                                     + "END_ELEMENT. Current eventType is %s",
                                     Strings.join(elementStack, ", "), XMLUtil.eventID2String(in.getEventType())));
                         }
-                        elementStack.remove(elementStack.size()-1);
+                        elementStack.remove(elementStack.size() - 1);
                     }
                     break;
                 }
@@ -342,12 +350,12 @@ public class XMLStepper {
                         return true;
                     }
                     String element = in.getLocalName();
-                    if (!element.equals(elementStack.get(elementStack.size()-1))) {
+                    if (!element.equals(elementStack.get(elementStack.size() - 1))) {
                         throw new IllegalStateException(String.format(
                                 "Encountered end tag '%s' where '%s' from the stack %s were expected",
-                                element, elementStack.get(elementStack.size()-1), Strings.join(elementStack, ", ")));
+                                element, elementStack.get(elementStack.size() - 1), Strings.join(elementStack, ", ")));
                     }
-                    String popped = elementStack.remove(elementStack.size()-1);
+                    String popped = elementStack.remove(elementStack.size() - 1);
                     if (callback != null && !(elementStack.isEmpty() && onlyInner)) {
                         callback.elementEnd(popped);
                     }
@@ -442,7 +450,7 @@ public class XMLStepper {
      * @return the attribute content og the default value.
      */
     public static String getAttribute(XMLStreamReader xml, String attributeName, String defaultValue) {
-        for (int i = 0 ; i < xml.getAttributeCount() ; i++) {
+        for (int i = 0; i < xml.getAttributeCount(); i++) {
             if (xml.getAttributeLocalName(i).equals(attributeName)) {
                 return xml.getAttributeValue(i);
             }
@@ -573,10 +581,10 @@ public class XMLStepper {
     }
 
     public static class Limiter {
-        final private Map<Pattern, Integer> limits;
-        final private boolean countPatterns;
-        final private boolean onlyCheckElementPaths;
-        final private boolean discardNonMatched;
+        private final Map<Pattern, Integer> limits;
+        private final boolean countPatterns;
+        private final boolean onlyCheckElementPaths;
+        private final boolean discardNonMatched;
 
         public Limiter(Map<Pattern, Integer> limits, boolean countPatterns, boolean onlyCheckElementPaths,
                        boolean discardNonMatched) {
@@ -711,7 +719,7 @@ public class XMLStepper {
                         return result;
                     }
                     if (!onlyCheckElementPaths) {
-                        for (int i = 0 ; i < xml.getAttributeCount() ; i++) {
+                        for (int i = 0; i < xml.getAttributeCount(); i++) {
                             final String merged =
                                     element + "#" + xml.getAttributeLocalName(i) + "=" + xml.getAttributeValue(i);
                             exceeded(result, counters, pattern, max, merged, countPatterns);
@@ -742,7 +750,9 @@ public class XMLStepper {
 
         });
     }
-    enum RESULT {match, exceeded}
+    enum RESULT {
+        match, exceeded
+    }
 
     public abstract static class Callback {
         /**

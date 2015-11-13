@@ -91,8 +91,6 @@ public class ReportElement {
         ERROR
     }
 
-    ;
-
     /**
      * Create a new ReportElement.
      *

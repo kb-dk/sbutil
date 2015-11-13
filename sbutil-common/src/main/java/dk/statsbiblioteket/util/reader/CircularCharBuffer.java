@@ -430,7 +430,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     }
 
     public boolean add(CharSequence chars) {
-        for (int i = 0 ; i < chars.length() ; i++) {
+        for (int i = 0; i < chars.length(); i++) {
             put(chars.charAt(i));
         }
         return chars.length() > 0;
@@ -698,7 +698,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
         // Wrap-around case
         int copied = array.length - first;
         System.arraycopy(array, first, dest, offset, copied);
-        System.arraycopy(array, 0, dest, offset + copied, realLength-copied);
+        System.arraycopy(array, 0, dest, offset + copied, realLength - copied);
         return realLength;
     }
 }

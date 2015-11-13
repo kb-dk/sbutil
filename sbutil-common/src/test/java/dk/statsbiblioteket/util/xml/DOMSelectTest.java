@@ -11,7 +11,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
-import static dk.statsbiblioteket.util.xml.DOM.*;
+import static dk.statsbiblioteket.util.xml.DOM.clearXPathCache;
+import static dk.statsbiblioteket.util.xml.DOM.selectBoolean;
+import static dk.statsbiblioteket.util.xml.DOM.selectDouble;
+import static dk.statsbiblioteket.util.xml.DOM.selectInteger;
+import static dk.statsbiblioteket.util.xml.DOM.selectNode;
+import static dk.statsbiblioteket.util.xml.DOM.selectNodeList;
+import static dk.statsbiblioteket.util.xml.DOM.selectString;
+import static dk.statsbiblioteket.util.xml.DOM.stringToDOM;
 
 /**
  * Test cases for the {@code DOM.select*} methods

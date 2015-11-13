@@ -14,16 +14,21 @@
  */
 package dk.statsbiblioteket.util.xml;
 
-import dk.statsbiblioteket.util.Files;
 import dk.statsbiblioteket.util.Profiler;
 import dk.statsbiblioteket.util.Strings;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.xml.sax.XMLReader;
 
-import javax.xml.stream.*;
-import java.io.*;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.XMLStreamWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,7 +142,7 @@ public class XMLStepperTest extends TestCase {
         });
     }
 
-    private final static String LIMIT_BARS =
+    private static final String LIMIT_BARS =
             "<foo><bar zoo=\"true\"></bar><bar zoo=\"true\"></bar><bar zoo=\"false\"></bar><baz></baz></foo>";
 
     public void testLimitXMLSimple() throws XMLStreamException {
@@ -187,7 +192,7 @@ public class XMLStepperTest extends TestCase {
         Profiler profiler = new Profiler(RUNS);
 
         String reduced = "";
-        for (int run = 0 ; run < RUNS ; run++) {
+        for (int run = 0; run < RUNS; run++) {
             reduced = XMLStepper.limitXML(SAMPLE, limits, false, false, false);
             profiler.beat();
         }
@@ -224,7 +229,7 @@ public class XMLStepperTest extends TestCase {
         XMLStepper.Limiter limiter = XMLStepper.createLimiter(limits, true, false, false);
 
         String reduced = "";
-        for (int run = 0 ; run < RUNS ; run++) {
+        for (int run = 0; run < RUNS; run++) {
             reduced = limiter.limit(SAMPLE);
             profiler.beat();
         }
@@ -236,7 +241,7 @@ public class XMLStepperTest extends TestCase {
     }
 
     private String getSample(int repeats) {
-        StringBuilder sb = new StringBuilder(10*1024*1024);
+        StringBuilder sb = new StringBuilder(10 * 1024 * 1024);
         sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                   "<record xmlns=\"http://www.loc.gov/MARC21/slim\" " +
                   "  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " +
@@ -251,7 +256,7 @@ public class XMLStepperTest extends TestCase {
                   "    <subfield code=\"a\">4106186</subfield>\n" +
                   "    <subfield code=\"f\">a</subfield>\n" +
                   "  </datafield>\n");
-        for (int i = 0 ; i < repeats ; i++) {
+        for (int i = 0; i < repeats; i++) {
             sb.append("<datafield tag=\"Z30\" ind1=\"-\" ind2=\"2\">\n" +
                       "    <subfield code=\"l\">SOL02</subfield>\n" +
                       "    <subfield code=\"8\">20100327</subfield>\n" +
@@ -297,7 +302,7 @@ public class XMLStepperTest extends TestCase {
             expected = expected.replaceAll("<([^> ]+)([^>]*) />", "<$1$2></$1>");
         }
         Map<Pattern, Integer> lims = new HashMap<Pattern, Integer>();
-        for (int i = 0 ; i < limits.length ; i+=2) {
+        for (int i = 0; i < limits.length; i += 2) {
             lims.put(Pattern.compile((String) limits[i]), (Integer) limits[i + 1]);
         }
         XMLStreamReader in = xmlFactory.createXMLStreamReader(new StringReader(input));
@@ -316,7 +321,7 @@ public class XMLStepperTest extends TestCase {
             expected = expected.replaceAll("<([^> ]+)([^>]*) />", "<$1$2></$1>");
         }
         Map<Pattern, Integer> lims = new HashMap<Pattern, Integer>();
-        for (int i = 0 ; i < limits.length ; i+=2) {
+        for (int i = 0; i < limits.length; i += 2) {
             lims.put(Pattern.compile((String) limits[i]), (Integer) limits[i + 1]);
         }
 
@@ -331,7 +336,7 @@ public class XMLStepperTest extends TestCase {
             expected = expected.replaceAll("<([^> ]+)([^>]*) />", "<$1$2></$1>");
         }
         Map<Pattern, Integer> lims = new HashMap<Pattern, Integer>();
-        for (int i = 0 ; i < limits.length ; i+=2) {
+        for (int i = 0; i < limits.length; i += 2) {
             lims.put(Pattern.compile((String) limits[i]), (Integer) limits[i + 1]);
         }
 

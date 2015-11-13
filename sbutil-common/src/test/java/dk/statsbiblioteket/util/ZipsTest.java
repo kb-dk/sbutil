@@ -52,7 +52,7 @@ public class ZipsTest {
     @Before
     public void setUp() throws URISyntaxException {
         File resources = new File(Thread.currentThread().getContextClassLoader().getResource("placeholder").toURI()).getParentFile();
-        dataDir = new File(resources,"data/xml").getAbsolutePath();
+        dataDir = new File(resources, "data/xml").getAbsolutePath();
         File myFolder = resources.getParentFile().getParentFile();
         File rootProject = resources.getParentFile().getParentFile().getParentFile();
         inputDir = myFolder.getAbsolutePath() + File.separator + "target";
