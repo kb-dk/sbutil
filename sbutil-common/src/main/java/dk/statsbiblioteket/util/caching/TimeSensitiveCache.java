@@ -299,6 +299,7 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
         }
 
         /**
+        /**
          * Does the map contain an element with this key?
          * Performs a cleanup first
          * If accessOrder is true, refreshed the timestamp
