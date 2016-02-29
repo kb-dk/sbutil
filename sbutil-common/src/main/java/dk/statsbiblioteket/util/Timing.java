@@ -34,6 +34,7 @@ import java.util.Map;
 public class Timing {
     private static final Log log = LogFactory.getLog(Timing.class);
     private final String name;
+    private final String subject;
 
     private long lastStart = System.nanoTime();
     private long spendNS;
@@ -41,21 +42,35 @@ public class Timing {
     private long updateCount = 0;
 
     public Timing(String name) {
+        this(name, null);
+    }
+
+    public Timing(String name, String subject) {
         this.name = name;
+        this.subject = subject;
     }
 
     public Timing(String name, long spendNS) {
-        this.name = name;
+        this(name);
+        this.spendNS = spendNS;
+    }
+
+    public Timing(String name, String subject, long spendNS) {
+        this(name, subject);
         this.spendNS = spendNS;
     }
 
     public Timing getChild(String name) {
+        return getChild(name, null);
+    }
+
+    public Timing getChild(String name, String subject) {
         if (children == null) {
             children = new LinkedHashMap<String, Timing>();
         }
         Timing child = children.get(name);
         if (child == null) {
-            child = new Timing(name);
+            child = new Timing(name, subject);
             children.put(name, child);
         }
         return child;
@@ -160,7 +175,11 @@ public class Timing {
     }
 
     public void toString(StringBuilder sb, boolean ns) {
-        sb.append(name).append("(").append(ns ? getNS()+"ns" : getMS()+"ms");
+        sb.append(name).append("(");
+        if (subject != null) {
+            sb.append("subj='").append(subject).append("', ");
+        }
+        sb.append(ns ? getNS()+"ns" : getMS()+"ms");
         if (updateCount > 1) {
             sb.append(", ").append(updateCount).append("upd, ");
             sb.append(ns ? getAverageNS()+"ns/upd" : getAverageMS()+"ms/upd");

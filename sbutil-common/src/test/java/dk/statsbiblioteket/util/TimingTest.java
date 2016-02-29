@@ -55,7 +55,7 @@ public class TimingTest extends TestCase {
         Timing subA = timing.getChild("sub_a");
         assertEquals("Adding 30 ms should return 30 ms", 30, subA.addMS(30));
         assertEquals("Adding 10 ms extra should return 40 ms", 40, subA.addMS(10));
-        timing.getChild("sub_b");
+        timing.getChild("sub_b", "#87");
         timing.getChild("sub_c").addNS(3*1000000);
 
         Thread.sleep(10);
