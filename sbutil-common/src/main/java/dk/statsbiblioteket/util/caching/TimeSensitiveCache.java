@@ -376,10 +376,12 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
                 return;
             }
             lastClean = System.currentTimeMillis();
-            if (super.isEmpty()) {
+
+            // With very low timeout this check could lead to infinite recursion
+/*            if (super.isEmpty()) {
                 return;
             }
-
+  */
 
             Iterator<C> iterator = values().iterator();
 
