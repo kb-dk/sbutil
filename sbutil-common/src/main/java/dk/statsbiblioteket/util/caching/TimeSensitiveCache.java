@@ -47,10 +47,9 @@ import java.util.*;
 @QAInfo(state = QAInfo.State.QA_OK,
         level = QAInfo.Level.NORMAL,
         author = "abr, te")
-public class TimeSensitiveCache<K, V> implements Map<K, V> {
+public class TimeSensitiveCache<K, V> implements Map<K, V>, Janitor.Job {
 
-    private BackingCache<K, Cachable<V>> elements;
-
+    private final BackingCache<EntryImpl> elements;
 
     /**
      * Construct a new TimeSensitiveCache.
@@ -62,10 +61,8 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
      *                    above this limit, the oldest element in the cache is removed, even if it
      *                    was not to old yet
      */
-    public TimeSensitiveCache(long timeToLive,
-                              boolean accessOrder,
-                              int fixedSize) {
-        elements = new BackingCache<K, Cachable<V>>(timeToLive, timeToLive / 10, fixedSize, accessOrder, true);
+    public TimeSensitiveCache(long timeToLive, boolean accessOrder, int fixedSize) {
+        elements = new BackingCache<EntryImpl>(timeToLive, timeToLive / 10, fixedSize, accessOrder, true);
     }
 
     /**
@@ -75,17 +72,15 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
      * @param accessOrder if true, the elements have their timestamp refreshed
      *                    when "gotten". Otherwise, they will be removed in insertion order
      */
-    public TimeSensitiveCache(long timeToLive,
-                              boolean accessOrder) {
-        elements = new BackingCache<K, Cachable<V>>(timeToLive, timeToLive / 10, 10, accessOrder, false);
+    public TimeSensitiveCache(long timeToLive, boolean accessOrder) {
+        elements = new BackingCache<EntryImpl>(timeToLive, timeToLive / 10, 10, accessOrder, false);
     }
 
 
     /**
-     * Get the element identified by the key. This method performs a cleanup
-     * before
-     * getting the element. If the element was not inserted in the cache, or
-     * cleaned, null will be returned.
+     * Get the element identified by the key. This method performs a cleanup before
+     * getting the element. If the element was not inserted in the cache, or cleaned,
+     * null will be returned.
      * If accessOrder is true, the element will be refreshed
      *
      * @param key the key of the element
@@ -93,9 +88,9 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
      */
     @Override
     public synchronized V get(Object key) {
-        Cachable<V> value = elements.get(key);
+        EntryImpl value = elements.get(key);
         if (value != null) {
-            return value.getObject();
+            return value.getValue();
         } else {
             return null;
         }
@@ -116,22 +111,22 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
 
     @Override
     public Collection<V> values() {
-        Collection<Cachable<V>> cachevalues = elements.values();
+        Collection<? extends EntryImpl> cachevalues = elements.values();
         Collection<V> values = new ArrayList<V>(cachevalues.size());
-        for (Cachable<V> cachevalue : cachevalues) {
-            values.add(cachevalue.getObject());
+        for (EntryImpl cachevalue : cachevalues) {
+            values.add(cachevalue.getValue());
         }
         return values;
     }
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        Set<Entry<K, Cachable<V>>> cacheentries = elements.entrySet();
+        Set<Entry<K, EntryImpl>> cacheentries = elements.entrySet();
         Set<Entry<K, V>> entries = new HashSet<Entry<K, V>>(cacheentries.size());
-        for (final Entry<K, Cachable<V>> cacheentry : cacheentries) {
+        for (final Entry<K, EntryImpl> cacheentry : cacheentries) {
             Entry<K, V> entry = new Entry<K, V>() {
                 private K key = cacheentry.getKey();
-                private V value = cacheentry.getValue().getObject();
+                private V value = cacheentry.getValue().getValue();
 
                 @Override
                 public K getKey() {
@@ -190,7 +185,12 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsValue(Object value) {
-        return values().contains(value);
+        for (Map.Entry<K, EntryImpl> element: elements.entrySet()) {
+            if (element.getValue().getValue().equals(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -204,7 +204,7 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
      */
     @Override
     public synchronized V put(K key, V value) {
-        Cachable<V> cacheable = new Cachable<V>(value);
+        EntryImpl cacheable = new SingleUseValue(key, value);
         elements.put(key, cacheable);
         return value;
     }
@@ -219,7 +219,8 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
     @Override
     public synchronized void putAll(Map<? extends K, ? extends V> m) {
         for (Map.Entry<? extends K, ? extends V> entry : m.entrySet()) {
-            elements.put(entry.getKey(), new Cachable<V>(entry.getValue()));
+            EntryImpl wrappedEntry = new SingleUseValue(entry.getKey(), entry.getValue());
+            elements.put(entry.getKey(), wrappedEntry);
         }
     }
 
@@ -231,9 +232,9 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
      */
     @Override
     public synchronized V remove(Object key) {
-        Cachable<V> value = elements.remove(key);
+        EntryImpl value = elements.remove(key);
         if (value != null) {
-            return value.getObject();
+            return value.getValue();
         } else {
             return null;
         }
@@ -241,12 +242,20 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
 
 
     /**
-     * The cache implementation backing the TimeSensitiveCache
-     *
-     * @param <K> key type
-     * @param <C> cacheable type
+     * Iterate entries, refreshing those that has stale values.
      */
-    private class BackingCache<K, C extends Cachable<V>> extends LinkedHashMap<K, C> {
+    @Override
+    public void batch() {
+        // TODO: Implement refresh of entries
+        throw new UnsupportedOperationException("Not implemented yet, but should be");
+    }
+
+    /* ******************************************************************************************************* */
+
+    /**
+     * The cache implementation backing the TimeSensitiveCache
+     */
+    private class BackingCache<C extends EntryImpl> extends LinkedHashMap<K, C> {
         private int capacity;
         private boolean fixedSize;
         private boolean accessOrder;
@@ -264,11 +273,7 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
          * @param fixedSize       should the size be kept fixed
          */
         public BackingCache(
-                long timeToLive,
-                long timeBetweenGC,
-                int initialCapacity,
-                boolean accessOrder,
-                boolean fixedSize) {
+                long timeToLive, long timeBetweenGC, int initialCapacity, boolean accessOrder, boolean fixedSize) {
             super(initialCapacity, 0.75f, accessOrder);
             this.capacity = initialCapacity;
             this.accessOrder = accessOrder;
@@ -281,18 +286,24 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
 
 
         /**
-         * Gets an object from the cache.
+         * Gets an value from the cache.
          * Performs a cleanup first
          * If accessOrder is true, refreshed the timestamp
          *
-         * @param key the key of the object
-         * @return the object or null
+         * @param key the key of the value
+         * @return the value or null
          */
         @Override
         public C get(Object key) {
             cleanup();
             C value = super.get(key);
-            if (accessOrder && value != null) {
+            if (value == null) {
+                return null;
+            } else if (value.getPersistenceStrategy() == PERSISTENCE.discard
+                       && isTooOld(value.getCacheTime(), timeToLive)) {
+                super.remove(key);
+                value = null;
+            } else if (accessOrder) {
                 value.refreshCacheTime();
             }
             return value;
@@ -304,7 +315,7 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
          * Performs a cleanup first
          * If accessOrder is true, refreshed the timestamp
          *
-         * @param key the key of the object
+         * @param key the key of the value
          * @return true if the cache has this key
          */
         @Override
@@ -339,7 +350,7 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
         public C put(K key, C value) {
             if (super.containsKey(key)){
                 C oldvalue = super.remove(key);
-                super.put(key,value);
+                super.put(key, value);
                 return oldvalue;
             } else {
                 return super.put(key, value);
@@ -356,14 +367,36 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
         @Override
         protected boolean removeEldestEntry(Map.Entry<K, C> eldest) {
             if (fixedSize && super.size() > capacity) {
-                return true;
-            }
-            if (isTooOld(eldest.getValue().getCacheTime(),timeToLive)){
-                return true;
+                // Remove oldest that has a immediate discarding persistence
+                trim();
+                return false; // Remove handled by limitRemove
             }
             cleanup();
             return false;
         }
+
+        /**
+         * Ensures that the capacity constraint is upheld
+         */
+        private void trim() {
+            if (!fixedSize) {
+                return;
+            }
+            int size = super.size();
+            final int initialSize = size;
+            Iterator<C> iterator = values().iterator();
+            while (size > capacity && iterator.hasNext()) {
+                C element = iterator.next();
+                if (element.getPersistenceStrategy() == PERSISTENCE.discard) {
+                    iterator.remove();
+                    size--;
+                } else {
+                    break;
+                }
+            }
+            // TODO: Consider warning or evicting refresh_maybe_keep if no elements could be removed
+        }
+
 
         /**
          * Checks if the cache has been cleaned recently. If not, starts with
@@ -382,13 +415,11 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
                 return;
             }
   */
-
             Iterator<C> iterator = values().iterator();
-
-
             while (iterator.hasNext()) {
                 C element = iterator.next();
-                if (isTooOld(element.getCacheTime(), timeToLive)) {
+                if (element.getPersistenceStrategy() == PERSISTENCE.discard
+                    && isTooOld(element.getCacheTime(), timeToLive)) {
                     iterator.remove();
                 } else {
                     break;
@@ -410,71 +441,122 @@ public class TimeSensitiveCache<K, V> implements Map<K, V> {
     }
 
     /**
-     * SImple little wrapper for elements in the cache, to add timestamp
-     * information.
-     *
-     * @param <T> the type of the element
+     * Entry which is kept in the cache indefinitely. When the timeout is reached, the value is re-inserted as fresh.
      */
-    private class Cachable<T> {
+    private class StaticValue extends EntryImpl {
+        public StaticValue(K key, V value) {
+            super(key, value, PERSISTENCE.keep_unchanged);
+        }
 
+        @Override
+        V refresh(V oldValue) {
+            return oldValue;
+        }
+    }
+
+    /**
+     * Entry which is kept in the cache only until it reaches timeout, after which it is removed.
+     */
+    private class SingleUseValue extends EntryImpl {
+        public SingleUseValue(K key, V value) {
+            super(key, value, PERSISTENCE.discard);
+        }
+
+        @Override
+        V refresh(V oldValue) {
+            return null;
+        }
+    }
+
+    public enum PERSISTENCE {
         /**
-         * The elemnt to store
+         * Always discard the value when timeout is reached.
          */
-        private T object;
-
-
+        discard,
         /**
-         * The cachetime
+         * Don't refresh the value. Keep it unchanged forever.
          */
+        keep_unchanged,
+        /**
+         * Try to refresh. If refresh yields null, keep the old value. Else replace the old value.
+         */
+        refresh_always_keep,
+        /**
+         * Try to refresh. If refresh yields null, remove the value. Else replace the old value.
+         */
+        refresh_maybe_keep
+    }
+
+    /**
+     * Wrapper for elements in the cache, to add timestamp information and optionally .
+     */
+    private abstract class EntryImpl {
+        private final K key;
+        private final PERSISTENCE persistence;
+        private V value;
+        // When the value was last accessed from the outside.
         private long cacheTime;
+        // When the value was last refreshed.
+        private long lastRefresh;
 
         /**
          * New element with the specified cachetime
-         *
-         * @param object
-         * @param cacheTime
          */
-        public Cachable(T object, long cacheTime) {
-            this.object = object;
+        public EntryImpl(K key, V value, long cacheTime, PERSISTENCE persistence) {
+            this.key = key;
+            this.value = value;
             this.cacheTime = cacheTime;
+            this.lastRefresh = cacheTime;
+            this.persistence = persistence;
         }
 
         /**
-         * New element with cachetime set to NOW from the system
-         *
-         * @param object
+         * New element with cachetime set to NOW from the system.
          */
-        public Cachable(T object) {
-            this.object = object;
-            this.cacheTime = System.currentTimeMillis();
+        public EntryImpl(K key, V value, PERSISTENCE persistence) {
+            this(key, value, System.currentTimeMillis(), persistence);
         }
 
-        /**
-         * Get the contained object
-         *
-         * @return
-         */
-        public T getObject() {
-            return object;
+        public K getKey() {
+            return key;
         }
-
-
-        /**
-         * Get the cachetime
-         *
-         * @return
-         */
+        public V getValue() {
+            return value;
+        }
         public long getCacheTime() {
             return cacheTime;
         }
+        public long getLastRefresh() {
+            return lastRefresh;
+        }
+
+        public void setValue(V value) {
+            this.value = value;
+            this.lastRefresh = System.currentTimeMillis();
+        }
 
         /**
-         * Set the cachetime to NOW from system
+         * Set the cache time to NOW from system.
          */
         public void refreshCacheTime() {
             this.cacheTime = System.currentTimeMillis();
         }
-    }
 
+        /**
+         * Refresh the value if possible and return the new value. It is up to implementation to determine if the
+         * old value should be returned if a refresh is impossible or if the value should be removed from the
+         * cache (by returning null).
+         * @param oldValue the previous value.
+         * @return the new value or null.
+         */
+        abstract V refresh(V oldValue);
+
+        /**
+         * @return what to do then a value is potentially stale.
+         */
+        public PERSISTENCE getPersistenceStrategy() {
+            return persistence;
+        }
+    }
 
 }
