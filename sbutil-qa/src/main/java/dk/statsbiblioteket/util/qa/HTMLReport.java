@@ -155,8 +155,7 @@ public class HTMLReport implements Report {
      * files.</p>
      * <p>If {@code baseSrcPath} starts with {@code http://} it will be parsed
      * as an URL an links will be inserted in the report. The links will be on
-     * the form<br/>
-     * <br/>
+     * the form
      * <code>
      * baseSrcPath + "org/my/package/MyClass.java"
      * </code></p>

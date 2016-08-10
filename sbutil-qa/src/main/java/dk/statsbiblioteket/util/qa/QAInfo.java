@@ -122,8 +122,6 @@ public @interface QAInfo {
      * piece of code. In most cases it will be the original author of the
      * document, but if the file receives heavy editing by other parties, they
      * may end up being more appropriate for the listed author.</p>
-     *
-     * @return
      */
     String author() default "";
 
@@ -136,17 +134,13 @@ public @interface QAInfo {
 
     /**
      * Free form string describing the deadline.
-     *
-     * @return
      */
     String deadline() default "";
 
     /**
      * <p>Developers responsible for reviewing this class or method.</p>
-     * <p/>
      * <p>Fx <code>{"mke", "te"}</code>  - use same convention as
      * {@link #author}.</p>
-     * <p/>
      * <p>It is advised to keep a list of all reviewers here, with the last
      * one in the list being the last person to review the code. This way it
      * will be easy to construct a simple audit trail for the code.</p>
@@ -155,22 +149,16 @@ public @interface QAInfo {
 
     /**
      * A freeform comment that can be included in QA reports.
-     *
-     * @return
      */
     String comment() default "";
 
     /**
      * The {@link Level} of the annotated element.
-     *
-     * @return
      */
     Level level() default Level.UNDEFINED;
 
     /**
      * The {@link State} of the annotated element.
-     *
-     * @return
      */
     State state() default State.UNDEFINED;
 }
