@@ -37,7 +37,7 @@ import java.util.NoSuchElementException;
  * </p><p>
  * The buffer is not thread-safe. It is method-compatible with Reader.
  * </p><p>
- * Note: the Queue-calls involved conversion between char and Character and
+ * Note: the Queue-calls involves conversion between char and Character and
  * are thus not the fastest.
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
@@ -79,6 +79,16 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
         if (max != Integer.MAX_VALUE) {
             this.max++; // To make room for the first != next invariant
         }
+    }
+
+    /**
+     * Create a new buffer with an initial capacity equal to the length of the given String s and a max size of
+     * the same length + 1. Then fills the buffer with the characters from the given String.
+     */
+    public CircularCharBuffer(String s) {
+        array = new char[s.length()];
+        max = s.length()+1;
+        add(s);
     }
 
     /**
@@ -268,6 +278,21 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
             b.append(peek(i));
         }
 
+        return b.toString();
+    }
+
+    /**
+     * Constructs a String content of the buffer from offset to offset+length without
+     * affecting the state of the buffer.
+     * @param offset where to start reading.
+     * @param length how many characters to read.
+     * @return a string representation of part of the buffer.
+     */
+    public String subset(int offset, int length) {
+        StringBuilder b = new StringBuilder();
+        for (int i = offset; i < length; i++) {
+            b.append(peek(i));
+        }
         return b.toString();
     }
 
