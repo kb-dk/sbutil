@@ -8,6 +8,8 @@
   */
 package dk.statsbiblioteket.util.reader;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,13 +17,15 @@ import java.util.regex.Pattern;
  * For bulk matching of many static verbatim keys against many String sources.
  * Counts matches and performs a callback for each match.
  */
-public abstract class VerbatimMatcher {
+public abstract class VerbatimMatcher<P> {
     private Node tree = new Node();
 
     /**
      * This will be called for each match.
+     * @param match the matching verbatim.
+     * @param payload optional payload for the matching Node. Might be null.
      */
-    public abstract void callback(String match);
+    public abstract void callback(String match, P payload);
 
     /**
      * Find matches in the given source.
@@ -55,19 +59,41 @@ public abstract class VerbatimMatcher {
         tree.addRule(verbatim);
     }
 
+    public void addRule(String verbatim, P payload) {
+        tree.addRule(verbatim, payload);
+    }
+
     public void addRules(String... verbatims) {
         for (String verbatim: verbatims) {
             tree.addRule(verbatim);
         }
     }
 
+    public Node getNode(String verbatim) {
+        return getNode(verbatim, false);
+    }
+    public Node getNode(String verbatim, boolean autoCreate) {
+        Node node = tree.getNode(verbatim, -1);
+        if (node != null || !autoCreate) {
+            return node;
+        }
+        addRule(verbatim);
+        node = tree.getNode(verbatim);
+        if (node == null) {
+            throw new IllegalStateException(
+                    "Logic error: Just added node for '" + verbatim + "' but could not extract it");
+        }
+        return node;
+    }
+
     /**
      * Single char per node tree.
      */
-    private class Node {
+    public class Node {
         private final char c;
         private boolean endpoint = false;
-        private Node[] children = new Node[0];
+        private List<Node> children = new ArrayList<Node>();
+        private P payload = null;
 
         /**
          * Constructor for the super-Node.
@@ -76,42 +102,55 @@ public abstract class VerbatimMatcher {
             c = 0;
         }
 
-        public Node(String s, final int index) {
+        public Node(String s, final int index, P payload) {
             c = s.charAt(index);
             if (index+1 == s.length()) {
                 endpoint = true;
+                this.payload = payload;
             } else {
-                children = new Node[1];
-                children[0] = new Node(s, index+1);
+                children.add(new Node(s, index+1, payload));
             }
         }
 
         public void addRule(String key) {
-            addChild(key, -1);
+            addRule(key, null);
         }
-
-        private void addChild(String s, final int index) {
+        public void addRule(String key, P payload) {
+            addChild(key, -1, payload);
+        }
+        private void addChild(String s, final int index, P payload) {
             // End reached, mark as end point
             if (index-1 == s.length()) {
                 endpoint = true;
+                this.payload = payload;
                 return;
             }
 
             {   // Check for existing matching children
                 Node child = getChild(s.charAt(index + 1));
                 if (child != null) {
-                    child.addChild(s, index + 1);
+                    child.addChild(s, index + 1, payload);
                     return;
                 }
             }
 
             // Add new child
-            Node[] newChildren = new Node[children.length + 1];
-            System.arraycopy(children, 0, newChildren, 0, children.length);
-            Node child = new Node(s, index+1);
-            newChildren[newChildren.length - 1] = child;
-            children = newChildren;
+            children.add(new Node(s, index+1, payload));
         }
+
+        public Node getNode(String verbatim) {
+            return getNode(verbatim, -1);
+        }
+
+        private Node getNode(String s, final int index) {
+            if (index+1 == s.length()) {
+                return endpoint ? this : null;
+            }
+
+            Node child = getChild(s.charAt(index + 1));
+            return child == null ? null : child.getNode(s, index+1);
+        }
+
 
         public int findMatches(CharSequence buffer) {
             return findMatches(buffer, 0);
@@ -124,7 +163,7 @@ public abstract class VerbatimMatcher {
         private int findMatches(CharSequence buffer, final int start, final int index) {
             int matches = 0;
             if (endpoint) {
-                VerbatimMatcher.this.callback(buffer.subSequence(start, index+1).toString());
+                VerbatimMatcher.this.callback(buffer.subSequence(start, index+1).toString(), payload);
                 matches++;
             }
 
@@ -144,6 +183,6 @@ public abstract class VerbatimMatcher {
             }
             return null;
         }
-    }
 
+    }
 }
