@@ -227,6 +227,22 @@ public abstract class VerbatimMatcher<P> {
             }
         }
 
+        public char getC() {
+            return c;
+        }
+
+        public boolean isEndpoint() {
+            return endpoint;
+        }
+
+        public P getPayload() {
+            return payload;
+        }
+
+        public void setPayload(P payload) {
+            this.payload = payload;
+        }
+
         private Node getChild(char c) {
             for (Node child : children) {
                 if (child.c == c) {
