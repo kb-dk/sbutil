@@ -113,6 +113,45 @@ public class VerbatimMatcherTest extends TestCase {
                              Arrays.asList("East London", "London"), Arrays.asList(null, "old"));
     }
 
+    public void testMatchShortest() {
+        CollectingMatcher matcher = new CollectingMatcher();
+        matcher.addRules("East", "London", "East London");
+        matcher.setMatchMode(VerbatimMatcher.MATCH_MODE.shortest);
+        matcher.setSkipMatching(true);
+        assertMatches(matcher, "Come visit East London in the fall",
+                      "East", "London");
+
+    }
+
+    public void testMatchLongest() {
+        CollectingMatcher matcher = new CollectingMatcher();
+        matcher.addRules("East", "London", "East London");
+        matcher.setMatchMode(VerbatimMatcher.MATCH_MODE.longest);
+        matcher.setSkipMatching(true);
+        assertMatches(matcher, "Come visit East London in the fall",
+                      "East London");
+
+    }
+
+    public void testMatchLongestNoSkip() {
+        CollectingMatcher matcher = new CollectingMatcher();
+        matcher.addRules("East", "London", "East London");
+        matcher.setMatchMode(VerbatimMatcher.MATCH_MODE.longest);
+        matcher.setSkipMatching(false);
+        assertMatches(matcher, "Come visit East London in the fall",
+                      "East London", "London");
+
+    }
+
+    public void testMatchShortestNoSkip() {
+        CollectingMatcher matcher = new CollectingMatcher();
+        matcher.addRules("East", "London", "East London");
+        matcher.setMatchMode(VerbatimMatcher.MATCH_MODE.shortest);
+        matcher.setSkipMatching(false);
+        assertMatches(matcher, "Come visit East London in the fall",
+                      "East", "London");
+    }
+
     private void assertMatchesPayload(
             CollectingMatcher matcher, String source, List<String> verbatims, List<String> payloads) {
         assertEquals("There should be the right number of matches",

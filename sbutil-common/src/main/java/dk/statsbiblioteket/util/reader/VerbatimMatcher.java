@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
  */
 public abstract class VerbatimMatcher<P> {
     private Node tree = new Node();
+    private long matchCount = 0;
+    private int lastMatchLength = -1;
 
     /**
      * This will be called for each match.
@@ -26,20 +28,49 @@ public abstract class VerbatimMatcher<P> {
      * @param payload optional payload for the matching Node. Might be null.
      */
     public abstract void callback(String match, P payload);
+    private void indirectCallback(String match, P payload) {
+        matchCount++;
+        lastMatchLength = match.length();
+        callback(match, payload);
+    };
+
+
+    public enum MATCH_MODE {all, shortest, longest};
+    public final MATCH_MODE DEFAULT_MATCH_MODE = MATCH_MODE.all;
+
+    private MATCH_MODE matchMode = DEFAULT_MATCH_MODE;
+    private boolean skipMatching = false;
 
     /**
-     * Find matches in the given source.
+     * Find matches in the given source and call {@link #callback(String, Object)} for each match.
      * @param source a String which will be searched for verbatims.
      * @return the number of matches.
      */
     public int findMatches(String source) {
+        return findMatches(source, matchMode, skipMatching);
+    }
+
+    /**
+     * Find matches in the given source, using the given mode to handle multiple matches.
+     * @param source a String which will be searched for verbatims.
+     * @param mode   how to handle multiple matches.
+     * @param skipMatching if true, the sliding window matcher is moved to the position immediately after the last
+     *                     match, when a match is made. If false, it is moved a single character after each match
+     *                     attempt. Normally used with {@link MATCH_MODE#shortest} or {@link MATCH_MODE#longest} as
+     *                     those ensures a single match.
+     * @return the number of matches.
+     */
+    public int findMatches(String source, MATCH_MODE mode, boolean skipMatching) {
         int matches = 0;
-        for (int i = 0 ; i < source.length() ; i++) {
-            matches += tree.findMatches(source, i);
+        int lastMatches = matches;
+        int i = 0;
+        while (i < source.length()) {
+            matches += tree.findMatches(source, i, mode);
+            i += (skipMatching && matches != lastMatches) ? lastMatchLength : 1;
+            lastMatches = matches;
         }
         return matches;
     }
-
 
     public int findMatches(String source, Pattern delimiter) {
         int matches = 0;
@@ -47,10 +78,10 @@ public abstract class VerbatimMatcher<P> {
         boolean first = true;
         while (delimitMatcher.find()) {
             if (first && !(delimitMatcher.start() == 0)) {
-                matches += tree.findMatches(source, 0);
+                matches += tree.findMatches(source, 0, matchMode);
             }
             first = false;
-            matches += tree.findMatches(source, delimitMatcher.end());
+            matches += tree.findMatches(source, delimitMatcher.end(), matchMode);
         }
         return matches;
     }
@@ -67,6 +98,14 @@ public abstract class VerbatimMatcher<P> {
         for (String verbatim: verbatims) {
             tree.addRule(verbatim);
         }
+    }
+
+    public void setMatchMode(MATCH_MODE matchMode) {
+        this.matchMode = matchMode;
+    }
+
+    public void setSkipMatching(boolean skipMatching) {
+        this.skipMatching = skipMatching;
     }
 
     public Node getNode(String verbatim) {
@@ -153,26 +192,39 @@ public abstract class VerbatimMatcher<P> {
 
 
         public int findMatches(CharSequence buffer) {
-            return findMatches(buffer, 0);
+            return findMatches(buffer, 0, matchMode);
         }
 
-        public int findMatches(CharSequence buffer, final int start) {
-            return findMatches(buffer, start, start-1);
+        public int findMatches(CharSequence buffer, final int start, MATCH_MODE matchMode) {
+            MatchCallback mc;
+            switch (matchMode) {
+                case all:
+                    mc = new MatchCallback();
+                    break;
+                case shortest:
+                case longest:
+                    mc = new MatchCallbackSorted(matchMode == MATCH_MODE.shortest);
+                    break;
+                default: throw new UnsupportedOperationException("The MATCH_MODE " + matchMode + " is unsupported");
+            }
+            findAll(buffer, start, start-1, mc);
+            mc.close();
+            return mc.matchCount;
         }
 
-        private int findMatches(CharSequence buffer, final int start, final int index) {
-            int matches = 0;
+        private void findAll(CharSequence buffer, final int start, final int index, MatchCallback matchCallback) {
             if (endpoint) {
-                VerbatimMatcher.this.callback(buffer.subSequence(start, index+1).toString(), payload);
-                matches++;
+                matchCallback.callback(buffer.subSequence(start, index+1).toString(), payload);
             }
 
             if (index+1 >= buffer.length()) {
-                return matches;
+                return;
             }
 
             Node child = getChild(buffer.charAt(index+1));
-            return matches + (child == null ? 0 : child.findMatches(buffer, start, index+1));
+            if (child != null) {
+                child.findAll(buffer, start, index + 1, matchCallback);
+            }
         }
 
         private Node getChild(char c) {
@@ -184,5 +236,42 @@ public abstract class VerbatimMatcher<P> {
             return null;
         }
 
+        public class MatchCallback {
+            public int matchCount = 0;
+            public void callback(String match, P payload) {
+                VerbatimMatcher.this.indirectCallback(match, payload);
+                matchCount++;
+            }
+            public void close() {
+                // Default is no-op
+            }
+        }
+
+        public class MatchCallbackSorted extends MatchCallback {
+            private final boolean shortest;
+            public String lastMatch = null;
+            public P lastPayload = null;
+
+            public MatchCallbackSorted(boolean shortest) {
+                this.shortest = shortest;
+            }
+
+            @Override
+            public void callback(String match, P payload) {
+                if (lastMatch == null ||
+                    (shortest && match.length() < lastMatch.length()) ||
+                    (!shortest && match.length() > lastMatch.length())) {
+                    lastMatch = match;
+                    lastPayload = payload;
+                    matchCount = 1;
+                }
+            }
+            @Override
+            public void close() {
+                if (lastMatch != null) {
+                    VerbatimMatcher.this.indirectCallback(lastMatch, lastPayload);
+                }
+            }
+        }
     }
 }
