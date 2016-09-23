@@ -22,6 +22,24 @@ public abstract class VerbatimMatcher<P> {
     private long matchCount = 0;
     private int lastMatchLength = -1;
 
+    public enum MATCH_MODE {all, shortest, longest};
+    public final MATCH_MODE DEFAULT_MATCH_MODE = MATCH_MODE.all;
+
+    private MATCH_MODE matchMode = DEFAULT_MATCH_MODE;
+    private boolean skipMatching = false;
+
+    /**
+     * If not 0, this character must be present just before matches, or the match must be at position 0 of the input.
+     * Not used with {@link #findMatches(String, Pattern)}.
+     */
+    private char leading = 0;
+
+    /**
+     * If not 0, this character must be present immediately after matches, or the match must be at the very end
+     * of the input.
+     */
+    private char following = 0;
+
     /**
      * This will be called for each match.
      * @param match the matching verbatim.
@@ -33,13 +51,6 @@ public abstract class VerbatimMatcher<P> {
         lastMatchLength = match.length();
         callback(match, payload);
     };
-
-
-    public enum MATCH_MODE {all, shortest, longest};
-    public final MATCH_MODE DEFAULT_MATCH_MODE = MATCH_MODE.all;
-
-    private MATCH_MODE matchMode = DEFAULT_MATCH_MODE;
-    private boolean skipMatching = false;
 
     /**
      * Find matches in the given source and call {@link #callback(String, Object)} for each match.
@@ -61,11 +72,34 @@ public abstract class VerbatimMatcher<P> {
      * @return the number of matches.
      */
     public int findMatches(String source, MATCH_MODE mode, boolean skipMatching) {
+        return findMatches(source, mode, skipMatching, leading, following);
+    }
+
+    /**
+     * Find matches in the given source, using the given mode to handle multiple matches.
+     * @param source a String which will be searched for verbatims.
+     * @param mode   how to handle multiple matches.
+     * @param skipMatching if true, the sliding window matcher is moved to the position immediately after the last
+     *                     match, when a match is made. If false, it is moved a single character after each match
+     *                     attempt. Normally used with {@link MATCH_MODE#shortest} or {@link MATCH_MODE#longest} as
+     *                     those ensures a single match.
+     * @param leading If not 0, this character must be present just before matches,
+     *                or the match must be at position 0 of the input.
+     * @param following If not 0, this character must be present immediately after matches,
+     *                  or the match must be at the very end of the input.
+     * @return the number of matches.
+     */
+    public int findMatches(String source, MATCH_MODE mode, boolean skipMatching, final char leading, char following) {
         int matches = 0;
         int lastMatches = matches;
         int i = 0;
         while (i < source.length()) {
-            matches += tree.findMatches(source, i, mode);
+            // char before current pos must be == leading
+            if (i != 0 && leading != 0 && source.charAt(i-1) != leading) {
+                i++;
+                continue;
+            }
+            matches += tree.findMatches(source, i, mode, following);
             i += (skipMatching && matches != lastMatches) ? lastMatchLength : 1;
             lastMatches = matches;
         }
@@ -123,6 +157,26 @@ public abstract class VerbatimMatcher<P> {
                     "Logic error: Just added node for '" + verbatim + "' but could not extract it");
         }
         return node;
+    }
+
+    public long getMatchCount() {
+        return matchCount;
+    }
+
+    public char getLeading() {
+        return leading;
+    }
+
+    public void setLeading(char leading) {
+        this.leading = leading;
+    }
+
+    public char getFollowing() {
+        return following;
+    }
+
+    public void setFollowing(char following) {
+        this.following = following;
     }
 
     /**
@@ -190,12 +244,14 @@ public abstract class VerbatimMatcher<P> {
             return child == null ? null : child.getNode(s, index+1);
         }
 
-
         public int findMatches(CharSequence buffer) {
             return findMatches(buffer, 0, matchMode);
         }
 
         public int findMatches(CharSequence buffer, final int start, MATCH_MODE matchMode) {
+            return findMatches(buffer, start, matchMode, following);
+        }
+        public int findMatches(CharSequence buffer, final int start, MATCH_MODE matchMode, char following) {
             MatchCallback mc;
             switch (matchMode) {
                 case all:
@@ -207,14 +263,17 @@ public abstract class VerbatimMatcher<P> {
                     break;
                 default: throw new UnsupportedOperationException("The MATCH_MODE " + matchMode + " is unsupported");
             }
-            findAll(buffer, start, start-1, mc);
+            findAll(buffer, start, start-1, mc, following);
             mc.close();
             return mc.matchCount;
         }
 
-        private void findAll(CharSequence buffer, final int start, final int index, MatchCallback matchCallback) {
+        private void findAll(
+                CharSequence buffer, final int start, final int index, MatchCallback matchCallback, char following) {
             if (endpoint) {
-                matchCallback.callback(buffer.subSequence(start, index+1).toString(), payload);
+                if (following == 0 || index == buffer.length()-1 || buffer.charAt(index+1) == following) {
+                    matchCallback.callback(buffer.subSequence(start, index + 1).toString(), payload);
+                }
             }
 
             if (index+1 >= buffer.length()) {
@@ -223,7 +282,7 @@ public abstract class VerbatimMatcher<P> {
 
             Node child = getChild(buffer.charAt(index+1));
             if (child != null) {
-                child.findAll(buffer, start, index + 1, matchCallback);
+                child.findAll(buffer, start, index + 1, matchCallback, following);
             }
         }
 

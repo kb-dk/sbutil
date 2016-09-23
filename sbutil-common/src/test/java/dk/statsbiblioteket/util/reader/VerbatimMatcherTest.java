@@ -152,6 +152,57 @@ public class VerbatimMatcherTest extends TestCase {
                       "East", "London");
     }
 
+    public void testNoLeading() {
+        CollectingMatcher matcher = new CollectingMatcher();
+        matcher.addRules("East", "London", "East London", "Come");
+        matcher.setMatchMode(VerbatimMatcher.MATCH_MODE.all);
+        matcher.setSkipMatching(false);
+        matcher.setLeading((char) 0); // default
+        assertMatches(matcher, "Come visit East-London in the fall",
+                      "Come", "East", "London");
+    }
+
+    public void testLeading() {
+        CollectingMatcher matcher = new CollectingMatcher();
+        matcher.addRules("East", "London", "East London", "Come");
+        matcher.setMatchMode(VerbatimMatcher.MATCH_MODE.all);
+        matcher.setSkipMatching(false);
+        matcher.setLeading(' ');
+        assertMatches(matcher, "Come visit East-London in the fall",
+                      "Come", "East");
+    }
+
+    public void testNoFollowing() {
+        CollectingMatcher matcher = new CollectingMatcher();
+        matcher.addRules("East", "London", "East London", "Come", "fall");
+        matcher.setMatchMode(VerbatimMatcher.MATCH_MODE.all);
+        matcher.setSkipMatching(false);
+        matcher.setFollowing((char) 0); // default
+        assertMatches(matcher, "Come visit East-London in the fall",
+                      "Come", "East", "London", "fall");
+    }
+
+    public void testFollowing() {
+        CollectingMatcher matcher = new CollectingMatcher();
+        matcher.addRules("East", "London", "East London", "Come", "fall");
+        matcher.setMatchMode(VerbatimMatcher.MATCH_MODE.all);
+        matcher.setSkipMatching(false);
+        matcher.setFollowing(' ');
+        assertMatches(matcher, "Come visit East-London in the fall",
+                      "Come", "London", "fall");
+    }
+
+    public void testLeadingAndFollowingWithSkip() {
+        CollectingMatcher matcher = new CollectingMatcher();
+        matcher.addRules("East", "London", "East London", "Come", "fall");
+        matcher.setMatchMode(VerbatimMatcher.MATCH_MODE.all);
+        matcher.setSkipMatching(true);
+        matcher.setLeading(' ');
+        matcher.setFollowing(' ');
+        assertMatches(matcher, "Come visit East-London in the fall",
+                      "Come", "fall");
+    }
+
     private void assertMatchesPayload(
             CollectingMatcher matcher, String source, List<String> verbatims, List<String> payloads) {
         assertEquals("There should be the right number of matches",
