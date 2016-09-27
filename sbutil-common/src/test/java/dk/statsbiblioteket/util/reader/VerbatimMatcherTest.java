@@ -2,6 +2,10 @@ package dk.statsbiblioteket.util.reader;
 
 import junit.framework.TestCase;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -190,6 +194,29 @@ public class VerbatimMatcherTest extends TestCase {
         matcher.setFollowing(' ');
         assertMatches(matcher, "Come visit East-London in the fall",
                       "Come", "London", "fall");
+    }
+
+    public void testSpecificProblem() throws IOException {
+        Path INPUT = Paths.get("/home/te/tmp/sumfresh/sites/aviser/names_and_coordinates.dat");
+        if (!Files.exists(INPUT)) {
+            return;
+        }
+        CollectingMatcher matcher = new CollectingMatcher();
+        BufferedReader in = new BufferedReader(new FileReader(INPUT.toFile()));
+        String line;
+        int count = 0;
+        while ((line = in.readLine()) != null) {
+            count++;
+            String[] tokens = line.split(",");
+            try {
+                if (count == 34) {
+                    System.out.println("Entering problematic phase with " + line);
+                }
+                matcher.addRules(tokens[0], tokens[1] + "," + tokens[2]);
+            } catch (Exception e) {
+                throw new RuntimeException("Exception adding line " + count + ": '" + line + "'");
+            }
+        }
     }
 
     public void testLeadingAndFollowingWithSkip() {

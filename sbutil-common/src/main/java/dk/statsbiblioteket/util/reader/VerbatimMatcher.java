@@ -213,7 +213,7 @@ public abstract class VerbatimMatcher<P> {
         }
         private void addChild(String s, final int index, P payload) {
             // End reached, mark as end point
-            if (index-1 == s.length()) {
+            if (index+1 == s.length()) {
                 endpoint = true;
                 this.payload = payload;
                 return;
