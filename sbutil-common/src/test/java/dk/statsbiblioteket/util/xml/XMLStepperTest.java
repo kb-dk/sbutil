@@ -14,13 +14,11 @@
  */
 package dk.statsbiblioteket.util.xml;
 
-import dk.statsbiblioteket.util.Files;
 import dk.statsbiblioteket.util.Profiler;
 import dk.statsbiblioteket.util.Strings;
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.xml.sax.XMLReader;
 
 import javax.xml.stream.*;
 import java.io.*;
@@ -53,6 +51,25 @@ public class XMLStepperTest extends TestCase {
     }
     private XMLOutputFactory xmlOutFactory = XMLOutputFactory.newInstance();
 
+    public void testSpaceRemoval() throws IOException, XMLStreamException {
+        String INPUT = Strings.flush(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "replacement_input.xml"));
+        String EXPECTED = Strings.flush(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "replacement_expected.xml"));
+        String actual = XMLStepper.replaceElementText(INPUT, new XMLStepper.ContentReplaceCallback() {
+            @Override
+            protected String replace(List<String> tags, String current, String originalText) {
+                return originalText.replace(" ", "");
+            }
+
+            @Override
+            protected boolean match(XMLStreamReader xml, List<String> tags, String current) {
+                return "bar".equals(current) && "a".equals(XMLStepper.getAttribute(xml, "name", "")) ||
+                        "baz".equals(current);
+            }
+        });
+        assertEquals("The text content replaced XML should be as expected", EXPECTED, actual);
+    }
 
     public void testIsWellformed() {
         final String[] FINE = new String[]{

@@ -18,10 +18,10 @@ import dk.statsbiblioteket.util.MutablePair;
 import dk.statsbiblioteket.util.Strings;
 import dk.statsbiblioteket.util.reader.CharSequenceReader;
 
-import javax.xml.XMLConstants;
 import javax.xml.stream.*;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -185,6 +185,43 @@ public class XMLStepper {
         return xml.length() < 3 ? "" : xml.substring(3); // We remove the start <a> from the String
     }
 
+    /**
+     * Wrapper for {@link #replaceElementText(XMLStreamReader, XMLStreamWriter, boolean, ContentReplaceCallback)}.
+     * @param xml      the XML to process.
+     * @param replacer the replacer for handling element text.
+     * @return the xml with element text being processed by the replacer.
+     * @throws XMLStreamException if parsing fails.
+     */
+    public static String replaceElementText(String xml, ContentReplaceCallback replacer) throws XMLStreamException {
+        XMLStreamReader in = xmlFactory.createXMLStreamReader(new CharSequenceReader(xml));
+        StringWriter sw = new StringWriter();
+        XMLStreamWriter out = xmlOutFactory.createXMLStreamWriter(sw);
+        replacer.setOut(out);
+        pipeXML(in, out, true, false, replacer);
+        out.flush();
+        return sw.toString();
+    }
+
+    /**
+     * Traverses all parts in the given element, including sub elements etc., and pipes the parts to out.
+     * The callback allows for selective replacement of texts inside of elements.
+     * Leaves in positioned immediately after the END_ELEMENT matching the START_ELEMENT.
+     * </p><p>
+     * Note: The piper does not repair namespaces. If in uses namespaces defined previously in the XML and out does
+     * not have these definitions, they will not be transferred.
+     * @param in must be positioned at START_ELEMENT and be coalescing.
+     * @param out the destination for the traversed XML.
+     * @param failOnError if true, unrecognized elements will result in an UnsupportedOperationException.
+     *                    if false, unrecognized elements will be ignored.
+     * @param replacer at each elementStart, the replacer will be called allowing for selective replacement of element
+     *                 text.
+     * @throws XMLStreamException if in was faulty.
+     */
+    public static void replaceElementText(
+            XMLStreamReader in, XMLStreamWriter out, boolean failOnError, ContentReplaceCallback replacer)
+            throws XMLStreamException {
+        pipeXML(in, out, failOnError, false, replacer);
+    }
 
     /**
      * Traverses all parts in the given element, including sub elements etc., and pipes the parts to out.
@@ -226,7 +263,7 @@ public class XMLStepper {
         pipeXML(in, out, failOnError, onlyInner, null);
     }
 
-    private static boolean pipeXML(XMLStreamReader in, XMLStreamWriter out, boolean ignoreErrors, boolean onlyInner,
+    public static boolean pipeXML(XMLStreamReader in, XMLStreamWriter out, boolean ignoreErrors, boolean onlyInner,
                                    Callback callback) throws XMLStreamException {
         if (in.getProperty(XMLInputFactory.IS_COALESCING) == null ||
             Boolean.TRUE != in.getProperty(XMLInputFactory.IS_COALESCING)) {
@@ -291,32 +328,7 @@ public class XMLStepper {
                     String element = in.getLocalName();
                     elementStack.add(element);
                     if (callback == null || !callback.elementStart(in, elementStack, element)) {
-                        if (in.getPrefix() == null || in.getPrefix().isEmpty()) {
-                            if (in.getNamespaceURI() == null || in.getNamespaceURI().isEmpty()) {
-                                out.writeStartElement(in.getLocalName());
-                            } else {
-                                out.writeStartElement(in.getPrefix(), in.getLocalName(), in.getNamespaceURI());
-                            }
-                        } else {
-                            if (in.getNamespaceURI() == null || in.getNamespaceURI().isEmpty()) {
-                                throw new XMLStreamException(
-                                        "Encountered element '" + in.getLocalName() + "' with prefix '" + in.getPrefix()
-                                        + "' but no namespace URI");
-                            } else {
-                                out.writeStartElement(in.getPrefix(), in.getLocalName(), in.getNamespaceURI());
-                            }
-                        }
-                        for (int i = 0 ; i < in.getNamespaceCount() ; i++) {
-                            out.writeNamespace(in.getNamespacePrefix(i), in.getNamespaceURI(i));
-                        }
-                        for (int i = 0 ; i < in.getAttributeCount() ; i++) {
-                            if (in.getAttributeNamespace(i) == null || in.getAttributeNamespace(i).isEmpty()) {
-                                out.writeAttribute(in.getAttributeLocalName(i), in.getAttributeValue(i));
-                            } else {
-                                out.writeAttribute(in.getAttributeNamespace(i), in.getAttributeLocalName(i),
-                                                   in.getAttributeValue(i));
-                            }
-                        }
+                        copyStartElement(in, out);
                         in.next();
                         if (pipeXML(in, out, ignoreErrors, false, elementStack, callback)) {
                             out.flush();
@@ -380,6 +392,35 @@ public class XMLStepper {
                 }
             }
             in.next();
+        }
+    }
+
+    private static void copyStartElement(XMLStreamReader in, XMLStreamWriter out) throws XMLStreamException {
+        if (in.getPrefix() == null || in.getPrefix().isEmpty()) {
+            if (in.getNamespaceURI() == null || in.getNamespaceURI().isEmpty()) {
+                out.writeStartElement(in.getLocalName());
+            } else {
+                out.writeStartElement(in.getPrefix(), in.getLocalName(), in.getNamespaceURI());
+            }
+        } else {
+            if (in.getNamespaceURI() == null || in.getNamespaceURI().isEmpty()) {
+                throw new XMLStreamException(
+                        "Encountered element '" + in.getLocalName() + "' with prefix '" + in.getPrefix()
+                        + "' but no namespace URI");
+            } else {
+                out.writeStartElement(in.getPrefix(), in.getLocalName(), in.getNamespaceURI());
+            }
+        }
+        for (int i = 0 ; i < in.getNamespaceCount() ; i++) {
+            out.writeNamespace(in.getNamespacePrefix(i), in.getNamespaceURI(i));
+        }
+        for (int i = 0 ; i < in.getAttributeCount() ; i++) {
+            if (in.getAttributeNamespace(i) == null || in.getAttributeNamespace(i).isEmpty()) {
+                out.writeAttribute(in.getAttributeLocalName(i), in.getAttributeValue(i));
+            } else {
+                out.writeAttribute(in.getAttributeNamespace(i), in.getAttributeLocalName(i),
+                                   in.getAttributeValue(i));
+            }
         }
     }
 
@@ -743,6 +784,42 @@ public class XMLStepper {
         });
     }
     enum RESULT {match, exceeded}
+
+    public abstract static class ContentReplaceCallback extends Callback {
+        private XMLStreamWriter out = null;
+
+
+        protected void setOut(XMLStreamWriter out) {
+            this.out = out;
+        }
+
+        @Override
+        public boolean elementStart(XMLStreamReader in, List<String> tags, String current) throws XMLStreamException {
+            if (out == null) {
+                throw new IllegalStateException("The XMLStreamWriter has not been set");
+            }
+            if (!match(in, tags, current)) {
+                return false;
+            }
+            copyStartElement(in, out);
+            final String original = in.getElementText();
+            final String replaced = replace(tags, current, original);
+            out.writeCharacters(replaced);
+            out.writeEndElement();
+            findTagEnd(in, current);
+            return true;
+        }
+
+        /**
+         * @return the text to be used instead of originalText.
+         */
+        protected abstract String replace(List<String> tags, String current, String originalText);
+
+        /**
+         * @return true if the text content of the element should be replaced.
+         */
+        protected abstract boolean match(XMLStreamReader xml, List<String> tags, String current);
+    }
 
     public abstract static class Callback {
         /**

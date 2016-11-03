@@ -1,0 +1,7 @@
+<foo>
+    <bar name="a">1 2 3</bar>
+    <bar name="b">4 5 6</bar>
+    <zoo>
+        <baz>abc8 9</baz>
+    </zoo>
+</foo>
