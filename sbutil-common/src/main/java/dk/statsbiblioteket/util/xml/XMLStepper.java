@@ -17,11 +17,10 @@ package dk.statsbiblioteket.util.xml;
 import dk.statsbiblioteket.util.MutablePair;
 import dk.statsbiblioteket.util.Strings;
 import dk.statsbiblioteket.util.reader.CharSequenceReader;
+import dk.statsbiblioteket.util.reader.ThreadedPiper;
 
 import javax.xml.stream.*;
-import java.io.ByteArrayOutputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -183,6 +182,43 @@ public class XMLStepper {
         String xml = os.toString();
         // TODO: How can this ever be less than 3? A search for 'foo' against summon has this problem in the test gui
         return xml.length() < 3 ? "" : xml.substring(3); // We remove the start <a> from the String
+    }
+
+    /**
+     * Streaming wrap of {@link #replaceElementText(XMLStreamReader, XMLStreamWriter, boolean, ContentReplaceCallback)}.
+     * The processing runs in its own thread, shared between calls with a thread pool. For very small inputs, it is
+     * better to call {@link #replaceElementText(String, ContentReplaceCallback)} or
+     * {@link #replaceElementText(XMLStreamReader, XMLStreamWriter, boolean, ContentReplaceCallback)}.
+     * @param xml the input for the replacer. This will be parsed as XML.
+     * @param replacer the replacer for handling element text.
+     * @return a stream with the output from the replacement of text in the input xml.
+     */
+    public static InputStream streamingReplaceElementText(
+            final InputStream xml, final ContentReplaceCallback replacer) throws IOException, XMLStreamException {
+        return ThreadedPiper.getDeferredStream(new ThreadedPiper.Producer() {
+            @Override
+            public void process(OutputStream out) throws IOException {
+                XMLStreamReader in;
+                XMLStreamWriter xmlOut;
+                try {
+                    in = xmlFactory.createXMLStreamReader(xml);
+                } catch (XMLStreamException e) {
+                    throw new IOException("Unable to construct XML reader", e);
+                }
+                try {
+                    xmlOut = xmlOutFactory.createXMLStreamWriter(new OutputStreamWriter(out, "utf-8"));
+                } catch (XMLStreamException e) {
+                    throw new IOException("Unable to construct XML reader", e);
+                }
+                replacer.setOut(xmlOut);
+                try {
+                    pipeXML(in, xmlOut, true, false, replacer);
+                } catch (XMLStreamException e) {
+                    throw new IOException("Exception piping throusg XML text replacer", e);
+                }
+                out.flush();
+            }
+        });
     }
 
     /**

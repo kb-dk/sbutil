@@ -71,6 +71,29 @@ public class XMLStepperTest extends TestCase {
         assertEquals("The text content replaced XML should be as expected", EXPECTED, actual);
     }
 
+    public void testSpaceRemovalStreaming() throws IOException, XMLStreamException {
+        InputStream INPUT = Thread.currentThread().getContextClassLoader().getResourceAsStream("replacement_input.xml");
+        String EXPECTED = Strings.flush(Thread.currentThread().getContextClassLoader().getResourceAsStream(
+                "replacement_expected.xml"));
+        InputStream actualS = XMLStepper.streamingReplaceElementText(INPUT, new XMLStepper.ContentReplaceCallback() {
+            @Override
+            protected String replace(List<String> tags, String current, String originalText) {
+                return originalText.replace(" ", "");
+            }
+
+            @Override
+            protected boolean match(XMLStreamReader xml, List<String> tags, String current) {
+                return "bar".equals(current) && "a".equals(XMLStepper.getAttribute(xml, "name", "")) ||
+                        "baz".equals(current);
+            }
+        });
+
+        String actual = Strings.flush(actualS);
+        // TODO: Figure out why the streaming version keeps the header, while the direct one doesn't
+        actual = actual.replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "").trim();
+        assertEquals("The text content replaced XML should be as expected", EXPECTED, actual);
+    }
+
     public void testIsWellformed() {
         final String[] FINE = new String[]{
                 "<foo xmlns=\"http://www.example.com/foo_ns/\"><bar>simple bar</bar></foo>",
