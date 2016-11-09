@@ -332,7 +332,7 @@ public class ConnectionManager<E> {
             log.trace("Adding new context for '" + connectionId + "' to cache");
             connections.put(connectionId, ctx);
         } else {
-            log.debug("Found connection to '" + connectionId + "' in cache");
+            log.trace("Found connection to '" + connectionId + "' in cache");
         }
         ctx.ref();
         return ctx;
