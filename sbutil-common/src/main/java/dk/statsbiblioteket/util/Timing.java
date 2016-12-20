@@ -90,10 +90,20 @@ public class Timing {
      * @return now-lastStart.
      */
     public long stop() {
+        return stop(updateCount+1);
+    }
+
+    /**
+     * Adds now-lastStart to spendNS, sets updateCount to the given updates and sets lastStart to now.
+     * This is used when a process has handled an amount of entities and the average time spend on each
+     * entity should be part of the report.
+     * @return now-lastStart.
+     */
+    public long stop(long updates) {
         long now = System.nanoTime();
         long spend = now-lastStart;
         spendNS += spend;
-        updateCount++;
+        updateCount = updates;
         return spend;
     }
 
