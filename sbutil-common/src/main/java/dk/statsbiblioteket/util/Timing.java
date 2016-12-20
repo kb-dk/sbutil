@@ -184,8 +184,27 @@ public class Timing {
         return sb.toString();
     }
 
+    /**
+     * @param ns if true, nano-seconds are returned, else milli-seconds.
+     * @param indent if true, the result is rendered multi-line and indented.
+     * @return recursive timing information in nano- or milli-seconds.
+     */
+    public String toString(boolean ns, boolean indent) {
+        StringBuilder sb = new StringBuilder();
+        toString(sb, ns, indent);
+        return sb.toString();
+    }
+
     public void toString(StringBuilder sb, boolean ns) {
-        sb.append(name).append("(");
+        toString(sb, ns, false);
+    }
+
+    void toString(StringBuilder sb, boolean ns, boolean indent) {
+        toString(sb, ns, indent, "");
+    }
+
+    private void toString(StringBuilder sb, boolean ns, boolean indent, String spaces) {
+        sb.append(spaces).append(name).append("(");
         if (subject != null) {
             sb.append("subj='").append(subject).append("', ");
         }
@@ -195,18 +214,18 @@ public class Timing {
             sb.append(ns ? getAverageNS()+"ns/upd" : getAverageMS()+"ms/upd");
         }
         if (children != null && !children.isEmpty()) {
-            sb.append(", [");
+            sb.append(indent ? ", [\n" : ", [");
             boolean first = true;
             for (Timing child: children.values()) {
                 if (first) {
                     first = false;
                 } else {
-                    sb.append(", ");
+                    sb.append(indent ? ",\n" : ", ");
                     first = false;
                 }
-                child.toString(sb, ns);
+                child.toString(sb, ns, indent, indent ? spaces + "  " : "");
             }
-            sb.append("]");
+            sb.append(indent ? "\n" + spaces + "]" : "]");
         }
         sb.append(")");
     }
