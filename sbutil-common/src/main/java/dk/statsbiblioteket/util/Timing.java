@@ -41,10 +41,18 @@ public class Timing {
     private Map<String, Timing> children = null;
     private long updateCount = 0;
 
+    /**
+     * Create a root timer with the given name.
+     * @param name timer designation. Typically a method name or a similar code-path description.
+     */
     public Timing(String name) {
         this(name, null);
     }
 
+    /**
+     * Create a root timer with the given name and subject.
+     * @param name timer designation. Typically a method name or a similar code-path description.
+     */
     public Timing(String name, String subject) {
         this.name = name;
         this.subject = subject;
@@ -60,10 +68,23 @@ public class Timing {
         this.spendNS = spendNS;
     }
 
+    /**
+     * If a child with the given name already exists, it will be returned.
+     * If a child does not exist, it will be created.
+     * @param name child Timing designation. Typically a method name or a similar code-path description.
+     * @return the re-used or newly created child.
+     */
     public Timing getChild(String name) {
         return getChild(name, null);
     }
 
+    /**
+     * If a child with the given name already exists, it will be returned.
+     * If a child does not exist, it will be created.
+     * @param name child Timing designation. Typically a method name or a similar code-path description.
+     * @param subject child Timing designation.
+     * @return the re-used or newly created child.
+     */
     public Timing getChild(String name, String subject) {
         if (children == null) {
             children = new LinkedHashMap<String, Timing>();
@@ -86,7 +107,7 @@ public class Timing {
     }
 
     /**
-     * Adds now-lastStart to spendNS, increments updateCount and sets lastStart to now.
+     * Adds now-lastStart to spendNS, increments updateCount with 1 and sets lastStart to now.
      * @return now-lastStart.
      */
     public long stop() {
@@ -104,6 +125,7 @@ public class Timing {
         long spend = now-lastStart;
         spendNS += spend;
         updateCount = updates;
+        lastStart = now;
         return spend;
     }
 
@@ -130,6 +152,22 @@ public class Timing {
     }
 
     /**
+     * Increment the update count with 1.
+     * @return update count after incrementing.
+     */
+    public long update() {
+        return ++updateCount;
+    }
+
+    /**
+     * Set the update count to the specific number.
+     * Note that calling {@link #stop()} auto-increments the updateCount with 1.
+     */
+    public void setUpdates(int updateCount) {
+        this.updateCount = updateCount;
+    }
+
+    /**
      * @return spendNS if updateCount > 0 else now-lastStart.
      */
     public long getNS() {
@@ -151,14 +189,14 @@ public class Timing {
      * @return average based on {@link #getNS()} and updateCount.
      */
     public long getAverageNS() {
-        return getNS() / (updateCount == 0 ? 1 : updateCount);
+        return getNS() / (updateCount == 0 ? 0 : updateCount);
     }
 
     /**
      * @return average based on {@link #getMS()} and updateCount.
      */
     public long getAverageMS() {
-        return (getNS() / (updateCount == 0 ? 1 : updateCount))/1000000;
+        return (getNS() / (updateCount == 0 ? 0 : updateCount))/1000000;
     }
 
     public void clear() {
