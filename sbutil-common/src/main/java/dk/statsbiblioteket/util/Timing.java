@@ -15,14 +15,13 @@
 package dk.statsbiblioteket.util;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Structure for timing-instrumentation of other code. Intended for always-enabled use.
+ * Structure for timing-instrumentation of other code. Intended for always-enabled use as all methods are
+ * sought to be light weight.
  * </p><p>
  * Usage: Create a root instance and optionally add children with {@link #getChild}.
  * </p><p>
@@ -32,11 +31,13 @@ import java.util.Map;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class Timing {
-    private static final Log log = LogFactory.getLog(Timing.class);
     private final String name;
     private final String subject;
+    private final String unit;
 
     private long lastStart = System.nanoTime();
+    private long minNS = Long.MAX_VALUE;
+    private long maxNS = Long.MIN_VALUE;
     private long spendNS;
     private Map<String, Timing> children = null;
     private long updateCount = 0;
@@ -54,8 +55,18 @@ public class Timing {
      * @param name timer designation. Typically a method name or a similar code-path description.
      */
     public Timing(String name, String subject) {
+        this(name, subject, null);
+    }
+
+    /**
+     * @param name    timer designation. Typically a method name or a similar code-path description.
+     * @param subject specific subject. Typically a document ID or similar workload-specific identifier.
+     * @param unit    the unit to use for average speed in toString. If null, the unit will be set to {@code upd}.
+     */
+    public Timing(String name, String subject, String unit) {
         this.name = name;
         this.subject = subject;
+        this.unit = unit == null ? "upd" : unit;
     }
 
     public Timing(String name, long spendNS) {
@@ -65,6 +76,11 @@ public class Timing {
 
     public Timing(String name, String subject, long spendNS) {
         this(name, subject);
+        this.spendNS = spendNS;
+    }
+
+    public Timing(String name, String subject, String unit, long spendNS) {
+        this(name, subject, unit);
         this.spendNS = spendNS;
     }
 
@@ -81,20 +97,33 @@ public class Timing {
     /**
      * If a child with the given name already exists, it will be returned.
      * If a child does not exist, it will be created.
-     * @param name child Timing designation. Typically a method name or a similar code-path description.
-     * @param subject child Timing designation.
+     * @param name    child Timing designation. Typically a method name or a similar code-path description.
+     * @param subject specific child subject. Typically a document ID or similar workload-specific identifier.
      * @return the re-used or newly created child.
      */
     public Timing getChild(String name, String subject) {
+        return getChild(name, subject, unit);
+    }
+
+    /**
+     * If a child with the given name already exists, it will be returned.
+     * If a child does not exist, it will be created.
+     * @param name    child Timing designation. Typically a method name or a similar code-path description.
+     * @param subject specific child subject. Typically a document ID or similar workload-specific identifier.
+     * @param unit    the unit to use for average speed in toString. If null, the unit will be set to {@code upd}.
+     * @return the re-used or newly created child.
+     */
+    public Timing getChild(String name, String subject, String unit) {
         if (children == null) {
             children = new LinkedHashMap<String, Timing>();
         }
         Timing child = children.get(name);
         if (child == null) {
-            child = new Timing(name, subject);
+            child = new Timing(name, subject, unit);
             children.put(name, child);
         }
         return child;
+
     }
 
     /**
@@ -123,10 +152,20 @@ public class Timing {
     public long stop(long updates) {
         long now = System.nanoTime();
         long spend = now-lastStart;
+        updateMinMax(spend);
         spendNS += spend;
         updateCount = updates;
         lastStart = now;
         return spend;
+    }
+
+    private void updateMinMax(long spend) {
+        if (minNS > spend) {
+            minNS = spend;
+        }
+        if (maxNS < spend) {
+            maxNS = spend;
+        }
     }
 
     /**
@@ -135,6 +174,7 @@ public class Timing {
      * @return spendNS.
      */
     public long addNS(long ns) {
+        updateMinMax(ns);
         spendNS += ns;
         updateCount++;
         return getNS();
@@ -146,8 +186,7 @@ public class Timing {
      * @return spendMS.
      */
     public long addMS(long ms) {
-        spendNS += (ms*1000000);
-        updateCount++;
+        addNS(ms*1000000);
         return getMS();
     }
 
@@ -246,15 +285,18 @@ public class Timing {
         if (subject != null) {
             sb.append("subj='").append(subject).append("', ");
         }
-        sb.append(ns ? getNS()+"ns" : getMS()+"ms");
+        sb.append(ns ? getNS() + "ns" : getMS() + "ms");
         if (updateCount > 1) {
-            sb.append(", ").append(updateCount).append("upd, ");
-            sb.append(ns ? getAverageNS()+"ns/upd" : getAverageMS()+"ms/upd");
+            sb.append(", ").append(updateCount).append(unit).append(", ");
+            sb.append(ns ? getAverageNS() + "ns/" + unit : getAverageMS() + "ms/").append(unit);
+            sb.append(", ").append(getAverageUpdatesPerSecond()).append(unit).append("/s");
+            sb.append(", min=").append(ns ? getMinNS() + "ns" : getMinMS() + "ms");
+            sb.append(", max=").append(ns ? getMaxNS() + "ns" : getMaxMS() + "ms");
         }
         if (children != null && !children.isEmpty()) {
             sb.append(indent ? ", [\n" : ", [");
             boolean first = true;
-            for (Timing child: children.values()) {
+            for (Timing child : children.values()) {
                 if (first) {
                     first = false;
                 } else {
@@ -266,6 +308,26 @@ public class Timing {
             sb.append(indent ? "\n" + spaces + "]" : "]");
         }
         sb.append(")");
+    }
+
+    public long getMinNS() {
+        return minNS;
+    }
+
+    public long getMaxNS() {
+        return maxNS;
+    }
+
+    public long getMinMS() {
+        return minNS/1000000;
+    }
+
+    public long getMaxMS() {
+        return maxNS/1000000;
+    }
+
+    public long getAverageUpdatesPerSecond() {
+        return updateCount == 0 ? 0 : updateCount*1000000*1000/spendNS;
     }
 
     // TODO: Consider adding a toJSON

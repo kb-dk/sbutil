@@ -52,7 +52,7 @@ public class TimingTest extends TestCase {
     public void testSub() throws InterruptedException {
         Timing timing = new Timing("foo");
         Thread.sleep(50);
-        Timing subA = timing.getChild("sub_a");
+        Timing subA = timing.getChild("sub_a", null, "blob");
         assertEquals("Adding 30 ms should return 30 ms", 30, subA.addMS(30));
         assertEquals("Adding 10 ms extra should return 40 ms", 40, subA.addMS(10));
         timing.getChild("sub_b", "#87");
