@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -104,7 +105,7 @@ public class RecursiveFolderWatcherTest extends TestCase {
     }
 
     /* depth == 0 */
-    public void testFlatWatch() throws Exception {
+    public synchronized void testFlatWatch() throws Exception {
         watcher = new RecursiveFolderWatcher(testRoot, 0, pollInterval);
         watcher.addFolderListener(listener);
 
@@ -122,7 +123,7 @@ public class RecursiveFolderWatcherTest extends TestCase {
     }
 
     /* depth == 1 */
-    public void testShallowWatch() throws Exception {
+    public synchronized void testShallowWatch() throws Exception {
         watcher = new RecursiveFolderWatcher(testRoot, 1, pollInterval);
         watcher.addFolderListener(listener);
 
@@ -143,7 +144,7 @@ public class RecursiveFolderWatcherTest extends TestCase {
     }
 
     /* depth == -1 */
-    public void testDeepWatch() throws Exception {
+    public synchronized void testDeepWatch() throws Exception {
         watcher = new RecursiveFolderWatcher(testRoot, -1, pollInterval);
         watcher.addFolderListener(listener);
 
