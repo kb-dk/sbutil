@@ -426,7 +426,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWrite() throws Exception {
-        File temp = new File(tempFolder,"temp.tmp");
+        File temp = new File(tempFolder,"testWrite.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -650,7 +650,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWrite2Bytes() throws Exception {
-        File temp = new File(tempFolder,"temp.tmp");
+        File temp = new File(tempFolder,"testWrite2Bytes.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -671,7 +671,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteCloseReadWrite() throws Exception {
-        File temp = new File(tempFolder,"temp.tmp");
+        File temp = new File(tempFolder,"testWriteCloseReadWrite.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -703,7 +703,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteCloseNewWrite() throws Exception {
-        File temp = new File(tempFolder,"temp.tmp");
+        File temp = new File(tempFolder,"testWriteCloseNewWrite.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
@@ -728,7 +728,7 @@ public class LineReaderTest extends TestCase {
     }
 
     public void testWriteSeekWrite() throws Exception {
-        File temp = new File(tempFolder,"temp.tmp");
+        File temp = new File(tempFolder,"testWriteSeekWrite.tmp");
         temp.deleteOnExit();
         temp.createNewFile();
         LineReader lr = new LineReader(temp, "rw");
