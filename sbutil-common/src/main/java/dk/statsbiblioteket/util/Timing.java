@@ -34,6 +34,7 @@ public class Timing {
     private final String name;
     private final String subject;
     private final String unit;
+    private final long objectCreation = System.nanoTime();
 
     private long lastStart = System.nanoTime();
     private long minNS = Long.MAX_VALUE;
@@ -41,6 +42,19 @@ public class Timing {
     private long spendNS;
     private Map<String, Timing> children = null;
     private long updateCount = 0;
+
+    public enum STATS {
+        name, subject, ms, ns, updates, ms_updates, ns_updates, updates_s, min_ms, min_ns, max_ms, max_ns, utilization,
+    }
+    public static final STATS[] MS_STATS = new STATS[]{
+            STATS.name, STATS.subject, STATS.ms, STATS.updates, STATS.ms_updates, STATS.updates_s, 
+            STATS.min_ms, STATS.max_ms, STATS.utilization
+    };
+    public static final STATS[] NS_STATS = new STATS[]{
+            STATS.name, STATS.subject, STATS.ns, STATS.updates, STATS.ns_updates, STATS.updates_s, 
+            STATS.min_ns, STATS.max_ns, STATS.utilization
+    };
+    private STATS[] showStats = MS_STATS;
 
     /**
      * Create a root timer with the given name.
@@ -69,6 +83,19 @@ public class Timing {
         this.unit = unit == null ? "upd" : unit;
     }
 
+    /**
+     * @param name    timer designation. Typically a method name or a similar code-path description.
+     * @param subject specific subject. Typically a document ID or similar workload-specific identifier.
+     * @param unit    the unit to use for average speed in toString. If null, the unit will be set to {@code upd}.
+     * @param showStats the stats to show on calls to {@link #toString}.
+     */
+    public Timing(String name, String subject, String unit, STATS[] showStats) {
+        this.name = name;
+        this.subject = subject;
+        this.unit = unit == null ? "upd" : unit;
+        this.showStats = showStats == null ? MS_STATS : showStats;
+    }
+
     public Timing(String name, long spendNS) {
         this(name);
         this.spendNS = spendNS;
@@ -82,6 +109,14 @@ public class Timing {
     public Timing(String name, String subject, String unit, long spendNS) {
         this(name, subject, unit);
         this.spendNS = spendNS;
+    }
+
+    public STATS[] getShowStats() {
+        return showStats;
+    }
+
+    public void setShowStats(STATS[] showStats) {
+        this.showStats = showStats == null ? MS_STATS : showStats;
     }
 
     /**
@@ -181,7 +216,7 @@ public class Timing {
     }
 
     /**
-     * Add ms to spendNS and increments updateCount.
+     * Add time to spendNS and increments updateCount.
      * @param ms milli seconds to add.
      * @return spendMS.
      */
@@ -228,14 +263,14 @@ public class Timing {
      * @return average based on {@link #getNS()} and updateCount.
      */
     public long getAverageNS() {
-        return getNS() / (updateCount == 0 ? 0 : updateCount);
+        return updateCount == 0 ? 0 : getNS()/updateCount;
     }
 
     /**
      * @return average based on {@link #getMS()} and updateCount.
      */
     public long getAverageMS() {
-        return (getNS() / (updateCount == 0 ? 0 : updateCount))/1000000;
+        return updateCount == 0 ? 0 : getNS()/updateCount/1000000;
     }
 
     public void clear() {
@@ -245,10 +280,10 @@ public class Timing {
     }
 
     /**
-     * @return recursive timing information in milliseconds.
+     * @return recursive timing information using the existing {@link #showStats} setup.
      */
     public String toString() {
-        return toString(false);
+        return toString(showStats, false);
     }
 
     /**
@@ -267,9 +302,7 @@ public class Timing {
      * @return recursive timing information in nano- or milli-seconds.
      */
     public String toString(boolean ns, boolean indent) {
-        StringBuilder sb = new StringBuilder();
-        toString(sb, ns, indent);
-        return sb.toString();
+        return toString(ns ? NS_STATS : MS_STATS, indent);
     }
 
     public void toString(StringBuilder sb, boolean ns) {
@@ -277,21 +310,86 @@ public class Timing {
     }
 
     void toString(StringBuilder sb, boolean ns, boolean indent) {
-        toString(sb, ns, indent, "");
+        toString(sb, ns ? NS_STATS : MS_STATS, indent, "");
     }
 
-    private void toString(StringBuilder sb, boolean ns, boolean indent, String spaces) {
-        sb.append(spaces).append(name).append("(");
-        if (subject != null) {
-            sb.append("subj='").append(subject).append("', ");
+    /**
+     * @param showStats the stats to output. Pre-defined collections are {@link #MS_STATS} and {@link #NS_STATS}.
+     * @return recursive timing information.
+     */
+    public String toString(STATS[] showStats) {
+        return toString(showStats, false);
+    }
+
+    /**
+     * @param showStats the stats to output. Pre-defined collections are {@link #MS_STATS} and {@link #NS_STATS}.
+     * @param indent if true, the result is rendered multi-line and indented.
+     * @return recursive timing information.
+     */
+    public String toString(STATS[] showStats, boolean indent) {
+        StringBuilder sb = new StringBuilder();
+        toString(sb, showStats, indent, "");
+        return sb.toString();
+    }
+
+    private void toString(StringBuilder sb, STATS[] showStats, boolean indent, String spaces) {
+        sb.append(spaces);
+        for (STATS stat: showStats) {
+            if (stat == STATS.name) {
+                sb.append(name);
+                break;
+            }
         }
-        sb.append(ns ? getNS() + "ns" : getMS() + "ms");
-        if (updateCount > 1) {
-            sb.append(", ").append(updateCount).append(unit).append(", ");
-            sb.append(ns ? getAverageNS() + "ns/" + unit : getAverageMS() + "ms/").append(unit);
-            sb.append(", ").append(getAverageUpdatesPerSecond()).append(unit).append("/s");
-            sb.append(", min=").append(ns ? getMinNS() + "ns" : getMinMS() + "ms");
-            sb.append(", max=").append(ns ? getMaxNS() + "ns" : getMaxMS() + "ms");
+        sb.append("(");
+        boolean empty = true;
+        for (STATS stat: showStats) {
+            if (stat == STATS.name || (stat == STATS.subject && subject == null)) {
+                continue;
+            }
+            if (empty) {
+                empty = false;
+            } else {
+                sb.append(", ");
+            }
+            switch (stat) {
+                case subject:
+                    sb.append("subj='").append(subject).append("'");
+                    break;
+                case ms:
+                    sb.append(getMS()).append("ms");
+                    break;
+                case ns:
+                    sb.append(getMS()).append("ns");
+                    break;
+                case updates:
+                    sb.append(updateCount).append(unit);
+                    break;
+                case ms_updates:
+                    sb.append(getAverageMS()).append("ms/").append(unit);
+                    break;
+                case ns_updates:
+                    sb.append(getAverageNS()).append("ns/").append(unit);
+                    break;
+                case updates_s:
+                    sb.append(getAverageUpdatesPerSecond()).append(unit).append("/s");
+                    break;
+                case min_ms:
+                    sb.append("min=").append(getMinMS()).append("ms");
+                    break;
+                case min_ns:
+                    sb.append("min=").append(getMinNS()).append("ns");
+                    break;
+                case max_ms:
+                    sb.append("max=").append(getMaxMS()).append("ms");
+                    break;
+                case max_ns:
+                    sb.append("max=").append(getMaxNS()).append("ns");
+                    break;
+                case utilization:
+                    sb.append(String.format("util=%.1f%%", 100.0*getNS()/(System.nanoTime()-objectCreation)));
+                    break;
+                default: throw new UnsupportedOperationException("The stat '" + stat + "' is not supported yet");
+            }
         }
         if (children != null && !children.isEmpty()) {
             sb.append(indent ? ", [\n" : ", [");
@@ -303,7 +401,7 @@ public class Timing {
                     sb.append(indent ? ",\n" : ", ");
                     first = false;
                 }
-                child.toString(sb, ns, indent, indent ? spaces + "  " : "");
+                child.toString(sb, showStats, indent, indent ? spaces + "  " : "");
             }
             sb.append(indent ? "\n" + spaces + "]" : "]");
         }
@@ -311,19 +409,19 @@ public class Timing {
     }
 
     public long getMinNS() {
-        return minNS;
+        return minNS == Long.MAX_VALUE ? 0 : minNS;
     }
 
     public long getMaxNS() {
-        return maxNS;
+        return maxNS == Long.MIN_VALUE ? 0 : maxNS;
     }
 
     public long getMinMS() {
-        return minNS/1000000;
+        return minNS == Long.MAX_VALUE ? 0 : minNS/1000000;
     }
 
     public long getMaxMS() {
-        return maxNS/1000000;
+        return maxNS == Long.MIN_VALUE ? 0 : maxNS/1000000;
     }
 
     public long getAverageUpdatesPerSecond() {

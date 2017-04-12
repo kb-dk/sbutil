@@ -61,6 +61,6 @@ public class TimingTest extends TestCase {
         timing.getChild("sub_e").getChild("sub_e_a");
 
         Thread.sleep(10);
-        System.out.println("Final output: " + timing.toString(false, false));
+        System.out.println("Final output: " + timing);
     }
 }
