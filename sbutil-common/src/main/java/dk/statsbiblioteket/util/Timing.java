@@ -14,8 +14,7 @@
  */
 package dk.statsbiblioteket.util;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -29,7 +28,8 @@ import java.util.concurrent.atomic.AtomicLong;
 // TODO: Consider adding a toJSON
 public class Timing {
     public enum STATS {
-        name, subject, ms, ns, updates, ms_updates, ns_updates, updates_s, min_ms, min_ns, max_ms, max_ns, utilization,
+        name, subject, ms, ns, updates, ms_updates, ns_updates, updates_s, min_ms, min_ns, max_ms, max_ns,
+        last_ms, last_ns, utilization,
     }
     public static final STATS[] MS_STATS = new STATS[]{
             STATS.name, STATS.subject, STATS.ms, STATS.updates, STATS.ms_updates, STATS.updates_s,
@@ -47,6 +47,7 @@ public class Timing {
     private final long objectCreation = System.nanoTime();
 
     private long lastStart = System.nanoTime();
+    private final AtomicLong lastNS = new AtomicLong(0);
     private final AtomicLong minNS = new AtomicLong(Long.MAX_VALUE);
     private final AtomicLong maxNS = new AtomicLong(Long.MIN_VALUE);
     private final AtomicLong spendNS = new AtomicLong(0);
@@ -173,6 +174,29 @@ public class Timing {
     }
 
     /**
+     * Not a high-performance method as the list is created on each call from a HashMap.
+     * Note that children may have sub-children.
+     * @return A list of all children. If there are no children, the empty list will be returned.
+     */
+    public List<Timing> getAllChildren() {
+        if (children == null || children.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<Timing> cList = new ArrayList<Timing>(children.size());
+        for (Map.Entry<String, Timing> child: children.entrySet()) {
+            cList.add(child.getValue());
+        }
+        return cList;
+    }
+
+    /**
+     * @return the number of children.
+     */
+    public int getChildCount() {
+        return children == null ? 0 : children.size();
+    }
+
+    /**
      * Resets start time to current nanoTime.
      * </p><p>
      * Note: Start is automatically called during construction of this Timing instance.
@@ -205,6 +229,7 @@ public class Timing {
         long now = System.nanoTime();
         long spend = now-lastStart;
         updateMinMax(spend);
+        lastNS.set(spend);
         spendNS.addAndGet(spend);
         updateCount.set(updates);
         lastStart = now;
@@ -236,6 +261,7 @@ public class Timing {
      */
     public long addNS(long ns) {
         updateMinMax(ns);
+        lastNS.set(ns);
         spendNS.addAndGet(ns);
         updateCount.incrementAndGet();
         return getNS();
@@ -254,6 +280,7 @@ public class Timing {
         } else if (updates > 1) {
             updateMinMax(ns/updates);
         }
+        lastNS.set(ns);
         spendNS.addAndGet(ns);
         updateCount.addAndGet(updates);
         return getNS();
@@ -340,6 +367,7 @@ public class Timing {
 
     public void clear() {
         updateCount.set(0);
+        lastNS.set(0);
         spendNS.set(0);
         start();
     }
@@ -449,6 +477,12 @@ public class Timing {
                     break;
                 case max_ns:
                     sb.append("max=").append(getMaxNS()).append("ns");
+                    break;
+                case last_ms:
+                    sb.append("last").append(lastNS.get()/1000000).append("ms");
+                    break;
+                case last_ns:
+                    sb.append("last").append(lastNS.get()).append("ns");
                     break;
                 case utilization:
                     sb.append(String.format("util=%.1f%%", 100.0*getNS()/(System.nanoTime()-objectCreation)));
