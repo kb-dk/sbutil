@@ -620,7 +620,7 @@ public class XMLStepper {
                         continue;
                     }
                     FakeXPath fakeXPath = fakeXPaths.get(i);
-                    if (fakeXPath.matches(xml, tags, current)) { // We have a match
+                    if (fakeXPath.matches(xml, tags)) { // We have a match
                         localMatches.add(fakeXPath.getValue(xml));
                         if (totalCollects.incrementAndGet() == fakeXPaths.size()*maxResultsPerFakeXPath) {
                             return PROCESS_ACTION.requests_stop_success; // All full, so we stop at once
@@ -636,74 +636,185 @@ public class XMLStepper {
     }
 
     /**
-     * fakeXPath {@code /*}: Any element.
-     * fakeXPath {@code /foo/*}: First element under first {@code foo} element.
-     * fakeXPath {@code /foo/bar}: Bar element under foo.
-     * fakeXPath {@code /foo/* /bar}: Bar element under any element under foo.
-     * fakeXPath {@code /foo/@bar}: Bar attribute in element foo.
+     * Subset of XPath @{url https://www.w3schools.com/xml/xpath_syntax.asp}.<br/>
+     * Parsing always start from the root of the document, so @{code foo} and {@code /foo} are equal.
+     * For the same reason, {@code ..} is not supported.<br/>
+     * {@code //} is supported.<br/>
+     *
+     * Predicate support:<br/>
+     * {@code foo[@bar]}: The element foo with the attribute bar.<br/>
+     * {@code foo[@bar='zoo']}: The element foo with the attribute bar with value zoo.<br/>
+     *
+     * Wildcard support:<br/>
+     * {@code *}: Any element node.
+     * {@code @*}: Any attribute node.
+     * Not supported: {@code node()}.
+     *
      */
     // TODO: /foo/[@bar=zoo]@baz
     // TODO: /foo/[@bar=zoo]/*
     // TODO: foo/[@bar=zoo]/*
     // TODO: foo matches foo/bar . Trailing /?
+    // https://www.w3schools.com/xml/xpath_syntax.asp
     private static class FakeXPath {
         private final String xpathString;
-        private final String[] path;
-        private final boolean lastIsAttribute;
-        private final String attributeName;
+
+        private final boolean locationIndependent;
+        private final PathElement[] path;
+        private final PathElement extraction;
 
         public FakeXPath(String fakeXPath) {
-            if (fakeXPath.startsWith("/")) {
-                fakeXPath = fakeXPath.substring(1);
-            } else if (fakeXPath.startsWith("./")) {
+            if (fakeXPath.startsWith("//")) {
+                locationIndependent = true;
                 fakeXPath = fakeXPath.substring(2);
+            } else {
+                locationIndependent = false;
+                if (fakeXPath.startsWith("./")) {
+                    fakeXPath = fakeXPath.substring(2);
+                } else if (fakeXPath.startsWith("/")) {
+                    fakeXPath = fakeXPath.substring(1);
+                }
             }
             this.xpathString = fakeXPath;
 
             String[] potentialPath = fakeXPath.split("/");
-            if (potentialPath[potentialPath.length-1].startsWith("@")) { // Ends with attribute
-                lastIsAttribute = true;
-                attributeName = potentialPath[potentialPath.length-1].substring(1);
-                path = Arrays.copyOfRange(potentialPath, 0, potentialPath.length-1);
+            PathElement extractionCandidate = new PathElement(potentialPath[potentialPath.length-1]);
+            int convertCount;
+            if (extractionCandidate.isAttribute) {
+                extraction = extractionCandidate;
+                convertCount = potentialPath.length-1;
             } else {
-                lastIsAttribute = false;
-                attributeName = null;
-                path = potentialPath;
+                extraction = PathElement.ELEMENT_TEXT;
+                convertCount = potentialPath.length;
+            }
+            path = new PathElement[convertCount];
+            for (int i = 0 ; i < convertCount ; i++) {
+                try {
+                    path[i] = new PathElement(potentialPath[i]);
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("Unable to parse FakeXPath element '" + potentialPath[i] +
+                                                       "' from full expression '" + fakeXPath + "'", e);
+                }
             }
         }
 
-        public boolean matches(XMLStreamReader xml, List<String> tags, String current) {
+        public boolean matches(XMLStreamReader xml, List<String> tags) {
+            if (locationIndependent && path.length < tags.size()) {
+                int offset = tags.size() - path.length;
+                return matches(xml, tags.subList(offset, tags.size()));
+            }
             if (path.length != tags.size()) {
                 return false;
             }
-            for (int i = 0; i < tags.size(); i++) {
-                if (path[i].equals("*")) {
-                    continue;
-                }
-                if (!path[i].equals(tags.get(i))) {
+            for (int i = 0 ; i < path.length ; i++) {
+                if (!path[i].matches(xml, tags.get(i))) {
                     return false;
                 }
             }
-            return !lastIsAttribute || getAttribute(xml, attributeName, null) != null;
+            return true;
         }
 
-        // Always advances, expects match
         public String getValue(XMLStreamReader xml) throws XMLStreamException {
-            if (!lastIsAttribute) {
-                return xml.getElementText();
-            }
-
-            String attributeValue = getAttribute(xml, attributeName, null);
-            if (attributeValue == null) {
-                throw new IllegalStateException(
-                        "Tried extracting value for attribute '" + attributeName + "' but got null");
-            }
-            xml.next();
-            return attributeValue;
+            return extraction.value(xml);
         }
 
         public String getFakeXPathString() {
             return xpathString;
+        }
+
+        public static class PathElement {
+            private final boolean isAttribute;
+            private final String key;
+            private final boolean wildcard;
+
+            private final boolean hasPredicate;
+            private final String predicateAttributeName;
+            private final String predicateAttributeValue;
+
+            public static final PathElement ELEMENT_TEXT = new PathElement("*");
+
+            public PathElement(String element) {
+                if (element.startsWith("@")) { // Is an attribute
+                    // @bar
+                    isAttribute = true;
+                    hasPredicate = false;
+                    predicateAttributeName = null;
+                    predicateAttributeValue = null;
+                    key = element.substring(1);
+                    wildcard = "*".equals(key);
+                    return;
+                }
+
+                if (element.contains("[")) { // Contains a predicate
+                    // foo[@bar='zoo']
+                    // foo[@bar]
+                    isAttribute = false;
+                    hasPredicate = true;
+                    int start = element.indexOf("[") + 1;
+                    int end = element.indexOf("]");
+                    key = element.substring(0, start-1);
+                    wildcard = "*".equals(key);
+
+                    // @bar='zoo'
+                    // @bar
+                    String predicate = element.substring(start, end);
+                    if (!predicate.startsWith("@")) {
+                        throw new IllegalArgumentException("The predicate '" + predicate + "' must start with '@'");
+                    }
+                    int eqIndex = predicate.indexOf("=");
+                    if (eqIndex > 0) {
+                        // @bar='zoo'
+                        predicateAttributeName = predicate.substring(1, eqIndex);
+                        predicateAttributeValue = predicate.substring(eqIndex + 2, predicate.length() - 1);
+                    } else {
+                        // @bar
+                        predicateAttributeName = predicate.substring(1);
+                        predicateAttributeValue = null;
+                    }
+                    return;
+                }
+
+                // Plain element key
+                // foo
+                isAttribute = false;
+                key = element;
+                wildcard = "*".equals(key);
+                hasPredicate = false;
+                predicateAttributeName = null;
+                predicateAttributeValue = null;
+            }
+            public boolean matches(XMLStreamReader xml, String elementName) { // Always at element_start
+                if (isAttribute) {
+                    return getAttribute(xml, key, null) != null;
+                }
+                if (!wildcard && !elementName.equals(key)) {
+                    return false;
+                }
+                if (hasPredicate) {
+                    String value = getAttribute(xml, predicateAttributeName, null);
+                    if (value == null) {
+                        return false;
+                    }
+                    if (predicateAttributeValue != null && !predicateAttributeValue.equals(value)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            // Always advances, expects match
+            public String value(XMLStreamReader xml) throws XMLStreamException {
+                if (!isAttribute) {
+                    return xml.getElementText();
+                }
+
+                String attributeValue = getAttribute(xml, key, null);
+                if (attributeValue == null) {
+                    throw new IllegalStateException(
+                            "Tried extracting value for attribute '" + key + "' but got null");
+                }
+                xml.next(); // Hmm... Could we avoid this?
+                return attributeValue;
+            }
         }
     }
 

@@ -62,10 +62,33 @@ public class XMLStepperTest extends TestCase {
         final String BIG_XML = Strings.flushLocal(
                 Thread.currentThread().getContextClassLoader().getResourceAsStream("data/big.xml"));
         final String[][] tests = new String[][]{
-                {"/project/property/@name", "project.name", "project.version.variant"},
-                {"/project/*/@name", "project.name", "project.version.variant"},
-                {"/*/property/@name", "project.name", "project.version.variant"},
-                {"/*/*/@name", "project.name", "project.version.variant"}
+                {"/project/property/@name", "project.name"},
+                {"/project/*/@name", "project.name"},
+                {"/*/property/@name", "project.name"},
+                {"/*/*/@name", "project.name"}
+        };
+        assertXPathShorthand(BIG_XML, tests);
+    }
+
+    public void testFakeXPathPredicated() throws XMLStreamException {
+        final String BIG_XML = Strings.flushLocal(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("data/big.xml"));
+        final String[][] tests = new String[][]{
+                {"/project/monkey[@bar='fun']", "ape"},
+                {"/project/property[@name='lib.dir']/@value", "${basedir}/lib"},
+                {"/project/property[@name]/@value", "sbutil"},
+                {"/project/*[@name='config.dir']/@value", "${basedir}/config"},
+        };
+        assertXPathShorthand(BIG_XML, tests);
+    }
+
+    public void testFakeXPathAnywhere() throws XMLStreamException {
+        final String BIG_XML = Strings.flushLocal(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("data/big.xml"));
+        final String[][] tests = new String[][]{
+                {"//bar", "zoo2"},
+                {"/bar]", null},
+                {"/project/foo/bar", "zoo2", ""},
         };
         assertXPathShorthand(BIG_XML, tests);
     }
@@ -121,7 +144,8 @@ public class XMLStepperTest extends TestCase {
                 //{"/project/foo/bar", "zoo2"}, // Yes, repeat of the above - does not work yet
                 //{"/project/foo/bar@moo", "?"},
                 //{"/project/foo/bar/@somat", "zoo4"}
-                {"/project/foo/baz", "zoo3"}
+                {"/project/foo/baz", "zoo3"},
+                {"//monkey", "ape", "gorilla"}
         };
         assertXPaths(BIG_XML, tests, 2);
     }
