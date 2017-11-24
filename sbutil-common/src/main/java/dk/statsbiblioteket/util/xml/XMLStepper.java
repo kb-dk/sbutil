@@ -650,6 +650,7 @@ public class XMLStepper {
      * {@code @*}: Any attribute node.
      * Not supported: {@code node()}.
      *
+     * Trailing {@code /text()} is treated as element text and ignored.
      */
     // TODO: /foo/[@bar=zoo]@baz
     // TODO: /foo/[@bar=zoo]/*
@@ -674,6 +675,9 @@ public class XMLStepper {
                 } else if (fakeXPath.startsWith("/")) {
                     fakeXPath = fakeXPath.substring(1);
                 }
+            }
+            if (fakeXPath.endsWith("/text()")) {
+                fakeXPath = fakeXPath.substring(0, fakeXPath.length()-"/text()".length());
             }
             this.xpathString = fakeXPath;
 

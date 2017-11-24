@@ -87,8 +87,10 @@ public class XMLStepperTest extends TestCase {
                 Thread.currentThread().getContextClassLoader().getResourceAsStream("data/big.xml"));
         final String[][] tests = new String[][]{
                 {"//bar", "zoo2"},
+                {"//bar/text()", "zoo2"},
                 {"/bar]", null},
                 {"/project/foo/bar", "zoo2", ""},
+                {"/project/foo/bar/text()", "zoo2", ""},
         };
         assertXPathShorthand(BIG_XML, tests);
     }
