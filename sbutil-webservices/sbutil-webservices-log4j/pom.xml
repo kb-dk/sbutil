@@ -5,7 +5,7 @@
     <parent>
         <groupId>dk.statsbiblioteket.sbutil</groupId>
         <artifactId>sbutil-webservices</artifactId>
-        <version>0.5.53</version>
+        <version>0.5.54-SNAPSHOT</version>
     </parent>
 
     <artifactId>sbutil-webservices-log4j</artifactId>
