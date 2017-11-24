@@ -37,32 +37,32 @@ import java.util.concurrent.Callable;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "abr")
 public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
-    private InputStream processInput = null;
-    private InputStream processOutput = null;
-    private InputStream processError = null;
+    protected InputStream processInput = null;
+    protected InputStream processOutput = null;
+    protected InputStream processError = null;
 
     /**
      * The threads that polls the output from the commands. When a thread is
      * finished, it removes itself from this list.
      */
-    private final List<Thread> threads =
+    protected final List<Thread> threads =
             Collections.synchronizedList(new LinkedList<Thread>());
 
-    private final int MAXINITIALBUFFER = 1000000;
-    private final int THREADTIMEOUT = 1000; // Milliseconds
-    private final int POLLING_INTERVAL = 100;//milli
+    protected final int MAXINITIALBUFFER = 1000000;
+    protected final int THREADTIMEOUT = 1000; // Milliseconds
+    protected final int POLLING_INTERVAL = 100;//milli
 
-    private final ProcessBuilder pb;
+    protected final ProcessBuilder pb;
 
     //   private final Object locker = new Object();
 
-    private long timeout = Long.MAX_VALUE;
+    protected long timeout = Long.MAX_VALUE;
 
-    private boolean collect = true;
-    private int maxOutput = 31000;
-    private int maxError = 31000;
-    private int return_code = -2;
-    private boolean timedOut;
+    protected boolean collect = true;
+    protected int maxOutput = 31000;
+    protected int maxError = 31000;
+    protected int return_code = -2;
+    protected boolean timedOut;
 
     /**
      * Create a new ProcessRunner. Cannot run, until you specify something with
@@ -265,7 +265,7 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
     /**
      * Wait for the polling threads to finish.
      */
-    private void waitForThreads() {
+    protected void waitForThreads() {
         long endTime = System.currentTimeMillis() + THREADTIMEOUT;
         while (System.currentTimeMillis() < endTime && threads.size() > 0) {
             try {
@@ -282,7 +282,7 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
      * @param stream the string to read
      * @return A string with the contents of the stream.
      */
-    private String getStringContent(InputStream stream) {
+    protected String getStringContent(InputStream stream) {
         if (stream == null) {
             return null;
         }
@@ -334,7 +334,7 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
         return this;
     }
 
-    private int execute(Process p) {
+    protected int execute(Process p) {
         long startTime = System.currentTimeMillis();
         feedProcess(p, processInput);
         int return_value;
@@ -369,7 +369,7 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
     }
 
 
-    private ByteArrayOutputStream collectProcessOutput(
+    protected ByteArrayOutputStream collectProcessOutput(
             final InputStream inputStream, final int maxCollect) {
         final ByteArrayOutputStream stream;
         if (maxCollect < 0) {
@@ -415,7 +415,7 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
         return stream;
     }
 
-    private void feedProcess(final Process process, InputStream processInput) {
+    protected void feedProcess(final Process process, InputStream processInput) {
         if (processInput == null) {
             // No complaints here - null just means no input
             return;

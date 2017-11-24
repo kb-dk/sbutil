@@ -3,7 +3,7 @@
 
     <groupId>dk.statsbiblioteket.sbutil</groupId>
     <artifactId>sbutil</artifactId>
-    <version>0.5.51-SNAPSHOT</version>
+    <version>0.5.52-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>sbutil</name>
@@ -13,7 +13,7 @@
     <parent>
         <groupId>org.sbforge</groupId>
         <artifactId>sbforge-parent</artifactId>
-        <version>12</version>
+        <version>19</version>
     </parent>
 
     <modules>
@@ -82,6 +82,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	<additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 
 
@@ -115,16 +116,20 @@
 
                     <!--<forkMode>never</forkMode>-->
                 </configuration>
-            </plugin>
+	    </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>2.2.1</version>
                 <executions>
                     <execution>
-                        <id>attach-sources</id>
+                         <id>attach-sources</id>
+                         <phase>none</phase><!--Disable the release-profile broken source plugin. See http://blog.peterlynch.ca/2010/05/maven-how-to-prevent-generate-sources.html-->
+                    </execution>
+                    <execution>
+                        <id>attach-sources-no-fork</id>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>jar-no-fork</goal>
                         </goals>
                     </execution>
                 </executions>
