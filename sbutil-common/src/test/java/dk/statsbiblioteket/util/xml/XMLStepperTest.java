@@ -22,9 +22,7 @@ import org.apache.commons.logging.LogFactory;
 
 import javax.xml.stream.*;
 import java.io.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
@@ -50,6 +48,101 @@ public class XMLStepperTest extends TestCase {
         xmlFactory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
     }
     private XMLOutputFactory xmlOutFactory = XMLOutputFactory.newInstance();
+
+    public void testFakeXPath() throws XMLStreamException {
+        final String BIG_XML = Strings.flushLocal(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("data/big.xml"));
+        final String[][] tests = new String[][]{
+                {"/project/property/@name", "project.name", "project.version.variant"}
+        };
+        assertXPaths(BIG_XML, tests, 2);
+    }
+
+    public void testFakeXPathStar() throws XMLStreamException {
+        final String BIG_XML = Strings.flushLocal(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("data/big.xml"));
+        final String[][] tests = new String[][]{
+                {"/project/property/@name", "project.name", "project.version.variant"},
+                {"/project/*/@name", "project.name", "project.version.variant"},
+                {"/*/property/@name", "project.name", "project.version.variant"},
+                {"/*/*/@name", "project.name", "project.version.variant"}
+        };
+        assertXPathShorthand(BIG_XML, tests);
+    }
+
+    public void testFakeXPathShorthand() throws XMLStreamException {
+        final String BIG_XML = Strings.flushLocal(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("data/big.xml"));
+        final String[][] tests = new String[][]{
+                {"/project/property/@name", "project.name"},
+                {"/project/tstamp/format/@pattern", "MM/dd/yyyy HH:mm"}
+        };
+        assertXPathShorthand(BIG_XML, tests);
+        assertXPathShorthands(BIG_XML, tests);
+    }
+    private void assertXPathShorthand(String xml, String[][] tests) throws XMLStreamException {
+        for (String[] test : tests) {
+            String result = XMLStepper.evaluateFakeXPath(xml, test[0]);
+            assertEquals("The single-xpath result for '" + test[0] + " should be as expected", test[1], result);
+        }
+    }
+    private void assertXPathShorthands(String xml, String[][] tests) throws XMLStreamException {
+        List<String> xPaths = new ArrayList<String>(tests.length);
+        for (String[] test: tests) {
+            xPaths.add(test[0]);
+        }
+        List<String> results = XMLStepper.evaluateFakeXPathsSingleResults(xml, xPaths);
+
+        for (int i = 0; i < tests.length; i++) {
+            String[] test = tests[i];
+            String result = results.get(i);
+            assertEquals("The multi-xpaths result for '" + test[0] + " should be as expected", test[1], result);
+        }
+    }
+
+    public void testFakeXPathEarlyTermination() throws XMLStreamException {
+        final String BIG_XML = Strings.flushLocal(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("data/big.xml"));
+        final String[][] tests = new String[][]{
+                {"/project/tstamp/format/@pattern", "MM/dd/yyyy HH:mm"}
+        };
+        assertXPaths(BIG_XML, tests, 1);
+    }
+
+    public void testFakeXPathMulti() throws XMLStreamException {
+        final String BIG_XML = Strings.flushLocal(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream("data/big.xml"));
+        final String[][] tests = new String[][]{
+                {"/project/property/@name", "project.name", "project.version.variant"},
+                {"/project/tstamp/format/@pattern", "MM/dd/yyyy HH:mm"},
+                {"/project/moo", "zoo1"},
+                {"/project/foo/bar", "zoo2", ""},
+                // TODO: Make multi-matches work
+                //{"/project/foo/bar", "zoo2"}, // Yes, repeat of the above - does not work yet
+                //{"/project/foo/bar@moo", "?"},
+                //{"/project/foo/bar/@somat", "zoo4"}
+                {"/project/foo/baz", "zoo3"}
+        };
+        assertXPaths(BIG_XML, tests, 2);
+    }
+
+    private void assertXPaths(String xml, String[][] tests, int maxMatchesPerXP) throws XMLStreamException {
+        List<String> xPaths = new ArrayList<String>(tests.length);
+        for (String[] test: tests) {
+            xPaths.add(test[0]);
+        }
+        List<List<String>> results = XMLStepper.evaluateFakeXPaths(xml, xPaths, maxMatchesPerXP);
+
+        for (int i = 0; i < tests.length; i++) {
+            String[] test = tests[i];
+            List<String> result = results.get(i);
+            assertEquals("The number of matches for " + test[0] + " should be as expected",
+                         test.length - 1, result.size());
+            for (int j = 0 ; j < test.length-1 ; j++) {
+                assertEquals("Result #" + j + " for " + test[0] + " should match", test[j+1], result.get(j));
+            }
+        }
+    }
 
     public void testSpaceRemoval() throws IOException, XMLStreamException {
         String INPUT = Strings.flush(Thread.currentThread().getContextClassLoader().getResourceAsStream(

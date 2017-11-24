@@ -22,6 +22,7 @@ import dk.statsbiblioteket.util.reader.ThreadedPiper;
 import javax.xml.stream.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,8 +53,13 @@ public class XMLStepper {
             if (xml.getEventType() == XMLStreamReader.START_ELEMENT) {
                 String currentTag = xml.getLocalName();
                 tagStack.add(currentTag);
-                if (!callback.elementStart(xml, tagStack, currentTag)) {
-                    xml.next();
+                switch(callback.elementStart2(xml, tagStack, currentTag)) {
+                    case requests_stop_success:
+                    case requests_stop_fail:
+                        callback.end();
+                        return;
+                    case no_action: xml.next();
+                    // Ignore no_action
                 }
                 continue;
             }
@@ -363,21 +369,35 @@ public class XMLStepper {
                 case XMLStreamReader.START_ELEMENT: {
                     String element = in.getLocalName();
                     elementStack.add(element);
-                    if (callback == null || !callback.elementStart(in, elementStack, element)) {
-                        copyStartElement(in, out);
-                        in.next();
-                        if (pipeXML(in, out, ignoreErrors, false, elementStack, callback)) {
+                    Callback.PROCESS_ACTION callResult = callback == null ? Callback.PROCESS_ACTION.no_action :
+                            callback.elementStart2(in, elementStack, element);
+                    switch (callResult) {
+                        case no_action:
+                            copyStartElement(in, out);
+                            in.next();
+                            if (pipeXML(in, out, ignoreErrors, false, elementStack, callback)) {
+                                out.flush();
+                                return true;
+                            }
+                            break;
+                        case called_next: // callback handled the element so we do not pipe the END_ELEMENT
+                            if (XMLStreamReader.END_ELEMENT != in.getEventType()) {
+                                throw new IllegalStateException(String.format(
+                                        "Callback for %s returned calles_next, but did not position the XML stream at "
+                                        + "END_ELEMENT. Current eventType is %s",
+                                        Strings.join(elementStack, ", "),
+                                        XMLUtil.eventID2String(in.getEventType())));
+                            }
+                            elementStack.remove(elementStack.size()-1);
+                            break;
+                        case requests_stop_success:
+                            out.writeEndDocument();
                             out.flush();
                             return true;
-                        }
-                    } else { // callback handled the element so we do not pipe the END_ELEMENT
-                        if (XMLStreamReader.END_ELEMENT != in.getEventType()) {
-                            throw new IllegalStateException(String.format(
-                                    "Callback for %s returned true, but did not position the XML stream at "
-                                    + "END_ELEMENT. Current eventType is %s",
-                                    Strings.join(elementStack, ", "), XMLUtil.eventID2String(in.getEventType())));
-                        }
-                        elementStack.remove(elementStack.size()-1);
+                        case requests_stop_fail:
+                            out.flush(); // No end document af processing failed
+                            return false;
+                        default: throw new UnsupportedOperationException("Unknown PROCESS_ACTION '" + callResult + "'");
                     }
                     break;
                 }
@@ -486,6 +506,205 @@ public class XMLStepper {
             }
         });
         return result.getValue();
+    }
+
+    /**
+     * Extraction of an XPath-like query, returning at most 1 result.
+     * @param xml        the XML to extract text from.
+     * @param fakeXPath  the fakeXPath to evaluate.
+     * @see FakeXPath
+     * @return the result of the evaluation or null if there was no match.
+     */
+    public static String evaluateFakeXPath(CharSequence xml, String fakeXPath) throws XMLStreamException {
+        return evaluateFakeXPathsSingleResultsPremade(xml, parsePaths(Collections.singletonList(fakeXPath))).get(0);
+    }
+
+    /**
+     * Extraction of an XPath-like query, returning at most 1 result.
+     * @param xml        the XML to extract text from.
+     * @param fakeXPath  the fakeXPath to evaluate.
+     * @see FakeXPath
+     * @return the result of the evaluation or null if there was no match.
+     */
+    public static String evaluateFakeXPath(CharSequence xml, FakeXPath fakeXPath) throws XMLStreamException {
+        return evaluateFakeXPathsSingleResultsPremade(xml, Collections.singletonList(fakeXPath)).get(0);
+    }
+    /**
+     * Extraction of values with an XPath-like query, returning at most 1 result/FakeXPath.
+     * @param xml        the XML to extract text from.
+     * @param fakeXPaths list of fakeXPaths to evaluate.
+     * @see FakeXPath
+     * @return a list with the same number of elements as fakeXPaths with the results of the XPaths matching the order,
+     *         null as a xpath-result means no match.
+     */
+    public static List<String> evaluateFakeXPathsSingleResults(
+            CharSequence xml, List<String> fakeXPaths) throws XMLStreamException {
+        return evaluateFakeXPathsSingleResultsPremade(xml, parsePaths(fakeXPaths));
+    }
+    /**
+     * Extraction of values with an XPath-like query, returning at most 1 result/FakeXPath.
+     * @param xml        the XML to extract text from.
+     * @param fakeXPaths list of fakeXPaths to evaluate.
+     * @see FakeXPath
+     * @return a list with the same number of elements as fakeXPaths with the results of the XPaths matching the order,
+     *         null as a xpath-result means no match.
+     */
+    public static List<String> evaluateFakeXPathsSingleResultsPremade(
+            CharSequence xml, List<FakeXPath> fakeXPaths) throws XMLStreamException {
+        List<List<String>> nested = evaluateFakeXPathsPremade(xml, fakeXPaths, 1);
+        List<String> single = new ArrayList<String>(nested.size());
+        for (List<String> entry: nested) {
+            single.add(entry.isEmpty() ? null : entry.get(0));
+        }
+        return single;
+    }
+    /**
+     * Extraction of values with an XPath-like query.
+     * @param xml        the XML to extract text from.
+     * @param fakeXPaths list of fakeXPaths to evaluate.
+     * @param maxResultsPerFakeXPath maximum numbers of results per XPath, -1 means no limit.
+     * @see FakeXPath
+     * @return a list with the same number of elements as fakeXPaths with the results of the XPaths matching the order.
+     */
+    public static List<List<String>> evaluateFakeXPaths(
+            CharSequence xml, List<String> fakeXPaths, final int maxResultsPerFakeXPath) throws XMLStreamException {
+        return evaluateFakeXPaths(xmlFactory.createXMLStreamReader(new CharSequenceReader(xml)),
+                                  parsePaths(fakeXPaths), maxResultsPerFakeXPath);
+    }
+    private static List<FakeXPath> parsePaths(List<String> fakeXPaths) {
+        List<FakeXPath> fxs = new ArrayList<FakeXPath>(fakeXPaths.size());
+        for (String fakeXPathString: fakeXPaths) {
+            fxs.add(new FakeXPath(fakeXPathString));
+        }
+        return fxs;
+    }
+    /**
+     * Extraction of values with an XPath-like query.
+     * @param xml        the XML to extract text from.
+     * @param fakeXPaths list of fakeXPaths to evaluate.
+     * @param maxResultsPerFakeXPath maximum numbers of results per XPath, -1 means no limit.
+     * @return a list with the same number of elements as fakeXPaths with the results of the XPaths matching the order.
+     */
+    // Problem: foo matches foo/bar . Trailing /?
+    public static List<List<String>> evaluateFakeXPathsPremade(
+            CharSequence xml, final List<FakeXPath> fakeXPaths, final int maxResultsPerFakeXPath)
+            throws XMLStreamException {
+        return evaluateFakeXPaths(
+                xmlFactory.createXMLStreamReader(new CharSequenceReader(xml)), fakeXPaths, maxResultsPerFakeXPath);
+    }
+    /**
+     * Specialized extraction of values with an XPath-like query.
+     * @param xml        the XML to extract text from.
+     * @param fakeXPaths list of fakeXPaths to evaluate.
+     * @param maxResultsPerFakeXPath maximum numbers of results per XPath, -1 means no limit.
+     * @return a list with the same number of elements as fakeXPaths with the results of the XPaths matching the order.
+     */
+    // Problem: foo matches foo/bar . Trailing /?
+    public static List<List<String>> evaluateFakeXPaths(
+            XMLStreamReader xml, final List<FakeXPath> fakeXPaths, final int maxResultsPerFakeXPath)
+            throws XMLStreamException {
+        final List<List<String>> matches = new ArrayList<List<String>>(fakeXPaths.size());
+        for (int i = 0 ; i < fakeXPaths.size() ; i++) {
+            matches.add(new ArrayList<String>());
+        }
+        final AtomicInteger totalCollects = new AtomicInteger(0);
+
+        iterateTags(xml, new Callback() {
+            @Override
+            public PROCESS_ACTION elementStart2(XMLStreamReader xml, List<String> tags, String current)
+                    throws XMLStreamException {
+                PROCESS_ACTION action = PROCESS_ACTION.no_action; // Default
+                for (int i = 0 ; i < fakeXPaths.size() ; i++) {
+                    List<String> localMatches = matches.get(i);
+                    if (maxResultsPerFakeXPath != -1 && localMatches.size() >= maxResultsPerFakeXPath) {
+                        continue;
+                    }
+                    FakeXPath fakeXPath = fakeXPaths.get(i);
+                    if (fakeXPath.matches(xml, tags, current)) { // We have a match
+                        localMatches.add(fakeXPath.getValue(xml));
+                        if (totalCollects.incrementAndGet() == fakeXPaths.size()*maxResultsPerFakeXPath) {
+                            return PROCESS_ACTION.requests_stop_success; // All full, so we stop at once
+                        }
+                        action = PROCESS_ACTION.called_next; // No early break as we might have more matches
+                    }
+                }
+                return action;
+            }
+        });
+
+        return matches;
+    }
+
+    /**
+     * fakeXPath {@code /*}: Any element.
+     * fakeXPath {@code /foo/*}: First element under first {@code foo} element.
+     * fakeXPath {@code /foo/bar}: Bar element under foo.
+     * fakeXPath {@code /foo/* /bar}: Bar element under any element under foo.
+     * fakeXPath {@code /foo/@bar}: Bar attribute in element foo.
+     */
+    // TODO: /foo/[@bar=zoo]@baz
+    // TODO: /foo/[@bar=zoo]/*
+    // TODO: foo/[@bar=zoo]/*
+    // TODO: foo matches foo/bar . Trailing /?
+    private static class FakeXPath {
+        private final String xpathString;
+        private final String[] path;
+        private final boolean lastIsAttribute;
+        private final String attributeName;
+
+        public FakeXPath(String fakeXPath) {
+            if (fakeXPath.startsWith("/")) {
+                fakeXPath = fakeXPath.substring(1);
+            } else if (fakeXPath.startsWith("./")) {
+                fakeXPath = fakeXPath.substring(2);
+            }
+            this.xpathString = fakeXPath;
+
+            String[] potentialPath = fakeXPath.split("/");
+            if (potentialPath[potentialPath.length-1].startsWith("@")) { // Ends with attribute
+                lastIsAttribute = true;
+                attributeName = potentialPath[potentialPath.length-1].substring(1);
+                path = Arrays.copyOfRange(potentialPath, 0, potentialPath.length-1);
+            } else {
+                lastIsAttribute = false;
+                attributeName = null;
+                path = potentialPath;
+            }
+        }
+
+        public boolean matches(XMLStreamReader xml, List<String> tags, String current) {
+            if (path.length != tags.size()) {
+                return false;
+            }
+            for (int i = 0; i < tags.size(); i++) {
+                if (path[i].equals("*")) {
+                    continue;
+                }
+                if (!path[i].equals(tags.get(i))) {
+                    return false;
+                }
+            }
+            return !lastIsAttribute || getAttribute(xml, attributeName, null) != null;
+        }
+
+        // Always advances, expects match
+        public String getValue(XMLStreamReader xml) throws XMLStreamException {
+            if (!lastIsAttribute) {
+                return xml.getElementText();
+            }
+
+            String attributeValue = getAttribute(xml, attributeName, null);
+            if (attributeValue == null) {
+                throw new IllegalStateException(
+                        "Tried extracting value for attribute '" + attributeName + "' but got null");
+            }
+            xml.next();
+            return attributeValue;
+        }
+
+        public String getFakeXPathString() {
+            return xpathString;
+        }
     }
 
     /**
@@ -627,9 +846,9 @@ public class XMLStepper {
     public static void skipSubTree(XMLStreamReader xml) throws XMLStreamException {
         iterateTags(xml, new Callback() {
             @Override
-            public boolean elementStart(
-                    XMLStreamReader xml, List<String> tags, String current) throws XMLStreamException {
-                return false; // Ignore everything until end of sub tree
+            public PROCESS_ACTION elementStart2(XMLStreamReader xml, List<String> tags, String current)
+                    throws XMLStreamException {
+                return PROCESS_ACTION.no_action; // Ignore everything until end of sub tree
             }
         });
     }
@@ -642,9 +861,9 @@ public class XMLStepper {
         xml.next();
         iterateTags(xml, new Callback() {
             @Override
-            public boolean elementStart(
-                    XMLStreamReader xml, List<String> tags, String current) throws XMLStreamException {
-                return false; // Ignore everything until end of sub tree
+            public PROCESS_ACTION elementStart2(XMLStreamReader xml, List<String> tags, String current)
+                    throws XMLStreamException {
+                return PROCESS_ACTION.no_action; // Ignore everything until end of sub tree
             }
         });
     }
@@ -766,14 +985,14 @@ public class XMLStepper {
         final Map<Object, Integer> counters = new HashMap<Object, Integer>();
         pipeXML(in, out, false, false, new Callback() {
             @Override
-            public boolean elementStart(
+            public PROCESS_ACTION elementStart2(
                     XMLStreamReader xml, List<String> tags, String current) throws XMLStreamException {
                 Set<RESULT> result = exceeded(counters, xml, tags);
                 if (result.contains(RESULT.exceeded) || (discardNonMatched && !result.contains(RESULT.match))) {
                     skipElement(xml);
-                    return true;
+                    return PROCESS_ACTION.called_next;
                 }
-                return false;
+                return PROCESS_ACTION.no_action;
             }
 
             private Set<RESULT> exceeded(Map<Object, Integer> counters, XMLStreamReader xml, List<String> tags) {
@@ -857,7 +1076,24 @@ public class XMLStepper {
         protected abstract boolean match(XMLStreamReader xml, List<String> tags, String current);
     }
 
+    /**
+     * Override either
+     */
     public abstract static class Callback {
+        public enum PROCESS_ACTION {
+            /** The processing did not change the state of the XMLStreamReader (did not call .next() et al) */
+            no_action,
+            /** The processing called .next() or similar XMLStreamReader-advancing code at least once */
+            called_next,
+            /** The processing has finished all processing on the current stream and requests that further processing
+             * is halted. All is ok.
+             */
+            requests_stop_success,
+            /** The processing has finished all processing on the current stream and requests that further processing
+             * is halted. The processing was not a success.
+             */
+            requests_stop_fail
+        };
         /**
          * Called for each encountered START_ELEMENT in the part of the xml that is within scope. If the implementation
          * calls {@code xml.next()} or otherwise advances the position in the stream, it must ensure that the list of
@@ -867,10 +1103,29 @@ public class XMLStepper {
          * @param tags       the start tags encountered in the current sub tree.
          * @param current    the local name of the current tag.
          * @return true if the implementation called {@code xml.next()} one or more times, else false.
+         * @deprecated use {@link #elementStart2(XMLStreamReader, List, String)} instead.
          */
-        // TODO: Can we avoid the return value by using Location?
-        public abstract boolean elementStart(
-                XMLStreamReader xml, List<String> tags, String current) throws XMLStreamException;
+        @Deprecated
+        public boolean elementStart(
+                XMLStreamReader xml, List<String> tags, String current) throws XMLStreamException {
+            throw new UnsupportedOperationException("Either elementStart or elementStart2 must be overridden");
+        }
+
+        /**
+         * Called for each encountered START_ELEMENT in the part of the xml that is within scope. If the implementation
+         * calls {@code xml.next()} or otherwise advances the position in the stream, it must ensure that the list of
+         * tags is consistent with the position in the DOM.
+         *
+         * @param xml        the Stream.
+         * @param tags       the start tags encountered in the current sub tree.
+         * @param current    the local name of the current tag.
+         * @return the action taken by the implementation that affects overall processing of the xml stream.
+         */
+        @SuppressWarnings("deprecation")
+        public PROCESS_ACTION elementStart2(
+                XMLStreamReader xml, List<String> tags, String current) throws XMLStreamException {
+            return elementStart(xml, tags, current) ? PROCESS_ACTION.called_next : PROCESS_ACTION.no_action;
+        }
 
         /**
          * Called for each encountered ELEMENT_END in the part of the XML that is within scope.
@@ -880,7 +1135,7 @@ public class XMLStepper {
         public void elementEnd(String element) { }
 
         /**
-         * Called when the last END_ELEMENT is encountered.
+         * Called when the last END_ELEMENT is encountered or PROCESS_ACTION.requests_stop_success has been returned.
          */
         public void end() { }
 

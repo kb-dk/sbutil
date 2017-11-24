@@ -7,6 +7,11 @@
     <property name="builder" value="mke"/>
     <property name="release" value="${project.name}-${project.version}"/>
 
+    <moo>zoo1</moo>
+    <foo><bar>zoo2</bar></foo>
+    <foo><baz>zoo3</baz></foo>
+    <foo><bar somat="zoo4"/></foo>
+
     <!-- Build deps -->
     <property name="sbutil.compiler.version" value="1.6"/>
     <property name="sbutil.ant.version" value="1.7.0"/>
