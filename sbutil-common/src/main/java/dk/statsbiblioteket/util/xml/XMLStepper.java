@@ -846,7 +846,7 @@ public class XMLStepper {
     }
 
     /**
-     *
+     * Extracts the value from the attribute with the given name. This does not advance the xml stream.
      * @param xml stream positioned at a start tag.
      * @param attributeName the wanted attribute
      * @param defaultValue the value to return if the attributes is not present.
