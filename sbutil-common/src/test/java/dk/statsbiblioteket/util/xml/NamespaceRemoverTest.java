@@ -50,6 +50,8 @@ public class NamespaceRemoverTest extends TestCase {
                 {"<foo >", "<foo xmlns=\"hello\">"},
                 {"<foo >", "<foo xmlns= \"hello\">"},
                 {"<foo >", "<foo xmlns:boom=\"hello\">"},
+                {"<foo  id=\"bar\">", "<foo xmlns=\"hello\" id=\"bar\">"},
+                {"<foo  id=\"bar\">", "<foo xmlns:boom=\"hello\" id=\"bar\">"},
                 {"<foo >", "<foo xmlns:boom  = \"hello\">"},
                 {"<foo>", "<bar:foo>"},
                 {"<foo gnuf=\"test\">", "<foo gnuf=\"test\">"},

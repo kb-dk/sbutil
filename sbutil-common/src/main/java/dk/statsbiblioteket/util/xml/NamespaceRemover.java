@@ -59,12 +59,17 @@ public class NamespaceRemover extends ReplaceReader {
     private CircularCharBuffer inBuf = new CircularCharBuffer(100, Integer.MAX_VALUE);
     private CircularCharBuffer outBuf = new CircularCharBuffer(100, Integer.MAX_VALUE);
 
-    private final Matcher declarationMatcher = Pattern.compile("xmlns(\\:.+)? *\\= *\".*\"").matcher("");
+    // <foo xmlns:bar="sdjslfjs">
+    private final Matcher declarationMatcher =
+            Pattern.compile("xmlns(\\:[a-zA-Z_\\.\\-0-9]+)? *\\= *\"[^\"]*\"").matcher("");
 
-    private final Matcher defaultDeclarationMatcher = Pattern.compile("xmlns *\\= *\".*\"").matcher("");
+    // <foo xmlns="sdjslfjs">
+    private final Matcher defaultDeclarationMatcher =
+            Pattern.compile("xmlns *\\= *\"[^\"]*\"").matcher("");
 
     // Should be http://www.w3.org/TR/REC-xml/#NT-Name but we cheat
-    private final Matcher prefixMatcher = Pattern.compile("[a-zA-Z_\\.\\-0-9]+\\:([a-zA-Z_\\.\\-0-9]+)").matcher("");
+    private final Matcher prefixMatcher = Pattern.compile(
+            "[a-zA-Z_\\.\\-0-9]+\\:([a-zA-Z_\\.\\-0-9]+)").matcher("");
 
     public NamespaceRemover(Reader in) {
         super(in);
