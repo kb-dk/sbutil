@@ -33,6 +33,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 
 /**
  * Helpers for transforming XML using XSLTs. All methods are Thread-safe,
@@ -178,6 +179,17 @@ public class XSLT {
             transformer = createTransformer(xslt);
             map.put(xslt.toString(), transformer);
         }
+        assignParameters(transformer, parameters);
+        return transformer;
+    }
+
+    /**
+     * Assigns the given parameters to the given Transformer. Previously assigned parameters are cleared first.
+     * @param transformer an existing transformer.
+     * @param parameters key-value pairs for parameters to assign.
+     * @return
+     */
+    public static Transformer assignParameters(Transformer transformer, Map parameters) {
         transformer.clearParameters(); // Is this safe? Any defaults lost?
         if (parameters != null) {
             for (Object entryObject : parameters.entrySet()) {
@@ -204,9 +216,8 @@ public class XSLT {
     /* ******************** Transformer-calls below this ******************** */
 
     /**
-     * Requests a cached ThreadLocal Transformer and performs the
-     * transformation.
-     *
+     * Requests a cached ThreadLocal Transformer and performs the transformation.
+     * {@code ignoreXMLNamespaces = false} is implied.
      * @param xslt the location of the XSLT to use.
      * @param in   the content to transform.
      * @return the transformed content.
@@ -296,6 +307,31 @@ public class XSLT {
         }
         return sw.toString();
     }
+
+    /**
+     * Performs a transformation.
+     * @param transformer         the transformer to use.
+     * @param in                  the content to transform.
+     * @param ignoreXMLNamespaces if true, namespaces in the input content will
+     *                            be stripped. This is not recommended, but a lot of XML and XSLTs
+     *                            does not match namespaces correctly. Setting this to true will
+     *                            have an impact on performance.
+     * @return the transformed content.
+     * @throws TransformerException if the transformation failed.
+     */
+    public static String transform(Transformer transformer, String in, boolean ignoreXMLNamespaces)
+            throws TransformerException {
+        StringWriter sw = new StringWriter();
+        if (!ignoreXMLNamespaces) {
+            transform(transformer, new StringReader(in), sw);
+        } else {
+            Reader noNamespace = new NamespaceRemover(new StringReader(in));
+            transform(transformer, noNamespace, sw);
+        }
+        return sw.toString();
+
+    }
+
 
     /**
      * Requests a cached ThreadLocal Transformer and performs the
@@ -476,11 +512,10 @@ public class XSLT {
 
     /* ********************* Resolved transformer below this ***************  */
 
-
     /**
      * Performs a transformation from Document to Stream with the transformer.
      *
-     * @param transformer probably retrieved by {@link #getLocalTransformer}.
+     * @param transformer probably retrieved by {@link #getLocalTransformer} or using {@link TransformerPool}.
      * @param dom         input.
      * @param out         output.
      * @throws TransformerException if the transformation failed.
@@ -492,7 +527,7 @@ public class XSLT {
     /**
      * Performs a transformation from Stream to Stream with the transformer.
      *
-     * @param transformer probably retrieved by {@link #getLocalTransformer}.
+     * @param transformer probably retrieved by {@link #getLocalTransformer} or using {@link TransformerPool}.
      * @param in          input Stream.
      * @param out         output Stream.
      * @throws TransformerException if the transformation failed.
@@ -505,7 +540,7 @@ public class XSLT {
     /**
      * Performs a transformation from Reader to Writer with the transformer.
      *
-     * @param transformer probably retrieved by {@link #getLocalTransformer}.
+     * @param transformer probably retrieved by {@link #getLocalTransformer} or using {@link TransformerPool}.
      * @param in          input.
      * @param out         output.
      * @throws TransformerException if the transformation failed.
@@ -517,7 +552,7 @@ public class XSLT {
     /**
      * Performs a transformation from DOM to Writer with the transformer.
      *
-     * @param transformer probably retrieved by {@link #getLocalTransformer}.
+     * @param transformer probably retrieved by {@link #getLocalTransformer} or using {@link TransformerPool}.
      * @param dom         input.
      * @param out         output.
      * @throws TransformerException if the transformation failed.
@@ -548,4 +583,178 @@ public class XSLT {
         transform(NAMESPACE_XSLT, in, sw, null);
         return new StringReader(sw.toString());
     }*/
+
+    /**
+     * Holds a number of {@link TransformerCache}s, auto-creating new caches when a new XSLT is encountered.
+     * Using a transformer pool is recommended when the ThreadLocal approach used by {@link #transform(URL, String)}
+     * and others is unviable, such as doing heavy XSLT in Tomcat from potentially hundreds of unique Threads.
+     */
+    public static class TransformerPool {
+        private final Map<URL, TransformerCache> pool = new HashMap<URL, TransformerCache>();
+        private final int cacheSize;
+
+        /**
+         * Creates a new pool of {@link TransformerCache}s, where each cache is initialized with cacheSize
+         * Transformers upon first request for a previously unseen XSLT.
+         * @param cacheSize used when a new {@link TransformerCache} is created.
+         */
+        public TransformerPool(int cacheSize) {
+            this.cacheSize = cacheSize;
+        }
+
+        public void put(URL xslt, Transformer transformer) {
+            TransformerCache cache;
+            synchronized (pool) {
+                cache = pool.get(xslt);
+            }
+            if (cache == null) {
+                throw new IllegalStateException(
+                        "Trying to deliver a Transformer when no TransformerCahce exists for XSLT '" + xslt + "'");
+            }
+            cache.put(transformer);
+        }
+
+        /**
+         * Gets and potentially creates a cache for the given XSLT, the return a Transformer from the cache.
+         * Note: If the xslt has previously not been requested, this method will block for _all_ threads
+         * until the TransformerCache has been created.
+         * @param xslt used together with {@link #cacheSize} to get or create the cache.
+         * @return a transformer for the given XSLT.
+         */
+        public Transformer take(URL xslt) {
+            return getCache(xslt).take();
+        }
+
+        /**
+         * Gets and potentially creates a cache for the given XSLT, the return a Transformer from the cache.
+         * Note: If the xslt has previously not been requested, this method will block for _all_ threads
+         * until the TransformerCache has been created.
+         * @param xslt       used together with {@link #cacheSize} to get or create the cache.
+         * @param parameters key-value pairs of parameters to assign to the transformer.
+         * @return a transformer for the given XSLT.
+         */
+        public Transformer take(URL xslt, Map<String, String> parameters) {
+            return getCache(xslt).take(parameters);
+        }
+
+        /**
+         * Shorthand for calling {@link #take(URL)} and {@link XSLT#transform(Transformer, String, boolean)}
+         */
+        public String transform(URL xslt, String xml, boolean ignoreXMLNamespaces) throws TransformerException {
+            return XSLT.transform(take(xslt), xml, ignoreXMLNamespaces);
+        }
+
+        /**
+         * Shorthand for calling {@link #take(URL, Map)} and {@link XSLT#transform(Transformer, String, boolean)}
+         */
+        public String transform(URL xslt, String xml, Map<String, String> parameters, boolean ignoreXMLNamespaces)
+                throws TransformerException {
+            return XSLT.transform(take(xslt, parameters), xml, ignoreXMLNamespaces);
+        }
+
+        /**
+         * Gets and potentially creates a cache for the given XSLT.
+         * Note: If the xslt has previously not been requested, this method will block for _all_ threads
+         * until the TransformerCache has been created.
+         * @param xslt used together with {@link #cacheSize} to get or create the cache.
+         * @return a cache for the given XSLT.
+         */
+        public TransformerCache getCache(URL xslt) {
+            TransformerCache cache = pool.get(xslt);
+            synchronized (pool) {
+                if (cache == null) {
+                    cache = new TransformerCache(xslt, cacheSize);
+                    pool.put(xslt, cache);
+                }
+            }
+            return cache;
+        }
+    }
+
+    /**
+     * A cache of Transformers, initialized from the same XSLT.
+     * The cache is fixed size, completely filled upon creation and and blocks on {@link TransformerCache#take()}.
+     * </p><p>
+     * It is essential for the calling code to return Transformers after use.
+     */
+    public static class TransformerCache {
+        protected final URL xslt;
+        private final ArrayBlockingQueue<Transformer> transformers;
+
+        public TransformerCache(URL xslt, int cacheSize) {
+            log.info("Creating TransformerCache with " + cacheSize + " entries for XSLT '" + xslt + "'");
+            this.xslt = xslt;
+            transformers = new ArrayBlockingQueue<Transformer>(cacheSize);
+
+            for (int i = 0 ; i < cacheSize ; i++) {
+                try {
+                    transformers.put(createTransformer(xslt));
+                } catch (InterruptedException e) {
+                    throw new IllegalStateException("Interrupted while initializing cache of size " + cacheSize, e);
+                } catch (TransformerException e) {
+                    throw new IllegalStateException("Unable to create Transformer for '" + xslt + "'", e);
+                }
+            }
+        }
+
+        protected Transformer createTransformer(URL xslt) throws TransformerException {
+            return XSLT.createTransformer(xslt);
+        }
+
+        /**
+         * Return a Transformer after use. Never blocks, unless Transformers created outside of the TransformerCache
+         * are used.
+         * @param transformer the transformer to return.
+         */
+        public void put(Transformer transformer) {
+            try {
+                transformers.put(transformer);
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Interrupted while waiting for put", e);
+            }
+        }
+
+        /**
+         * Waits until a Transformer is available and returns it.
+         * Important: Must be returned after use by calling {@link #put(Transformer)}.
+         * @return a transformer readu for use.
+         */
+        public Transformer take() {
+            try {
+                return transformers.take();
+            } catch (InterruptedException e) {
+                throw new RuntimeException("Interrupted while waiting for take", e);
+            }
+        }
+
+        /**
+         * Waits until a Transformer is available, assigns the given parameters and returns it.
+         * Important: Must be returned after use by calling {@link #put(Transformer)}.
+         * @param parameters key-value pairs of parameters to assign to the transformer.
+         * @return a transformer ready for use.
+         */
+        public Transformer take(Map<String, String> parameters) {
+            return assignParameters(take(), parameters);
+        }
+
+        /**
+         * Shorthand for calling {@link #take()} and {@link XSLT#transform(Transformer, String, boolean)}
+         */
+        public String transform(String xml, boolean ignoreXMLNamespaces) throws TransformerException {
+            return XSLT.transform(take(), xml, ignoreXMLNamespaces);
+        }
+
+        /**
+         * Shorthand for calling {@link #take(Map)} and {@link XSLT#transform(Transformer, String, boolean)}
+         */
+        public String transform(String xml, Map<String, String> parameters, boolean ignoreXMLNamespaces)
+                throws TransformerException {
+            return XSLT.transform(take(parameters), xml, ignoreXMLNamespaces);
+        }
+
+        public int available() {
+            return transformers.size();
+        }
+    }
+
 }

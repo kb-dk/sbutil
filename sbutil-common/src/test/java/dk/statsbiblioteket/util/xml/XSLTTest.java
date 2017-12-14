@@ -30,6 +30,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import java.io.File;
 import java.io.IOException;
@@ -76,6 +77,27 @@ public class XSLTTest {
         result = XSLT.transform(xslt2, input);
         assertEquals("Sample 2 should transform correctly",
                      trim(expected2), trim(result));
+    }
+
+    @Test
+    public void testPoolTest() throws TransformerException, IOException {
+        XSLT.TransformerPool pool = new XSLT.TransformerPool(5);
+        String input = Files.loadString(new File(getURL("data/xml/trivial_input.xml").getFile()));
+        {
+            URL xslt1 = getURL("data/xml/trivial_transform1.xslt");
+            String expected1 = Files.loadString(new File(getURL("data/xml/expected1.xml").getFile()));
+            String result = pool.transform(xslt1, input, false);
+            assertEquals("Sample 1 should transform correctly",
+                         trim(expected1), trim(result));
+        }
+
+        {
+            URL xslt2 = getURL("data/xml/trivial_transform2.xslt");
+            String expected2 = Files.loadString(new File(getURL("data/xml/expected2.xml").getFile()));
+            String result = pool.transform(xslt2, input, false);
+            assertEquals("Sample 2 should transform correctly",
+                         trim(expected2), trim(result));
+        }
     }
 
     // XML trimmer, removing white space
