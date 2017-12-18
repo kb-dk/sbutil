@@ -223,6 +223,7 @@ public class XSLT {
      * @param in   the content to transform.
      * @return the transformed content.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static String transform(URL xslt, String in) throws TransformerException {
         return transform(xslt, in, null, false);
@@ -253,6 +254,7 @@ public class XSLT {
      * @param parameters for the Transformer. The keys must be Strings. If the map is null, it will be ignored.
      * @return the transformed content.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static String transform(URL xslt, String in, Map parameters) throws TransformerException {
         return transform(xslt, in, parameters, false);
@@ -271,6 +273,7 @@ public class XSLT {
      *                            have an impact on performance.
      * @return the transformed content.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static String transform(URL xslt, String in, Map parameters, boolean ignoreXMLNamespaces)
             throws TransformerException {
@@ -335,8 +338,7 @@ public class XSLT {
 
 
     /**
-     * Requests a cached ThreadLocal Transformer and performs the
-     * transformation.
+     * Requests a cached ThreadLocal Transformer and performs the transformation.
      *
      * @param xslt       the location of the XSLT to use.
      * @param in         the content to transform.
@@ -344,6 +346,7 @@ public class XSLT {
      *                   If the map is null, it will be ignored.
      * @return the transformed content.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static String transform(URL xslt, Reader in, Map parameters) throws TransformerException {
         return transform(xslt, in, parameters, false);
@@ -361,6 +364,7 @@ public class XSLT {
      *                            will have an impact on performance.
      * @return the transformed content.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static String transform(URL xslt, Reader in, Map parameters, boolean ignoreXMLNamespaces)
             throws TransformerException {
@@ -383,6 +387,7 @@ public class XSLT {
      *         supplied to toString("charset") to get proper String results.
      *         The charset is specified by the XSLT.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static ByteArrayOutputStream transform(URL xslt, byte[] in, Map parameters) throws TransformerException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -404,6 +409,7 @@ public class XSLT {
      *         supplied to toString("charset") to get proper String results.
      *         The charset is specified by the XSLT.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static ByteArrayOutputStream transform(URL xslt, byte[] in, Map parameters, boolean ignoreXMLNamespaces)
             throws TransformerException {
@@ -428,6 +434,7 @@ public class XSLT {
      *         supplied to toString("charset") to get proper String results.
      *         The charset is specified by the XSLT.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static ByteArrayOutputStream transform(URL xslt, InputStream in, Map parameters)
             throws TransformerException {
@@ -437,8 +444,7 @@ public class XSLT {
     }
 
     /**
-     * Requests a cached ThreadLocal Transformer and performs the
-     * transformation.
+     * Requests a cached ThreadLocal Transformer and performs the transformation.
      *
      * @param xslt                the location of the XSLT to use.
      * @param in                  the content to transform.
@@ -450,6 +456,7 @@ public class XSLT {
      *         supplied to toString("charset") to get proper String results.
      *         The charset is specified by the XSLT.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static ByteArrayOutputStream transform(URL xslt, InputStream in, Map parameters,
                                                   boolean ignoreXMLNamespaces) throws TransformerException {
@@ -474,6 +481,7 @@ public class XSLT {
      *         supplied to toString("charset") to get proper String results.
      *         The charset is specified by the XSLT.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static ByteArrayOutputStream transform(URL xslt, Document dom, Map parameters) throws TransformerException {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -490,6 +498,7 @@ public class XSLT {
      * @param parameters for the Transformer. The keys must be Strings.
      *                   If the map is null, it will be ignored.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static void transform(URL xslt, InputStream in, OutputStream out, Map parameters)
             throws TransformerException {
@@ -505,6 +514,7 @@ public class XSLT {
      * @param parameters for the Transformer. The keys must be Strings.
      *                   If the map is null, it will be ignored.
      * @throws TransformerException if the transformation failed.
+     * @see TransformerPool for an alternative with a fixed limit on the number of created Transformers.
      */
     public static void transform(URL xslt, Reader in, Writer out, Map parameters) throws TransformerException {
         transform(getLocalTransformer(xslt, parameters), in, out);
