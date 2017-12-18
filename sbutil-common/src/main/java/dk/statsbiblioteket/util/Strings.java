@@ -41,7 +41,9 @@ public class Strings {
     private Strings() {
     }
 
-    private static final ThreadLocal<StringBuilder> localBuilder =
+    // ThreadLocal StringBuilders removed as they are prone to causing subtle memory overheads with
+    // multi-threaded web applications
+/*    private static final ThreadLocal<StringBuilder> localBuilder =
             new ThreadLocal<StringBuilder>() {
                 @Override
                 protected StringBuilder initialValue() {
@@ -63,7 +65,7 @@ public class Strings {
                     return new char[1024];
                 }
             };
-
+*/
     /**
      * Convenience method: Extract the stacktrace from an Exception and returns
      * it as a String.
@@ -140,7 +142,7 @@ public class Strings {
             throw new NullPointerException("Delimiter argument is null");
         }
 
-        StringBuilder b = localBuilder.get();
+        StringBuilder b = new StringBuilder();
         long counter = 0;
         for (Object o : c) {
             if (b.length() != 0) {
@@ -187,7 +189,7 @@ public class Strings {
             throw new NullPointerException("Delimiter argument is null");
         }
 
-        StringBuilder b = localBuilder.get();
+        StringBuilder b = new StringBuilder();
 
         long counter = 0;
         for (Object o : a) {
@@ -215,7 +217,7 @@ public class Strings {
             throw new NullPointerException("Delimiter argument is null");
         }
 
-        StringBuilder b = localBuilder.get();
+        StringBuilder b = new StringBuilder();
 
         long counter = 0;
         for (int value : values) {
@@ -246,8 +248,8 @@ public class Strings {
      */
     public static String flush(Reader r) throws IOException {
         int numRead;
-        char[] buf = localBuffer.get();
-        StringBuilder b = localBuilder.get();
+        char[] buf = new char[1024];
+        StringBuilder b = new StringBuilder();
 
         try {
             while ((numRead = r.read(buf)) != -1) {
