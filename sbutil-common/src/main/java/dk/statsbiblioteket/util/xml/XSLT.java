@@ -63,7 +63,7 @@ public class XSLT {
      * @throws javax.xml.transform.TransformerException thrown if for some
      *          reason a Transformer could not be instantiated.
      *          This is normally due to problems with the {@code xslt} URL
-     * @see {@link #getLocalTransformer} for reusing Transformers.
+     * @see #getLocalTransformer for reusing Transformers.
      */
     public static Transformer createTransformer(URL xslt) throws TransformerException {
         log.trace("createTransformer: Requesting and compiling XSLT from '" + xslt + "'");

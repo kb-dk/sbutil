@@ -48,12 +48,15 @@ import java.util.NoSuchElementException;
 public class CharArrayReplacer extends ReplaceReader {
     private char[][] rules;
 
-    private ThreadLocal bufferPool = new ThreadLocal() {
+
+    // ThreadLocal removed as they are prone to causing subtle memory overheads with
+    // multi-threaded web applications
+    /*private ThreadLocal bufferPool = new ThreadLocal() {
         @Override
         protected synchronized Object initialValue() {
             return new CircularCharBuffer(10, Integer.MAX_VALUE);
         }
-    };
+    };*/
 
     /**
      * Used when the source is set to hold output chars that queues when the
@@ -149,7 +152,7 @@ public class CharArrayReplacer extends ReplaceReader {
      */
     @Override
     public char[] transformToChars(char[] chars) {
-        CircularCharBuffer out = (CircularCharBuffer) bufferPool.get();
+        CircularCharBuffer out = new CircularCharBuffer(chars.length, Integer.MAX_VALUE);
         out.clear();
         for (char c : chars) {
             out.put(rules[c]);
