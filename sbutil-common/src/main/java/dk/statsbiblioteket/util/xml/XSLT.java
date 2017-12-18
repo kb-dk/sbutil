@@ -34,6 +34,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Helpers for transforming XML using XSLTs. All methods are Thread-safe,
@@ -66,6 +67,21 @@ public class XSLT {
      * @see #getLocalTransformer for reusing Transformers.
      */
     public static Transformer createTransformer(URL xslt) throws TransformerException {
+        return createTransformer(tfactory, xslt);
+    }
+    /**
+     * Creates a new transformer based on the given XSLTLocation.
+     * Useful for e.g. using Saxon instead of the default Xalan.
+     *
+     * @param factory the factory to use for creating the transformer.
+     * @param xslt the location of the XSLT.
+     * @return a Transformer based on the given XSLT.
+     * @throws javax.xml.transform.TransformerException thrown if for some
+     *          reason a Transformer could not be instantiated.
+     *          This is normally due to problems with the {@code xslt} URL
+     * @see #getLocalTransformer for reusing Transformers.
+     */
+    public static Transformer createTransformer(TransformerFactory factory, URL xslt) throws TransformerException {
         log.trace("createTransformer: Requesting and compiling XSLT from '" + xslt + "'");
         final long startTime = System.nanoTime();
 
@@ -134,8 +150,10 @@ public class XSLT {
 
     private static ThreadLocal<Map<String, Transformer>> createLocalMapCache() {
         return new ThreadLocal<Map<String, Transformer>>() {
+            private AtomicInteger counter = new AtomicInteger(0);
             @Override
             protected Map<String, Transformer> initialValue() {
+                log.trace("Creating ThreadLocal localMapCache #" + counter);
                 return new HashMap<String, Transformer>();
             }
         };
@@ -603,6 +621,7 @@ public class XSLT {
     public static class TransformerPool {
         private final Map<URL, TransformerCache> pool = new HashMap<URL, TransformerCache>();
         private final int cacheSize;
+        private final TransformerFactory factory;
 
         /**
          * Creates a new pool of {@link TransformerCache}s, where each cache is initialized with cacheSize
@@ -610,6 +629,18 @@ public class XSLT {
          * @param cacheSize used when a new {@link TransformerCache} is created.
          */
         public TransformerPool(int cacheSize) {
+            this(tfactory, cacheSize);
+        }
+
+        /**
+         * Creates a new pool of {@link TransformerCache}s, where each cache is initialized with cacheSize
+         * Transformers upon first request for a previously unseen XSLT.
+         *
+         * @param factory the factory to use for creating the transformer. e.g. Saxon instead of the default Xalan.
+         * @param cacheSize used when a new {@link TransformerCache} is created.
+         */
+        public TransformerPool(TransformerFactory factory, int cacheSize) {
+            this.factory = factory;
             this.cacheSize = cacheSize;
         }
 
@@ -695,7 +726,7 @@ public class XSLT {
                     return cache;
                 }
                 // Cache does not exist. Create & add it inside of the synchronization
-                cache = new TransformerCache(xslt, cacheSize, true);
+                cache = new TransformerCache(factory, xslt, cacheSize, true);
                 pool.put(xslt, cache);
             }
             // Cache is newly created and must therefore be filled
@@ -721,13 +752,20 @@ public class XSLT {
     public static class TransformerCache {
         protected final URL xslt;
         private final ArrayBlockingQueue<Transformer> transformers;
+        private final TransformerFactory factory;
 
         public TransformerCache(URL xslt, int cacheSize) {
-            this(xslt, cacheSize, false);
+            this(tfactory, xslt, cacheSize, false);
         }
-
+        public TransformerCache(TransformerFactory factory, URL xslt, int cacheSize) {
+            this(factory, xslt, cacheSize, false);
+        }
         private TransformerCache(URL xslt, int cacheSize, boolean noFill) {
+            this(tfactory, xslt, cacheSize, noFill);
+        }
+        private TransformerCache(TransformerFactory factory, URL xslt, int cacheSize, boolean noFill) {
             log.info("Creating TransformerCache with " + cacheSize + " entries for XSLT '" + xslt + "'");
+            this.factory = factory;
             this.xslt = xslt;
             transformers = new ArrayBlockingQueue<Transformer>(cacheSize);
             if (!noFill) {
@@ -755,7 +793,7 @@ public class XSLT {
         }
 
         protected Transformer createTransformer(URL xslt) throws TransformerException {
-            return XSLT.createTransformer(xslt);
+            return XSLT.createTransformer(factory, xslt);
         }
 
         /**
@@ -823,5 +861,4 @@ public class XSLT {
         }
 
     }
-
 }
