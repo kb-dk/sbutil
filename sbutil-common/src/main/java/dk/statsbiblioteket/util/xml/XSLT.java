@@ -92,7 +92,7 @@ public class XSLT {
                 throw new NullPointerException("xslt URL is null");
             }
             in = xslt.openStream();
-            transformer = tfactory.newTransformer(new StreamSource(in, xslt.toString()));
+            transformer = factory.newTransformer(new StreamSource(in, xslt.toString()));
             transformer.setErrorListener(getErrorListener());
         } catch (TransformerException e) {
             throw new TransformerException(String.format(
