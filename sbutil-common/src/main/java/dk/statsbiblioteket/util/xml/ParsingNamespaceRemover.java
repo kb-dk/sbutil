@@ -29,11 +29,11 @@ import org.xml.sax.helpers.XMLFilterImpl;
  * Simple XMLFilter that strips all namespace information from elements.
  * CData are not affected.
  * Inspired by http://www.simonstl.com/ns/namespaces/elements/strip/.
- * <p/>
+ *
  * Using this method to strip namespaces before applying an XSLT provides
  * ~30% speedup compared to a namespace stripping DOM-parsing. The fastest
  * wayto do namespace ignoring transformations is by using a NamespaceRemovingReader
- * <p/>
+ *
  *
  * @deprecated It is much faster using a {@link NamespaceRemover}
  */

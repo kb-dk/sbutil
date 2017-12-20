@@ -32,7 +32,7 @@ import java.util.Map;
 /**
  * A factory for creating Text-oriented replacers. A replacer will be selected
  * and instantiated based on the given rules.
- * <p/>
+ *
  * It is highly recommended to use this factory instead of directly creating
  * replacers, as it selects the optimal replacer based on the rules.
  *
@@ -52,12 +52,12 @@ public class ReplaceFactory {
      * Creates a factory that generates a replacer for the given rules.
      * Changes to the rules between calls to {@link #getReplacer()} are not
      * guaranteed to take effect: Create a new Factory instead.
-     * </p><p>
+     *
      * After a factory for a given set of rules is created, getting a replacer
      * for the rules is very cheap as internal mappings are shared between the
      * replacer instances.
      *
-     * @param rules what to replace in the form of target=>replacement pairs.
+     * @param rules what to replace in the form of target-replacement pairs.
      */
     public ReplaceFactory(Map<String, String> rules) {
         replacer = getReplacer(rules);
@@ -91,17 +91,17 @@ public class ReplaceFactory {
     /**
      * Creates a replacer from the given rules reading character data from
      * {@code in}.
-     * <p/>
+     *
      * Note that you can reuse the replace reader with the same rules by calling
      * {@link ReplaceReader#setSource(java.io.Reader)}.
-     * <p/>
+     *
      * The factory will detect
      * the optimal strategy for character replacement based on {@code rules}
      * and return a {@link CharArrayReplacer}, {@link CharReplacer}, or
      * {@link StringReplacer} accordingly.
      *
      * @param in    the input character stream in which to replace substrings
-     * @param rules what to replace in the form of target=>replacement pairs.
+     * @param rules what to replace in the form of target-replacement pairs.
      * @return a replacer made from the rules.
      */
     public static ReplaceReader getReplacer(Reader in,
@@ -125,16 +125,16 @@ public class ReplaceFactory {
      * Creates a replacer from the given rules with an empty input stream.
      * You will need to set the data source of the returned reader by calling
      * {@link ReplaceReader#setSource(java.io.Reader)}.
-     * <p/>
+     *
      * Note that you can reuse the replace reader with the same rules by calling
      * {@link ReplaceReader#setSource(java.io.Reader)}.
-     * <p/>
+     *
      * The factory will detect
      * the optimal strategy for character replacement based on {@code rules}
      * and return a {@link CharArrayReplacer}, {@link CharReplacer}, or
      * {@link StringReplacer} accordingly.
      *
-     * @param rules what to replace in the form of target=>replacement pairs.
+     * @param rules what to replace in the form of target-replacement pairs.
      * @return a replacer made from the rules.
      */
     public static ReplaceReader getReplacer(Map<String, String> rules) {
@@ -144,12 +144,12 @@ public class ReplaceFactory {
     /**
      * Get a new {@code ReplaceReader} on {@code in} by dynamically building
      * a rule map where {@code rules[i]} maps to {@code rules[++i]}.
-     * <p/>
+     *
      * You can resue the returned reader by calling
      * {@link ReplaceReader#setSource}
      *
      * @param in    the input character stream in which to replace substrings
-     * @param rules what to replace in the form of target=>replacement pairs.
+     * @param rules what to replace in the form of target-replacement pairs.
      * @return a replacer made from the rules
      * @throws IllegalArgumentException if passed an uneven number of arguments
      */
@@ -172,15 +172,15 @@ public class ReplaceFactory {
      * Get a new {@code ReplaceReader} with an empty input stream. The
      * replacement rules are
      * dynamically build by mapping {@code rules[i]} to {@code rules[++i]}.
-     * <p/>
+     *
      * Before reading from the returned reader you must
      * call {@link ReplaceReader#setSource} on it to set the underlying stream
      * to replace substrings from.
-     * <p/>
+     *
      * You can reuse the returned reader by calling
      * {@link ReplaceReader#setSource}.
      *
-     * @param rules what to replace in the form of target=>replacement pairs.
+     * @param rules what to replace in the form of target-replacement pairs.
      * @return a replacer made from the rules
      * @throws IllegalArgumentException if passed an uneven number of arguments
      */

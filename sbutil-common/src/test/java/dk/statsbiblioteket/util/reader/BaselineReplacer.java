@@ -29,7 +29,7 @@ import java.io.StringWriter;
 import java.util.*;
 
 /**
- * trivial (and slow) implementation of String=>String replacement.
+ * trivial (and slow) implementation of String ⇒ String replacement.
  * Used for monkey-tests of proper Replacers.
  */
 @QAInfo(level = QAInfo.Level.NORMAL,

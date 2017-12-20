@@ -20,7 +20,7 @@ public class RecursiveFolderWatcher extends FolderWatcher {
     /**
      * Create a new recursive folder watcher recursing {@code depth} levels
      * into the directory tree of {@code watchedFolder}.
-     * <p/>
+     *
      * If {@code depth==0} no recursion will happen, if it is {@code <0}
      * recursion will traverse the file hierarchy to any depth.
      * Otherwise if {@code depth >0} directory traversal will only happen
@@ -46,7 +46,7 @@ public class RecursiveFolderWatcher extends FolderWatcher {
     /**
      * Create a new recursive folder watcher recursing {@code depth} levels
      * into the directory tree of {@code watchedFolder}.
-     * <p/>
+     *
      * If {@code depth==0} no recursion will happen, if it is {@code <0}
      * recursion will traverse the file hierarchy to any depth.
      * Otherwise if {@code depth >0} directory traversal will only happen

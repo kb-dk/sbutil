@@ -159,28 +159,40 @@ public class Strings {
     }
 
     /**
-     * See {@link #join(java.util.Collection)}.
+     * @param a the Objects to create a String representation for.
+     * @return the input objects converted to Strings and concatenated with the given delimiter.
+     * @see #join(java.util.Collection)
      */
     public static String join(Object[] a) {
         return join(a, ", ", Long.MAX_VALUE);
     }
 
     /**
-     * See {@link #join(java.util.Collection, long)}.
+     * @param a the Objects to create a String representation for.
+     * @param max maximum number of Objects to convert to Strings. Objects beyond these will be represented with "...".
+     * @return the input objects converted to Strings and concatenated with the given delimiter.
+     * @see #join(java.util.Collection, long)
      */
     public static String join(Object[] a, long max) {
         return join(a, ", ", max);
     }
 
     /**
-     * See {@link Strings#join(Collection, String)}.
+     * @param a the Objects to create a String representation for.
+     * @param delimiter the delimer to insert between each Objects String representation.
+     * @return the input objects converted to Strings and concatenated with the given delimiter.
+     * @see #join(Collection, String)
      */
     public static String join(Object[] a, String delimiter) {
         return join(a, delimiter, Long.MAX_VALUE);
     }
 
     /**
-     * See {@link #join(java.util.Collection, String, long)}.
+     * @param a the Objects to create a String representation for.
+     * @param delimiter the delimer to insert between each Objects String representation.
+     * @param max maximum number of Objects to convert to Strings. Objects beyond these will be represented with "...".
+     * @return the input objects converted to Strings and concatenated with the given delimiter.
+     * @see #join(java.util.Collection, String, long)
      */
     public static String join(Object[] a, String delimiter, long max) {
         if (a == null) {
@@ -238,7 +250,7 @@ public class Strings {
      * Read all character data from {@code r} and create a String based on
      * that data. The reader is guaranteed to be closed when this method
      * returns.
-     * <p/>
+     *
      * This method is optimized to only allocate the needed space for the final
      * string and not any intermediate buffers.
      *
@@ -277,12 +289,12 @@ public class Strings {
      * Read all character data from {@code r} and create a String based on
      * that data. The reader is guaranteed to be closed when this method
      * returns.
-     * <p/>
+     *
      * The difference from this method to
      * {@link #flush(java.io.Reader)} is that it can not throw an IOException.
      * It is expected that the caller guarantees that the character stream is
      * based on a local memory buffer.
-     * <p/>
+     *
      * This method is optimized to only allocate the needed space for the final
      * string and not any intermediate buffers.
      *
@@ -312,7 +324,7 @@ public class Strings {
     /**
      * Wrap a {@code char} array as a {@link CharSequence} without doing any
      * memory- allocations or copying.
-     * <p/>
+     *
      * Note that since the original array underneath the returned character
      * sequence is exactly {@code chars} any changes made to {@code chars}
      * will be reflected in the returned character sequence as well.
@@ -364,8 +376,9 @@ public class Strings {
      * Finds the first index of the occurence of {@code c} in {@code chars}
      * or returns -1.
      *
-     * @param c     the character to look for
-     * @param chars the character sequence to search in
+     * @param c     the character to look for.
+     * @param offset the starting point for searching.
+     * @param chars the character sequence to search in.
      * @return the index for which {@code chars.charAt(i) == c} or -1 if
      *         {@code c} doesn't exist in {@code chars}
      */

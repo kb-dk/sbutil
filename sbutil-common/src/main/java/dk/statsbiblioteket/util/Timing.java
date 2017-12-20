@@ -20,9 +20,9 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Structure for timing-instrumentation of other code. Intended for always-enabled use as all methods are
  * sought to be light weight.
- * </p><p>
+ *
  * Usage: Create a root instance and optionally add children with {@link #getChild}.
- * </p><p>
+ *
  * Mixed thread safety: Methods are thread safe, unless the JavaDoc says otherwise.
  */
 // TODO: Consider adding a toJSON
@@ -65,6 +65,7 @@ public class Timing {
     /**
      * Create a root timer with the given name and subject.
      * @param name timer designation. Typically a method name or a similar code-path description.
+     * @param subject specific subject. Typically a document ID or similar workload-specific identifier.
      */
     public Timing(String name, String subject) {
         this(name, subject, null);
@@ -198,9 +199,9 @@ public class Timing {
 
     /**
      * Resets start time to current nanoTime.
-     * </p><p>
+     *
      * Note: Start is automatically called during construction of this Timing instance.
-     * </p><p>
+     *
      * Note 2: The use of start() and {@link #stop()} is not thread-safe by nature.
      */
     public void start() {
@@ -209,7 +210,7 @@ public class Timing {
 
     /**
      * Adds now-lastStart to spendNS, increments updateCount with 1 and sets lastStart to now.
-     * </p><p>
+     *
      * Note: The use of @{link #start()} and stop() is not thread-safe by nature.
      * @return now-lastStart.
      */
@@ -221,8 +222,9 @@ public class Timing {
      * Adds now-lastStart to spendNS, sets updateCount to the given updates and sets lastStart to now.
      * This is used when a process has handled an amount of entities and the average time spend on each
      * entity should be part of the report.
-     * </p><p>
+     *
      * Note: The use of @{link #start()} and stop() is not thread-safe by nature.
+     * @param updates the number of updates that happened since start.
      * @return now-lastStart.
      */
     public long stop(long updates) {
@@ -317,6 +319,7 @@ public class Timing {
 
     /**
      * Adds the given number to the update counter.
+     * @param count the amount to add.
      * @return the new total number of updates.
      */
     public long addUpdates(int count) {
@@ -326,20 +329,21 @@ public class Timing {
     /**
      * Set the update count to the specific number.
      * Note that calling {@link #stop()} auto-increments the updateCount with 1.
+     * @param updateCount the number of updated for the timing.
      */
     public void setUpdates(int updateCount) {
         this.updateCount.set(updateCount);
     }
 
     /**
-     * @return spendNS if updateCount > 0 else now-lastStart.
+     * @return spendNS if updateCount &gt; 0 else now-lastStart.
      */
     public long getNS() {
         return updateCount.get() > 0 ? spendNS.get() : System.nanoTime()-lastStart;
     }
 
     /**
-     * @return spendNS if updateCount > 0 else now-lastStart, divided by 1000000.
+     * @return spendNS if updateCount &gt; 0 else now-lastStart, divided by 1000000.
      */
     public long getMS() {
         return (updateCount.get() > 0 ? spendNS.get() : System.nanoTime()-lastStart)/1000000;

@@ -105,6 +105,7 @@ public class Streams {
 
 
     /**
+     * @param in the stream to read a long from.
      * @return the next long in the stream if present. If EOF was reached
      *         during read, an exception is thrown. The long must be stored
      *         in big-endian format.

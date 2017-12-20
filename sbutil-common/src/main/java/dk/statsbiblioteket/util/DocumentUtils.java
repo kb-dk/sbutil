@@ -57,7 +57,7 @@ public class DocumentUtils {
 
     /**
      * Simple method to dump a Document object as a xml string. Be aware that the
-     * string starts with <?xml ...
+     * string starts with &lt;?xml ...
      *
      * @param doc the document to convert
      * @return The document as a xml

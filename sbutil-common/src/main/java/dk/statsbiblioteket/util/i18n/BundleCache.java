@@ -35,10 +35,10 @@ import java.util.*;
  * because the whole {@link Properties}/ResourceBundle setup is fundamentally
  * broken, in that it is impossible to handle property files in UTF-8.
  * Go figure.
- * <p/>
+ *
  * To make it explicit: With this class you can keep your resource bundles
  * in UTF-8 encoding.
- * <p/>
+ *
  * You would not need to use this class normally. It is used automatically by
  * {@link Translator}.
  *
@@ -109,19 +109,18 @@ public class BundleCache {
     }
 
     /**
-     * <p>Get a resource bundle with for a given name and locale.
+     * Get a resource bundle with for a given name and locale.
      * If it is not found the default unlocalized bundle will
      * be tried. If this is not found either a MissingResourceException
-     * will be thrown.</p>
-     * <p/>
-     * <p>Both the locale specific and fallback bundles will be cached</p>
+     * will be thrown.
      *
-     * @param bundleName
-     * @param locale
-     * @return
+     * Both the locale specific and fallback bundles will be cached
+     *
+     * @param bundleName name of the bundle.
+     * @param locale locale for the bundle.
+     * @return a bundle ready for use.
      */
-    public static synchronized ResourceBundle getBundle(String bundleName,
-                                                        Locale locale) {
+    public static synchronized ResourceBundle getBundle(String bundleName, Locale locale) {
         BundleCache self = getInstance();
         String localeBundleName = getLocaleBundleName(bundleName, locale);
         ResourceBundle bundle = self.cache.get(localeBundleName);
@@ -133,7 +132,7 @@ public class BundleCache {
             return bundle;
         }
 
-        // We do not have the budnle cached. Create it and cache it
+        // We do not have the bundle cached. Create it and cache it
         try {
             return self.createBundle(localeBundleName);
         } catch (MissingResourceException e) {

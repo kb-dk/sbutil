@@ -34,12 +34,12 @@ import java.util.NoSuchElementException;
  * A highly speed-optimized single char to single char replacer.
  * The implementation maintains an array of all possible char values (65536)
  * mapped to their replacements, thereby making lookup of a single char O(1).
- * </p><p>
+ *
  * This implementation is semi-thread safe. All methods except
  * {@link #setSource(java.io.Reader)} and {@link #setSource(CircularCharBuffer)}
  * can be called safely from different threads.
  *
- * @see {@link CharArrayReplacer}.
+ * @see CharArrayReplacer
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,
@@ -81,10 +81,10 @@ public class CharReplacer extends ReplaceReader {
      * Create a new CharReplacer with an empty input character stream set,
      * based on a map with rules consisting of target chars and replacement
      * chars.
-     * <p/>
+     *
      * Before calling any other methods on this reader you must call
      * {@link CharReplacer#setSource(java.io.Reader)}.
-     * <p/>
+     *
      * If a rule contains a target or a replacement that isn't exactly 1
      * char long, an exception is thrown.
      *

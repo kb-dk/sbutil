@@ -25,7 +25,7 @@ public class RMIConnectionFactory<E extends Remote> extends ConnectionFactory<E>
     /**
      * Return a {@link Remote} interface on the address named by
      * {@code connectionId}.
-     * <p/>
+     *
      * <pre>
      *    Remote server = fact.createConnection ("//localhost:2767/test_service");
      * </pre>

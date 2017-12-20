@@ -21,7 +21,7 @@ public abstract class ConnectionFactory<E> {
     /**
      * Number of times to retry each subsequent time a connection is being established by {@link #createConnection}.
      * An implementation must wait at least {@link #subsequentGraceTime} ms before retrying.
-     * </p><p>
+     *
      * Note: If unchanged, this is 3. Coupled with a subsequentGraceTime of 500ms, this is a 1½ second wait if the
      * endpoint is non-responsive. In many settings, these values should be lower (often 0), but the 1½ second total
      * time is used as default for legacy reasons.
@@ -136,9 +136,9 @@ public abstract class ConnectionFactory<E> {
     }
 
     /**
-     * <p>Create a connection of type {@code E} to a named resource. The {@code connectionId} is an implementation
+     * Create a connection of type {@code E} to a named resource. The {@code connectionId} is an implementation
      * specific id - which in case of RMI backends could be the RMI service address.
-     * </p><p>
+     *
      * If the connection fails upon first createConnection-call, it should be retried
      * {@link #initialConnectionRetries} number of times with a grace time of {@link #initialGraceTime} ms in between.
      * If the connection fails on subsequent create-connection-calls, the retries and grace values are taken from

@@ -58,7 +58,7 @@ public class Logs {
      * Elements are converted to Strings and appended to the message. Arrays,
      * Lists and similar in the elements are expanded to a certain degree of
      * detail.
-     * </p><p>
+     *
      * Sample input/output:
      * <code>log(myLog, Level.TRACE, false, "Started test", null,
      * 5, new String[]{"flim", "flam"});</code>

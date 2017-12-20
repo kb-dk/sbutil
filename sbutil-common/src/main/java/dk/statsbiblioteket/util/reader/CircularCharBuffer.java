@@ -34,9 +34,9 @@ import java.util.NoSuchElementException;
  * A memory efficient Queue/Reader-like mechanism for buffering character data.
  * It avoids memory reallocations by traversing its internal character buffer
  * in a circular manner, hence the name of the class.
- * </p><p>
+ *
  * The buffer is not thread-safe. It is method-compatible with Reader.
- * </p><p>
+ *
  * Note: the Queue-calls involves conversion between char and Character and
  * are thus not the fastest.
  */
@@ -53,7 +53,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     /**
      * The maximum capacity of the buffer + 1. If the maximum capacity is
      * Integer.MAX_VALUE, max is also Integer.MAX_VALUE.
-     * </p><p>
+     *
      * The +1 hack is due to performance optimization.
      */
     private int max; // Maximum size
@@ -64,14 +64,13 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     /**
      * Create a new buffer with an initial capacity of {@code initialSize}
      * characters and a maximum allowed size of {@code maxSize} characters.
-     * <p/>
+     *
      * The buffer will automatically grow beyond {@code initialSize} as data
      * is added, but will raise an error if the allocation would go above
      * {@code maxSize}.
      *
      * @param initialSize number of characters for the initial allocation
-     * @param maxSize     maximum number of characters that can be stored in this
-     *                    buffer
+     * @param maxSize     maximum number of characters that can be stored in this buffer
      */
     public CircularCharBuffer(int initialSize, int maxSize) {
         array = new char[initialSize];
@@ -84,6 +83,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
     /**
      * Create a new buffer with an initial capacity equal to the length of the given String s and a max size of
      * the same length + 1. Then fills the buffer with the characters from the given String.
+     * @param s the initial content.
      */
     public CircularCharBuffer(String s) {
         array = new char[s.length()];
@@ -95,8 +95,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * Put the char in the buffer, expanding it if necessary.
      *
      * @param c the character to add to the buffer.
-     * @throws ArrayIndexOutOfBoundsException if the buffer needs to be
-     *                                        expanded, but has reached the maximum size.
+     * @throws ArrayIndexOutOfBoundsException if the buffer needs to be expanded, but has reached the maximum size.
      */
     public void put(char c) {
         if (size() == array.length - 1) {
@@ -113,8 +112,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * Puts the chars in the buffer, expanding it if necessary.
      *
      * @param chars the chars to add.
-     * @throws ArrayIndexOutOfBoundsException if the buffer needs to be
-     *                                        expanded, but has reached the maximum size.
+     * @throws ArrayIndexOutOfBoundsException if the buffer needs to be expanded, but has reached the maximum size.
      */
     public void put(char[] chars) {
         // TODO: Consider optimizing this with arraycopy
@@ -127,8 +125,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * Insert a {@code CharSequence} such as a {@link String} into the buffer.
      *
      * @param s the character sequence to add.
-     * @throws ArrayIndexOutOfBoundsException if the buffer needs to be
-     *                                        expanded, but has reached the maximum size.
+     * @throws ArrayIndexOutOfBoundsException if the buffer needs to be expanded, but has reached the maximum size.
      */
     public void put(CharSequence s) {
         for (int i = 0; i < s.length(); i++) {
@@ -170,7 +167,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
 
     /**
      * @return the maximum capacity of the buffer.
-     * @see {@link #size()}.
+     * @see #size()
      */
     public int getMaximumCapacity() {
         return max == Integer.MAX_VALUE ? max : max - 1;
@@ -325,7 +322,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * Number of characters in the buffer
      *
      * @return the number of characters in the buffer.
-     * @see {@link #getMaximumCapacity()}.
+     * @see #getMaximumCapacity()
      */
     public int size() {
         if (first <= next) {
@@ -386,7 +383,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * @param str the String to locate.
      * @return the index of the first occurence of str or -1 if the str could
      *         not be located.
-     * @see {@link String#indexOf(String)}.
+     * @see String#indexOf(String)
      */
     public int indexOf(final String str) {
         return indexOf(str, 0);
@@ -400,7 +397,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * @param fromIndex the index to start from.
      * @return the index of the first occurence of str, starting from fromIndex
      *         or -1 if the str could not be located.
-     * @see {@link String#indexOf(String, int)}.
+     * @see String#indexOf(String, int)
      */
     public int indexOf(final String str, final int fromIndex) {
         begin:
@@ -419,18 +416,17 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * Get a circular char buffer reflecting a subsequence of this one.
      * The returned buffer will start with the character at {@code start} and
      * end with the character at {@code end - 1}.
-     * <p/>
+     *
      * The new buffer will have its maximum size equalling the maximum size of
      * the buffer from which it was created.
-     * <p/>
+     *
      * Calling this method will not affect the state of the buffer.
      *
      * @param start the start offset into this buffer, inclusive
      * @param end   the end index into this buffer, exclusive
      * @return a newly allocated circular char buffer
      * @throws IllegalArgumentException       if {@code start} is negative
-     * @throws ArrayIndexOutOfBoundsException if {@code end} is past
-     *                                        the buffer length
+     * @throws ArrayIndexOutOfBoundsException if {@code end} is past the buffer length
      */
     @Override
     public CircularCharBuffer subSequence(int start, int end) {
@@ -660,7 +656,7 @@ public class CircularCharBuffer implements CharSequence, Iterable<Character> {
      * Reader-compatible method.
      *
      * @param n the amount of characters to skip.
-     * @throws IOException if n > {@link #size()}.
+     * @throws IOException if n &lt; {@link #size()}.
      */
     public void skip(long n) throws IOException {
         if (n < 0) {

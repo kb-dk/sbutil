@@ -36,15 +36,15 @@ import java.util.regex.Pattern;
  * If you are looking for namespace agnostic XSLT transformations use the
  * static methods supplied on the on the {@link XSLT} class, eg.
  * {@link XSLT#transform(java.net.URL, String, boolean)}.
- * </p><p>
- * The reader looks for the pattern "<.*>".
+ *
+ * The reader looks for the pattern "&lt;.*&gt;".
  * For each match, all elements matching "xmlns:?[a-z]*=\".*\"" are removed.
- * If "<![[CDATA.*]]>" is encountered, it is copied verbatim.
- * if "<!--.*-->" is encountered, it is copied verbatim.
- * </p><p>
+ * If "&lt;![[CDATA.*]]&gt;" is encountered, it is copied verbatim.
+ * if "&lt;!--.*--&gt;" is encountered, it is copied verbatim.
+ *
  * This reader reads ahead, so the parent Reader is not guaranteed to be
  * positioned at any deterministic position during processing.
- * </p><p>
+ *
  * The reader is not thread-safe.
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
@@ -205,8 +205,7 @@ public class NamespaceRemover extends ReplaceReader {
      * Attempts to ensure that there is at least length characters in the out
      * buffer. This might involve reading far ahead in the in buffer.
      *
-     * @param length the number of characters that should ideally be in the
-     *               out buffer after processing.
+     * @param length the number of characters that should ideally be in the out buffer after processing.
      * @throws IOException if an I/O error occured in the parent Reader.
      */
     private void ensureLength(int length) throws IOException {

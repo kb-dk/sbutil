@@ -8,8 +8,6 @@ import java.util.Map;
 /**
  * Simple LRUcache based on the LinkedHashMap
  *
- * @param <K>
- * @param <V>
  * @see java.util.LinkedHashMap
  */
 @QAInfo(state = QAInfo.State.QA_NEEDED,

@@ -33,11 +33,11 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 /**
- * <p>Convenience class to ease usage of resource bundles for translation
- * purposes.</p>
- * <p/>
- * <p><b>Note:</b> {@link ResourceBundle} does internal caching of the parsed
- * bundles so there is not need for a static factory for this class.</p>
+ * Convenience class to ease usage of resource bundles for translation
+ * purposes.
+ *
+ * <b>Note:</b> {@link ResourceBundle} does internal caching of the parsed
+ * bundles so there is not need for a static factory for this class.
  *
  * @see BundleCache
  * @see ResourceBundle
@@ -65,14 +65,14 @@ public class Translator {
     private boolean usingFallBack;
 
     /**
-     * <p>Create a Translator for a named {@link ResourceBundle} and a given
-     * {@link Locale}.</p>
-     * <p/>
-     * <p>If no resource bundle matching the request can be found this
+     * Create a Translator for a named {@link ResourceBundle} and a given
+     * {@link Locale}.
+     *
+     * If no resource bundle matching the request can be found this
      * class will try to fall back to the {@link #DEFAULT_LOCALE}. If this fails
      * too it will fall back to an empty resource bundle. This means that all
      * requests to {@link #translate} will return a String where '.' is
-     * replaced by a white space. See {@link #translate} documentation.</p>
+     * replaced by a white space. See {@link #translate} documentation.
      *
      * @param bundleName the name of the ResourceBundle to look up
      * @param locale     the locale to translate to
@@ -106,24 +106,24 @@ public class Translator {
      * Create a Translator for the {@link #DEFAULT_BUNDLE}.
      * See {@link #Translator(String, java.util.Locale)} for fallback strategy.
      *
-     * @param locale
+     * @param locale the locale to use for all translations.
      */
     public Translator(Locale locale) {
         this(DEFAULT_BUNDLE, locale);
     }
 
     /**
-     * <p>Return translation corresponding to a given key. If the key is not
+     * Return translation corresponding to a given key. If the key is not
      * found in the underlying {@link ResourceBundle} the string with periods
-     * replaced by white spaces will be returned.</p>
-     * <p/>
-     * <p>Because of the above described fallback behavior it is strongly
+     * replaced by white spaces will be returned.
+     *
+     * Because of the above described fallback behavior it is strongly
      * advised to make translation keys in the reverse format. Ie replace
-     * white spaces by periods.</p>
-     * <p/>
-     * <p>If the key is not found this will be reported to the log on the first
+     * white spaces by periods.
+     *
+     * If the key is not found this will be reported to the log on the first
      * occurence only. This is to avoid flooding the log with translation
-     * warnings.</p>
+     * warnings.
      *
      * @param key    the key to lookup translation for.
      * @param values the values to replace in the translated string
@@ -148,10 +148,9 @@ public class Translator {
     }
 
     /**
-     * Get the bundle used for translation. Note that this may be an empty bundle
-     * in case none was found.
+     * Get the bundle used for translation. Note that this may be an empty bundle in case none was found.
      *
-     * @return
+     * @return the translation bundle.
      */
     public ResourceBundle getBundle() {
         return bundle;

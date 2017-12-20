@@ -6,11 +6,11 @@ import java.util.Arrays;
 
 /**
  * Sliding window percentile calculator (this includes arithmetic mean) with min and max.
- * </p><p>
+ *
  * A window size is defined and the calculator is fed a stream of values. It will automatically remove older entries.
  * Care has been taken to optimize performance by using int[], binary search and array copy to maintain the internal
  * structure. The intended use case is for windows that are well within level 2/3-cache.
- * </p><p>
+ *
  * This implementation is not thread safe.
  */
 // TODO: Running calculation of average and deviation
@@ -69,7 +69,7 @@ public class SlidingPercentiles {
     /**
      * Add the given value to the window, maintaining internal invariants. If the maximum size for the window has been
      * reached, this involves an eviction of the oldest value.
-     * </p><p>
+     *
      * If {@link #continuousSort} is true, insertion time is O(n); if false, insertion time is O(1).
      * {@code System#arraycopy} is used for shifting values when continuousSort is true.
      * @param value will be added to the sliding window.
@@ -93,7 +93,7 @@ public class SlidingPercentiles {
 
     /**
      * Removed the oldest received value from the window.
-     * </p><p>
+     *
      * If {@link #continuousSort} is true, removal time is O(n); if false, removal time is O(1).
      * {@code System#arraycopy} is used for shifting values when continuousSort is true.
      * @return the oldest value in the window.

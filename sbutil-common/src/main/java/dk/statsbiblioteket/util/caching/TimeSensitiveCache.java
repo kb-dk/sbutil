@@ -31,16 +31,16 @@ import java.util.*;
  * and automatically remove them when they grow to old. The cache is implemented
  * without extra threads, but the garbage collection is performed when one of
  * methods are called.
- * <p/>
+ *
  * The cache can, if the accessOrder is set, update the timestamps of the elements
  * when they are accessed.
- * <p/>
+ *
  * The cache can, if fixedSize is provided, hold a fixed size, and remove the
  * oldest elements when the size grows above these bonds.
- * <p/>
+ *
  * Both the above options are compatible, so you could have a cache with the elements
  * in access order, but having a fixed size.
- * <p/>
+ *
  * All the methods in this class are synchronized, which should make this class
  * thread safe
  */

@@ -33,9 +33,9 @@ import java.util.NoSuchElementException;
  * This shares much of its functionality with {@link CircularCharBuffer}.
  * It avoids memory reallocations by traversing its internal character buffer
  * in a circular manner.
- * </p><p>
+ *
  * The buffer is not thread-safe.
- * </p><p>
+ *
  * Note: the Queue-calls involved conversion between char and Character and
  * are thus not the fastest.
  */
@@ -48,7 +48,7 @@ public class CircularIntBuffer implements Iterable<Integer> {
     /**
      * The maximum capacity of the buffer + 1. If the maximum capacity is
      * Integer.MAX_VALUE, max is also Integer.MAX_VALUE.
-     * </p><p>
+     *
      * The +1 hack is due to performance optimization.
      */
     private int max; // Maximum size
@@ -59,7 +59,7 @@ public class CircularIntBuffer implements Iterable<Integer> {
     /**
      * Create a new buffer with an initial capacity of {@code initialSize}
      * elements and a maximum allowed size of {@code maxSize} elements.
-     * <p/>
+     *
      * The buffer will automatically grow beyond {@code initialSize} as data
      * is added, but will raise an error if the allocation would go above
      * {@code maxSize}.
@@ -135,7 +135,7 @@ public class CircularIntBuffer implements Iterable<Integer> {
 
     /**
      * @return the maximum capacity of the buffer.
-     * @see {@link #size()}.
+     * @see #size()
      */
     public int getMaximumCapacity() {
         return max == Integer.MAX_VALUE ? max : max - 1;
@@ -246,7 +246,7 @@ public class CircularIntBuffer implements Iterable<Integer> {
 
     /**
      * @return the number of elements in the buffer.
-     * @see {@link #getMaximumCapacity()}.
+     * @see #getMaximumCapacity()
      */
     public int size() {
         if (first <= next) {
@@ -289,10 +289,10 @@ public class CircularIntBuffer implements Iterable<Integer> {
      * Get a circular buffer reflecting a subsequence of this one.
      * The returned buffer will start with the element at {@code start} and
      * end with the element at {@code end - 1}.
-     * <p/>
+     *
      * The new buffer will have its maximum size equalling the maximum size of
      * the buffer from which it was created.
-     * <p/>
+     *
      * Calling this method will not affect the state of the buffer.
      *
      * @param start the start offset into this buffer, inclusive
@@ -504,7 +504,7 @@ public class CircularIntBuffer implements Iterable<Integer> {
      * Reader-compatible method.
      *
      * @param n the amount of elements to skip.
-     * @throws java.io.IOException if n > {@link #size()}.
+     * @throws java.io.IOException if n &gt; {@link #size()}.
      */
     public void skip(long n) throws IOException {
         if (n < 0) {

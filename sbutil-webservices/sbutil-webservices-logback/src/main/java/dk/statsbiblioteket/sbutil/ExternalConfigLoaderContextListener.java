@@ -9,11 +9,13 @@ import java.io.File;
 
 /**
  * Simple utility listener to load certain properties before Spring Starts up.
- * <p/>
+ *
  * Add this entry to your web.xml:
- * <pre><listener>
- * <listener-class>dk.statsbiblioteket.sbutil.ExternalConfigLoaderContextListener</listener-class>
- * </listener></pre>
+ * <pre>
+ *   &lt;listener&gt;
+ *       &lt;listener-class&gt;dk.statsbiblioteket.sbutil.ExternalConfigLoaderContextListener&lt;/listener-class&gt;
+ *   &lt;/listener&gt;
+ * </pre>
  *
  * It will look for a context param  by the name dk.statsbiblioteket.sbutil.ExternalConfigLoaderContextListener.configDir
  * If this is a relative path, it is relative from the root folder of your webapp.

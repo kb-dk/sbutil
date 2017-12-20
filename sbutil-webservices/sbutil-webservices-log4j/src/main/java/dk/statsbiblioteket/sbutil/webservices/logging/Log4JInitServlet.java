@@ -40,7 +40,7 @@ import java.io.File;
  * the context-parameter key which has been assiged with the file path to an XML
  * log4j configuration (that is <b>not</b> a <code>.properties</code> file), and
  * initialise log4j with that.
- * <p/>
+ *
  * Add a section like the following to your <code>web.xml</code> file in order
  * to use this servlet to initialise log4j for your web application:
  * 
@@ -62,7 +62,7 @@ import java.io.File;
  *         &lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
  *     &lt;/servlet&gt;
  * </pre>
- * <p/>
+ *
  * You must assign the above context-param key with the file path to the log4j
  * configuration in the tomcat configuration (eg. in the
  * <code>context.xml</code> file) to make it all work. This servlet will attempt

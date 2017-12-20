@@ -88,7 +88,7 @@ public class EscapeUTF8Stream extends InputStream {
 
     /**
      * This reads a character from {@link #in} through {@link #reader}. If the
-     * character has a value <= 127, it is returned directly. If not, the
+     * character has a value &lt;= 127, it is returned directly. If not, the
      * character is escaped to \\uXXXX as described in
      * http://java.sun.com/docs/books/jls/second_edition/html/lexical.doc.html#100850
      * The generated characters are stored until next call to read() and only
@@ -127,9 +127,8 @@ public class EscapeUTF8Stream extends InputStream {
     /* Pass-throughs */
 
     /**
-     * @return the number of bytes that can be read or skipped. This does not
-     *         take escaping into account, so the number is <= the actual number of
-     *         skippable bytes.
+     * @return the number of bytes that can be read or skipped. This does not take escaping into account, so the
+     * number is &lt;= the actual number of skippable bytes.
      * @throws IOException in case of I/O errors.
      */
     public int available() throws IOException {

@@ -52,7 +52,7 @@ public class HTMLReport implements Report {
             + "  </head>\n"
             + "<body>\n"
             + "<h1>QA Report for @HEADER_ESCAPE@</h1>\n"
-            + "<p><b>Generated: </b><i>@DATE_ESCAPE@</i></p>\n";
+            + "<b>Generated: </b><i>@DATE_ESCAPE@</i>\n";
 
     /**
      * The footer template for the HTML document.
@@ -150,15 +150,15 @@ public class HTMLReport implements Report {
     private String baseSrcPath;
 
     /**
-     * <p>Create a HTML report for the project named {@code projectName} writing
+     * Create a HTML report for the project named {@code projectName} writing
      * the HTML to {@code out} using {@code baseSrcPath} to refer to the source
-     * files.</p>
-     * <p>If {@code baseSrcPath} starts with {@code http://} it will be parsed
+     * files.
+     * If {@code baseSrcPath} starts with {@code http://} it will be parsed
      * as an URL an links will be inserted in the report. The links will be on
      * the form
      * <code>
      * baseSrcPath + "org/my/package/MyClass.java"
-     * </code></p>
+     * </code>
      *
      * @param projectName The project name.
      * @param out         The output stream. Default is {@link System#out}.
@@ -235,13 +235,13 @@ public class HTMLReport implements Report {
             headerInfo += " <b>Author:</b> " + info.author() + " ";
         }
         if (!"".equals(info.comment())) {
-            otherInfo += "<b>Comment</b>: " + info.comment() + "<br/>";
+            otherInfo += "<b>Comment</b>: " + info.comment() + "";
         }
         if (!"".equals(info.deadline())) {
-            otherInfo += "<b>Deadline</b>: " + info.deadline() + "<br/>";
+            otherInfo += "<b>Deadline</b>: " + info.deadline() + "";
         }
         if (!"".equals(info.revision())) {
-            otherInfo += "<b>Revision</b>: " + info.revision() + "<br/>";
+            otherInfo += "<b>Revision</b>: " + info.revision() + "";
         }
         if (baseSrcPath.startsWith("http://")) {
             String fileUrl;
@@ -307,7 +307,7 @@ public class HTMLReport implements Report {
         s = s.replace("@HEADER_INFO_ESCAPE@", "in " + element.getBaseDir()
                                               + " file: <b>" + element.getFilename() + "</b>");
         s = s.replace("@OTHER_INFO_ESCAPE@", ""
-                                             + "<code>" + element.getData().replace("\n", "<br/>")
+                                             + "<code>" + element.getData().replace("\n", "")
                                              + "</code>");
         s = s.replace("@QA_LEVEL_ESCAPE@", "ERROR");
         s = s.replace("@QA_STATE_ESCAPE@", "<i>None</i>");

@@ -7,7 +7,7 @@ import junit.framework.TestCase;
  *
  * @author Asger Askov Blekinge
  * @since <pre>21/10/2010</pre>
- *        <p/>
+ *
  *        $Id$
  */
 public class LRUCacheTest extends TestCase {

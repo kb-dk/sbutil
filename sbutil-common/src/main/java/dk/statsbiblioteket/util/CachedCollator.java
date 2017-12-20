@@ -47,14 +47,14 @@ import java.util.*;
  * maximum possible speed-up. If no statistics are give, the characters from
  * 0x20 to 0xFF are used. Note that this might give faulty sorting for some
  * languages.
- * </p><p>
+ *
  * When two Strings are compared, it is checked if both Strings contains only
  * characters from the char-statistics. If they do, comparison is done with
  * the cache-table, which is fast. If any of the Strings contains other
  * characters, comparison is done with the underlying Java-supplied Collator.
- * </p><p>
+ *
  * null is handled explicitly and always occur last.
- * </p><p>
+ *
  * The characters given must all be single-character comparable. Any characters
  * used in more complex sorting rules (e.g. "aa" in Danish), should not be
  * used for the cache. Note that the given characters are not required to be
@@ -77,7 +77,7 @@ public class CachedCollator extends Collator {
             " !\"#$%&'()*+,-./0123456789:;<=>?[\\]^_{|}~@";
 
     /**
-     * ASCII-chars a-z and A-Z>. Depending on local rules for sorting, these
+     * ASCII-chars a-z and A-Z. Depending on local rules for sorting, these
      * might not be safe to use as commonChars (e.g. "aa" comes after "ab" in
      * some standard danish sorts). Normally this will be used together with
      * {@link #COMMON_NON_LETTER} and other characters.
@@ -154,7 +154,7 @@ public class CachedCollator extends Collator {
      *                   setting where the collator is used. It can contain any
      *                   number of characters.
      *                   See the class documentation for details.
-     *                   Duplicate characters are removed.<br />
+     *                   Duplicate characters are removed.
      *                   Example: "eaoi 0ntr1"...
      */
     public CachedCollator(Locale locale, String mostCommon) {

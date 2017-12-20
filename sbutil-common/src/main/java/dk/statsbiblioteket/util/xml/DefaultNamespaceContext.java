@@ -20,7 +20,7 @@ public class DefaultNamespaceContext implements NamespaceContext {
 
     /**
      * Constructs a NamespaceContext with no default namespace.
-     * <p/>
+     *
      * Beware that the default namespace can only be set during
      * construction.
      */
@@ -30,7 +30,7 @@ public class DefaultNamespaceContext implements NamespaceContext {
 
     /**
      * Constructs a NamespaceContext with a default namespace.
-     * <p/>
+     *
      *
      * @param defaultNamespaceURI , the default namespace for this context.
      */
@@ -68,10 +68,10 @@ public class DefaultNamespaceContext implements NamespaceContext {
 
     /**
      * Set or add a namespace to the context and associated it with a prefix.
-     * <p/>
+     *
      * A given prefix can only be associated with one namespace in the context.
      * A namespace can have multiple prefixes.
-     * <p/>
+     *
      * The prefixes: {@code xml}, and {@code xmlns} are reserved and
      * predefined in any context.
      *
@@ -201,7 +201,7 @@ public class DefaultNamespaceContext implements NamespaceContext {
 
         /**
          * This method is not supported on this Iterator.
-         * <p/>
+         *
          * Allways throws UnsupportedOperationException {@link javax.xml.namespace.NamespaceContext#getPrefixes(String)}
          *
          * @throws UnsupportedOperationException if the <tt>remove</tt>

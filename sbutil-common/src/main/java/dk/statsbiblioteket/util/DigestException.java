@@ -27,11 +27,11 @@ import dk.statsbiblioteket.util.qa.QAInfo;
 /**
  * A {@link RuntimeException} thrown when there is unexpected errors
  * computing a digest.
- * <p/>
- * <p>For example when you checksum a fixed {@link String} with
+ *
+ * For example when you checksum a fixed {@link String} with
  * a well known digest such as MD5, errors a re not expected.
- * <p/>
- * <p>It is also used to hide explicit code to handle {@link java.security.NoSuchAlgorithmException}s
+ *
+ * It is also used to hide explicit code to handle {@link java.security.NoSuchAlgorithmException}s
  * in cases where you request algorithms required by the
  * <a href="http://java.sun.com/j2se/1.5.0/docs/guide/security/CryptoSpec.html">Java CryptoSpec</a>. Fx
  * {@code MD5} and {@code SHA-1}.

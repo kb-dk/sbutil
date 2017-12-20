@@ -38,15 +38,15 @@ import java.util.Comparator;
 /**
  * A Java NIO based high-performance, large file-size enabled, random seek
  * capable line reader. Use only for good.
- * </p><p>
+ *
  * The reader assumes UTF-8 encoding when performing String-related operations.
  * It is substantially faster than {@link RandomAccessFile} (about a factor 5
  * for most operations). It can be used as a replacement for RandomAccessFile.
- * </p><p>
+ *
  * Important: writeUTF is not supported. This is because the relevant converter
  * method {@link DataOutputStream#writeUTF(String, DataOutput)} is
  * package private.
- * </p><p>
+ *
  * This class is not synchronised.
  */
 @QAInfo(state = QAInfo.State.QA_NEEDED,
@@ -104,7 +104,8 @@ public class LineReader implements DataInput, DataOutput {
      * The current position in the {@link #file}. Reads and writes will occur
      * from this position and forward.
      *
-     * @see {@link #getPosition} and {@link #seek}.
+     * @see #getPosition().
+     * @see #seek(long).
      */
     private long position = 0;
 
@@ -116,7 +117,7 @@ public class LineReader implements DataInput, DataOutput {
      * The size of the file. Cached to avoid making system-calls for each
      * request for file size.
      *
-     * @see {@link #length}.
+     * @see #length().
      */
     private long fileSize = -1;
 
@@ -127,7 +128,7 @@ public class LineReader implements DataInput, DataOutput {
 
     /**
      * States whether all write operations should be automatically followed by
-     * a flush.<br />
+     * a flush.
      * Note: The current implementation always flushes. This is expected to
      * change.
      */
@@ -137,16 +138,15 @@ public class LineReader implements DataInput, DataOutput {
     private int bufferSize;
 
     /**
-     * Connects to the given file with the given mode. This corresponds to
-     * {@link RandomAccessFile(File, String)}.
+     * Connects to the given file with the given mode. This corresponds to RandomAccessFile(File, String).
      *
      * @param file the file to connect to.
-     * @param mode the mode to use. Valid values are<br />
-     *             "r": read-only.<br />
-     *             "rw": read and write.<br />
+     * @param mode the mode to use. Valid values are
+     *             "r": read-only.
+     *             "rw": read and write.
      *             "rws": read and write and synchronize after each write.
      *             "rwd": read and write and synchronize after each write.
-     * @throws IOException if the file coult not be accessed.
+     * @throws IOException if the file could not be accessed.
      */
     public LineReader(File file, String mode) throws IOException {
         if (mode != null && mode.contains("w") && !file.exists()) {
@@ -182,11 +182,11 @@ public class LineReader implements DataInput, DataOutput {
     }
 
     /**
-     * The buffer size affects performance greatly.<br />
+     * The buffer size affects performance greatly.
      * Set this low (hundreds of bytes) if the file is large, the access very
-     * random and the reads small.<br />
+     * random and the reads small.
      * Set this high (thousands of bytes) if the file is medium, the access
-     * clustered and/or the reads are large.<br />
+     * clustered and/or the reads are large.
      * Set this very high (the file size) if the file is small.
      *
      * @param bufferSize the size of the buffer.
@@ -347,7 +347,7 @@ public class LineReader implements DataInput, DataOutput {
 
     /**
      * Fill the buffer from the file at the current position, if it is not
-     * already filled.<br />
+     * already filled.
      * Note: This does not check whether the position of the buffer corresponds
      * to the global position.
      *
@@ -797,19 +797,19 @@ public class LineReader implements DataInput, DataOutput {
      * Find the start-position of a line matching the given query.
      * A binary-search is used, thus requiring the user of the LineReader to
      * maintain specific structure and a matching comparator.
-     * </p><p>
+     *
      * The expected structure is UTF-8 with new-line {@code "\n"} as
      * line-delimiters. As the byte {@code 0x0A} for new-line is never part
      * of a valid multi-byte UTF-8 character this should pose no problems.
-     * </p><p>
+     *
      * Searching for an empty line is not supported. Escaping on line breaks is
      * the responsibility of the user.
-     * </p><p>
+     *
      * Recommendation: Call {@link #setBufferSize(int)} with an amount
      * corresponding to the line-length. Keep in mind that binary searching
      * often result in a lot of lookups around the same position at the end
      * of the search, choosing the average length of a single line as the
-     * buffer size is probably too small. If the lines are short (< 20 chars),
+     * buffer size is probably too small. If the lines are short (&lt; 20 chars),
      * use a value such as 400. If the lines are long (~100 chars), go for
      * 1000 or 2000. If the lines are very long (1000+), consider 4000 or 8000.
      * These are soft guidelines as the best values are also dependend of the

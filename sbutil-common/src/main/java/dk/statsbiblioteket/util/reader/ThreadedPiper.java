@@ -49,6 +49,7 @@ public class ThreadedPiper {
     /**
      * @param producer adds content to the returned InputStream.
      * @return a stream coupled to the producer.
+     * @throws IOException if the producer failed to deliver.
      */
     public static InputStream getDeferredStream(final Producer producer) throws IOException {
         final PipedOutputStream source = new PipedOutputStream();
@@ -92,6 +93,7 @@ public class ThreadedPiper {
         /**
          * Assigns the given exception to the InputStream.
          * On the next read from the stream, the exception will be thrown.
+         * @param exception the exception to raise on next read.
          */
         public void raiseException(IOException exception) {
             this.exception = exception;

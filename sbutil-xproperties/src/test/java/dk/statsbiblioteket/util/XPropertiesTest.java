@@ -47,7 +47,7 @@ import java.util.Properties;
  *
  * @author Toke Eskildsen
  * @version 1.0
- *          <p/>
+ *
  *          CVS:  $Id: XPropertiesTest.java,v 1.6 2007/12/04 13:22:01 mke Exp $
  * @since <pre>2005-11-22</pre>
  */

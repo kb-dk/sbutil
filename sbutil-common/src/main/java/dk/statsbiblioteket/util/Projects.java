@@ -40,13 +40,13 @@ public class Projects {
 
     /**
      * Get the root directory of the running project.
-     * <p/>
+     *
      * This should work regardless of your application running in a
      * container , being a lib imported from lib/myLib.jar, or the main
      * jar file of a project.
-     * <p/>
+     *
      * For webservice applications the project root will be the WEB-INF directory.
-     * <p/>
+     *
      * WARNING: This is detected through heuristics and you should
      * always check that the path makes sense in your context.
      *
@@ -83,15 +83,15 @@ public class Projects {
 
     /**
      * A heuristic check if the provided directory looks like a project root.
-     * <p/>
+     *
      * The directory is not a project root if itself or its parent directory
      * returns true on {@link #isProjectRelatedDir}.
-     * <p/>
+     *
      * If the directory passes the above check it is
      * checked that the directory has a child directory returning true
      * on {@link #isProjectRelatedDir} or that the directory contains a shell script.
      * If one of these conditions are true, this method returns true.
-     * <p/>
+     *
      * If all else fails this method returns false.
      *
      * @param directory the directory to check

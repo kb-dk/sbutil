@@ -38,7 +38,7 @@ public class ConfigCollection {
     /** Current configuration. */
     private static Properties contextConfig = new Properties();
     /**
-     * Last known servlet context.<p/>
+     * Last known servlet context.
      * FIXME: Storing this statically probably makes no sense, and allows race
      * conditions between various contexts.
      */

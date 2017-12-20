@@ -28,7 +28,7 @@ import java.util.*;
 /**
  * Encapsulation of {@link TimeSensitiveCache} that uses {@link PendingElement}s
  * and exposes the wait-for-value principle.
- * </p><p>
+ *
  * Note that the methods {@link #values} and {@link #entrySet} only returns
  * assigned values.
  */
@@ -126,7 +126,7 @@ public class PendingCache<V, T> implements Map<V, T> {
      * @param key   standard map key.
      * @param value standard map value.
      * @return the old value if one was assigned (non-blocking).
-     * @see {@link #putPending}.
+     * @see #putPending
      */
     @Override
     public synchronized T put(V key, T value) {

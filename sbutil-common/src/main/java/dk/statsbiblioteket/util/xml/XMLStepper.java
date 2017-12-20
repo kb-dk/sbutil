@@ -35,6 +35,7 @@ public class XMLStepper {
      * Leaves the cursor after END_ELEMENT.
      * @param xml the stream to iterate.
      * @param callback called for each start element.
+     * @throws XMLStreamException if the xml was not valid or XML processing failed for other reasons.
      */
     public static void iterateTags(XMLStreamReader xml, Callback callback) throws XMLStreamException {
         iterateTags(xml, false, callback);
@@ -46,6 +47,7 @@ public class XMLStepper {
      * @param xml the stream to iterate.
      * @param lenient if true, the iterator tries to compensate for element-exceeding advances in the XML stream by the callback.
      * @param callback called for each start element.
+     * @throws XMLStreamException if the xml was not valid or XML processing failed for other reasons.
      */
     public static void iterateTags(XMLStreamReader xml, boolean lenient, Callback callback) throws XMLStreamException {
         List<String> tagStack = new ArrayList<String>(10);
@@ -118,6 +120,8 @@ public class XMLStepper {
 
     /**
      * Shorthand for {@link #isWellformed(javax.xml.stream.XMLStreamReader)}.
+     * @param xml the XML to check.
+     * @return true if the XML is well formed.
      */
     public static boolean isWellformed(String xml) {
         try {
@@ -168,7 +172,7 @@ public class XMLStepper {
      * Equivalent to
      * {@link #pipeXML(javax.xml.stream.XMLStreamReader, javax.xml.stream.XMLStreamWriter, boolean, boolean)} but
      * returns the sub XML as a String instead of piping the result.
-     * </p><p>
+     *
      * Note: This methods is resilient against the multiple root-problem in pipeXML. This also means that the returned
      *       String is not necessarily valid XML.
      * @param in must be positioned at START_ELEMENT and be coalescing.
@@ -198,9 +202,10 @@ public class XMLStepper {
      * @param xml the input for the replacer. This will be parsed as XML.
      * @param replacer the replacer for handling element text.
      * @return a stream with the output from the replacement of text in the input xml.
+     * @throws IOException if the xml content could not be read.
      */
     public static InputStream streamingReplaceElementText(
-            final InputStream xml, final ContentReplaceCallback replacer) throws IOException, XMLStreamException {
+            final InputStream xml, final ContentReplaceCallback replacer) throws IOException {
         return ThreadedPiper.getDeferredStream(new ThreadedPiper.Producer() {
             @Override
             public void process(OutputStream out) throws IOException {
@@ -248,7 +253,7 @@ public class XMLStepper {
      * Traverses all parts in the given element, including sub elements etc., and pipes the parts to out.
      * The callback allows for selective replacement of texts inside of elements.
      * Leaves in positioned immediately after the END_ELEMENT matching the START_ELEMENT.
-     * </p><p>
+     *
      * Note: The piper does not repair namespaces. If in uses namespaces defined previously in the XML and out does
      * not have these definitions, they will not be transferred.
      * @param in must be positioned at START_ELEMENT and be coalescing.
@@ -269,7 +274,7 @@ public class XMLStepper {
      * Traverses all parts in the given element, including sub elements etc., and pipes the parts to out.
      * Used for copying snippets verbatim from one XML structure to another.
      * Leaves in positioned immediately after the END_ELEMENT matching the START_ELEMENT.
-     * </p><p>
+     *
      * Note: The piper does not repair namespaces. If in uses namespaces defined previously in the XML and out does
      * not have these definitions, they will not be transferred.
      * @param in must be positioned at START_ELEMENT and be coalescing.
@@ -285,10 +290,10 @@ public class XMLStepper {
      * Traverses all parts in the given element, including sub elements etc., and pipes the parts to out.
      * Used for copying snippets verbatim from one XML structure to another.
      * Leaves in positioned immediately after the END_ELEMENT matching the START_ELEMENT.
-     * </p><p>
+     *
      * Note: The piper does not repair namespaces. If in uses namespaces defined previously in the XML and out does
      * not have these definitions, they will not be transferred.
-     * </p><p>
+     *
      * Warning: Skipping the outer element is dangerous as the outer element can contain multiple inner elements.
      * If the destination (out) is empty and in contains multiple sub-elements, the piping will fail with an Exception
      * stating "Trying to output second root". In order to avoid that, the destination needs to have at least one
@@ -492,6 +497,7 @@ public class XMLStepper {
      * @param tag the designation of the element to extract text from.
      * @return the text of the element with the given tag or null if the tag could not be found. If the tag is empty,
      *         the empty String will be returned.
+     * @throws XMLStreamException if the xml was not valid or XML processing failed for other reasons.
      */
     public static String getFirstElementText(CharSequence xml, String tag) throws XMLStreamException {
         final MutablePair<Boolean, String> result = new MutablePair<Boolean, String>(false, null);
@@ -514,6 +520,7 @@ public class XMLStepper {
      * @param fakeXPath  the fakeXPath to evaluate.
      * @see FakeXPath
      * @return the result of the evaluation or null if there was no match.
+     * @throws XMLStreamException if the xml was not valid or XML processing failed for other reasons.
      */
     public static String evaluateFakeXPath(CharSequence xml, String fakeXPath) throws XMLStreamException {
         return evaluateFakeXPathsSingleResultsPremade(xml, parsePaths(Collections.singletonList(fakeXPath))).get(0);
@@ -525,6 +532,7 @@ public class XMLStepper {
      * @param fakeXPath  the fakeXPath to evaluate.
      * @see FakeXPath
      * @return the result of the evaluation or null if there was no match.
+     * @throws XMLStreamException if the xml was not valid or XML processing failed for other reasons.
      */
     public static String evaluateFakeXPath(CharSequence xml, FakeXPath fakeXPath) throws XMLStreamException {
         return evaluateFakeXPathsSingleResultsPremade(xml, Collections.singletonList(fakeXPath)).get(0);
@@ -536,6 +544,7 @@ public class XMLStepper {
      * @see FakeXPath
      * @return a list with the same number of elements as fakeXPaths with the results of the XPaths matching the order,
      *         null as a xpath-result means no match.
+     * @throws XMLStreamException if the xml was not valid or XML processing failed for other reasons.
      */
     public static List<String> evaluateFakeXPathsSingleResults(
             CharSequence xml, List<String> fakeXPaths) throws XMLStreamException {
@@ -548,6 +557,7 @@ public class XMLStepper {
      * @see FakeXPath
      * @return a list with the same number of elements as fakeXPaths with the results of the XPaths matching the order,
      *         null as a xpath-result means no match.
+     * @throws XMLStreamException if the xml was not valid or XML processing failed for other reasons.
      */
     public static List<String> evaluateFakeXPathsSingleResultsPremade(
             CharSequence xml, List<FakeXPath> fakeXPaths) throws XMLStreamException {
@@ -565,6 +575,7 @@ public class XMLStepper {
      * @param maxResultsPerFakeXPath maximum numbers of results per XPath, -1 means no limit.
      * @see FakeXPath
      * @return a list with the same number of elements as fakeXPaths with the results of the XPaths matching the order.
+     * @throws XMLStreamException if the xml was not valid or XML processing failed for other reasons.
      */
     public static List<List<String>> evaluateFakeXPaths(
             CharSequence xml, List<String> fakeXPaths, final int maxResultsPerFakeXPath) throws XMLStreamException {
@@ -584,6 +595,7 @@ public class XMLStepper {
      * @param fakeXPaths list of fakeXPaths to evaluate.
      * @param maxResultsPerFakeXPath maximum numbers of results per XPath, -1 means no limit.
      * @return a list with the same number of elements as fakeXPaths with the results of the XPaths matching the order.
+     * @throws XMLStreamException if the xml was not valid or XML processing failed for other reasons.
      */
     // Problem: foo matches foo/bar . Trailing /?
     public static List<List<String>> evaluateFakeXPathsPremade(
@@ -598,6 +610,7 @@ public class XMLStepper {
      * @param fakeXPaths list of fakeXPaths to evaluate.
      * @param maxResultsPerFakeXPath maximum numbers of results per XPath, -1 means no limit.
      * @return a list with the same number of elements as fakeXPaths with the results of the XPaths matching the order.
+     * @throws XMLStreamException if the xml was not valid or XML processing failed for other reasons.
      */
     // Problem: foo matches foo/bar . Trailing /?
     public static List<List<String>> evaluateFakeXPaths(
@@ -636,16 +649,16 @@ public class XMLStepper {
     }
 
     /**
-     * Subset of XPath @{url https://www.w3schools.com/xml/xpath_syntax.asp}.<br/>
+     * Subset of XPath @{url https://www.w3schools.com/xml/xpath_syntax.asp}.
      * Parsing always start from the root of the document, so @{code foo} and {@code /foo} are equal.
-     * For the same reason, {@code ..} is not supported.<br/>
-     * {@code //} is supported.<br/>
+     * For the same reason, {@code ..} is not supported.
+     * {@code //} is supported.
      *
-     * Predicate support:<br/>
-     * {@code foo[@bar]}: The element foo with the attribute bar.<br/>
-     * {@code foo[@bar='zoo']}: The element foo with the attribute bar with value zoo.<br/>
+     * Predicate support:
+     * {@code foo[@bar]}: The element foo with the attribute bar.
+     * {@code foo[@bar='zoo']}: The element foo with the attribute bar with value zoo.
      *
-     * Wildcard support:<br/>
+     * Wildcard support:
      * {@code *}: Any element node.
      * {@code @*}: Any attribute node.
      * Not supported: {@code node()}.
@@ -1067,22 +1080,22 @@ public class XMLStepper {
     /**
      * Iterates the given input, counting occurrences of limit-matches and skipping matching elements when the limits
      * are reached.
-     * </p><p>
+     *
      * Every tag and every attribute (optional) is matched against the limits. Tags are represented as
      * {@code /rootelement/subelement}, attributes as {@code /rootelement/subelement#attributename=value}.
      * Namespaces are not part of the representation.
-     * </p><p>
-     * Sample: in={@code <foo><bar zoo="true"></bar><bar zoo="true"></bar><bar zoo="false"></bar><baz /></foo>}<br/>
-     * Limits {@code "/foo/bar", 1} -> {@code <foo><bar zoo="true"></bar><baz /></foo>}<br/>
-     * Limits {@code "bar", 1} -> {@code <foo><bar zoo="true"></bar><baz /></foo>}<br/>
-     * Limits {@code "/foo/bar", 2} -> {@code <foo><bar zoo="true"></bar><bar zoo="true"></bar><baz /></foo>}<br/>
-     * Limits {@code "/foo/bar", 0} -> {@code <foo><baz></baz></foo>}<br/>
-     * Limits {@code "/foo/bar#zoo=true", 1} -> {@code <foo><bar zoo="true"></bar><bar zoo="false"></bar><baz /></foo>}
-     * </p><p>
+     *
+     * Sample: in={@code &lt;foo&gt;&lt;bar zoo="true"&gt;&lt;/bar&gt;&lt;bar zoo="true"&gt;&lt;/bar&gt;&lt;bar zoo="false"&gt;&lt;/bar&gt;&lt;baz /&gt;&lt;/foo&gt;}
+     * Limits {@code "/foo/bar", 1} -&gt; {@code &lt;foo&gt;&lt;bar zoo="true"&gt;&lt;/bar&gt;&lt;baz /&gt;&lt;/foo&gt;}
+     * Limits {@code "bar", 1} -&gt; {@code &lt;foo&gt;&lt;bar zoo="true"&gt;&lt;/bar&gt;&lt;baz /&gt;&lt;/foo&gt;}
+     * Limits {@code "/foo/bar", 2} -&gt; {@code &lt;foo&gt;&lt;bar zoo="true"&gt;&lt;/bar&gt;&lt;bar zoo="true"&gt;&lt;/bar&gt;&lt;baz /&gt;&lt;/foo&gt;}
+     * Limits {@code "/foo/bar", 0} -&gt; {@code &lt;foo&gt;&lt;baz&gt;&lt;/baz&gt;&lt;/foo&gt;}
+     * Limits {@code "/foo/bar#zoo=true", 1} -&gt; {@code &lt;foo&gt;&lt;bar zoo="true"&gt;&lt;/bar&gt;&lt;bar zoo="false"&gt;&lt;/bar&gt;&lt;baz /&gt;&lt;/foo&gt;}
+     *
      * Example: limits={@code ["/foo$", -1], ["/foo/bar", 1]}, countPatterns=false, onlyCheckElementPaths=true,
-                discardNonMatched=true} -> {@code "<foo><bar zoo=\"true\" /></foo>"}<br/>
+                discardNonMatched=true} -&gt; {@code "&lt;foo&gt;&lt;bar zoo=\"true\" /&gt;&lt;/foo&gt;"}
      * Example: limits={@code ["/foo$", -1], ["/foo/bar", 1]}, countPatterns=false, onlyCheckElementPaths=true,
-                discardNonMatched=false} -> {@code "<foo><bar zoo=\"true\" /><baz /></foo>"}<br/>
+                discardNonMatched=false} -&gt; {@code "&lt;foo&gt;&lt;bar zoo=\"true\" /&gt;&lt;baz /&gt;&lt;/foo&gt;"}
      * @param in     XML stream positioned at the point from which reduction should occur (normally the start).
      * @param out    the reduced XML.
      * @param limits patterns and max occurrences for entries. The limits are processed in entrySet order.
@@ -1181,11 +1194,17 @@ public class XMLStepper {
         }
 
         /**
+         * @param tags the tags for the current branch of the XML-tree.
+         * @param current the current element.
+         * @param originalText the text of the current element.
          * @return the text to be used instead of originalText.
          */
         protected abstract String replace(List<String> tags, String current, String originalText);
 
         /**
+         * @param xml the xml stream.
+         * @param tags the tags for the current branch of the XML-tree.
+         * @param current the current element.
          * @return true if the text content of the element should be replaced.
          */
         protected abstract boolean match(XMLStreamReader xml, List<String> tags, String current);
@@ -1219,6 +1238,7 @@ public class XMLStepper {
          * @param current    the local name of the current tag.
          * @return true if the implementation called {@code xml.next()} one or more times, else false.
          * @deprecated use {@link #elementStart2(XMLStreamReader, List, String)} instead.
+         * @throws XMLStreamException if processing failed.
          */
         @Deprecated
         public boolean elementStart(
@@ -1235,6 +1255,7 @@ public class XMLStepper {
          * @param tags       the start tags encountered in the current sub tree.
          * @param current    the local name of the current tag.
          * @return the action taken by the implementation that affects overall processing of the xml stream.
+         * @throws XMLStreamException if processing failed.
          */
         @SuppressWarnings("deprecation")
         public PROCESS_ACTION elementStart2(

@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  * A helper-class utilising {@link FolderWatcher} to notify
  * {@link FolderListener}s about which file or folder under a specified folder
  * that should be regarded as the current file or folder.
- * </p><p>
+ *
  * Sample use: A searcher should always use the latest index. A CurrentWatcher
  * is created. If a new index is moved to a specified folder, the watcher
  * notifies the listeners that the new index should be used. If an index is
@@ -63,10 +63,10 @@ public class CurrentWatcher extends Observable<CurrentListener> implements
      * Creates a CurrentWatcher that looks for files and folders that satisfies
      * the given targets pattern. The last target (sorted alphanumerically) is
      * seen as the current target.
-     * </p><p>
+     *
      * Note: If no files or folders matches targets or if watchedFolder does
      * not exists, the current file or folder will be null.
-     * </p><p>
+     *
      * Note: No event will be thrown upon initialization. Users of this class
      * should call {@link #getCurrent} after creation, in order to get the
      * initial file or folder.

@@ -201,10 +201,10 @@ public class ReportElement {
     }
 
     /**
-     * <p>Add additional data to a report element. This could for example be a
-     * stack trace for an element of type ERROR.</p>
-     * <p>The additional data is displayed at the discretion of the
-     * {@link Report} displaying the report elements.</p>
+     * Add additional data to a report element. This could for example be a
+     * stack trace for an element of type ERROR.
+     * The additional data is displayed at the discretion of the
+     * {@link Report} displaying the report elements.
      *
      * @param s The string to add.
      */

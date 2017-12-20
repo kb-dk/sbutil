@@ -39,13 +39,13 @@ public class FolderEvent {
     /**
      * If files are both added and removed since the last event, an added event
      * will be sent, followed by a removed event.
-     * </p><p>
+     *
      * added:          The files in the changeList was added to the watched
-     * folder.<br />
+     * folder.
      * removed:        The files in the changeList was removed from the watched
-     * folder.<br />
+     * folder.
      * watchedRemoved: The watched folder was removed. The changelist will be
-     * null.<br />
+     * null.
      * watchedCreated: The watched folder was created. The changelist will
      * contain the contents of the folder.
      */

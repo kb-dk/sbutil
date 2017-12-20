@@ -34,7 +34,7 @@ import java.util.Map;
  * A reader that replaces Strings on the fly. This replacer uses a tree for
  * finding matches for replacement and should be fairly effective for a large
  * number of replacements, as long as there is a non-trivial amount of diversity
- * among the replacements (e.g. "aaa1" => "foo", "aaa2" => "bar" etc.) will give
+ * among the replacements (e.g. "aaa1" ⇒ "foo", "aaa2" ⇒ "bar" etc.) will give
  * poor performance when the number of cases is in the hundreds or thousands.
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
@@ -78,7 +78,7 @@ public class StringReplacer extends ReplaceReader {
     /**
      * Create a new replacer, with an empty input stream, replacing substrings
      * based on the rules defined by the {@code replacements} argument.
-     * <p/>
+     *
      * Before calling any other methods on this reader you chould set its input
      * stream by calling {@link StringReplacer#setSource(java.io.Reader)}.
      *

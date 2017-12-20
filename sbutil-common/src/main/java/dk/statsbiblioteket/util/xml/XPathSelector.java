@@ -6,7 +6,7 @@ import org.w3c.dom.NodeList;
 /**
  * Interface for doing efficient XPath selections. To obtain an implementation
  * of this interface use {@link DOM#createXPathSelector(String[])}.
- * <p/>
+ *
  * Note that your DOM must be constructed with namespaces explicitly enabled
  * for a namespace aware selector to work properly. You do this either via
  * the {@link DOM#streamToDOM(java.io.InputStream, boolean)} or
@@ -87,10 +87,10 @@ public interface XPathSelector {
     /**
      * Extract the given value from the node as a String or if the value cannot
      * be extracted, {@code defaultValue} is returned.
-     * <p/>
+     *
      * Example: To get the value of the attribute "foo" in the node, specify
      * "@foo" as the path.
-     * <p/>
+     *
      * Note: This method does not handle namespaces explicitely.
      *
      * @param node         the node with the wanted attribute
@@ -104,10 +104,10 @@ public interface XPathSelector {
     /**
      * Extract the given value from the node as a String or if the value cannot
      * be extracted, the empty string is returned
-     * <p/>
+     *
      * Example: To get the value of the attribute "foo" in the node, specify
      * "@foo" as the path.
-     * <p/>
+     *
      * Note: This method does not handle namespaces explicitely.
      *
      * @param node  the node with the wanted attribute
@@ -119,7 +119,7 @@ public interface XPathSelector {
 
     /**
      * Select the Node list with the given XPath.
-     * </p><p>
+     *
      * Note: This is a convenience method that logs exceptions instead of
      * throwing them.
      *
@@ -131,7 +131,7 @@ public interface XPathSelector {
 
     /**
      * Select the Node with the given XPath.
-     * </p><p>
+     *
      * Note: This is a convenience method that logs exceptions instead of
      * throwing them.
      *

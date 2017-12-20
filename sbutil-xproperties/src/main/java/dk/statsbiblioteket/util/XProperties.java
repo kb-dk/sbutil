@@ -42,27 +42,27 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
- * <p>Human Readable Properties with XStream backend.</p>
- * <p/>
- * <p>An extension of java.util.properties, that uses XStream from Thoughtworks to
+ * Human Readable Properties with XStream backend.
+ *
+ * An extension of java.util.properties, that uses XStream from Thoughtworks to
  * create human readable property files for many different objects. The
  * {@link #store}, {@link #load}, {@link #storeToXML} and {@link #loadFromXML}
- * calls are overwritten.</p>
- * <p/>
- * <p>XProperties provides storage in human readable XML.
+ * calls are overwritten.
+ *
+ * XProperties provides storage in human readable XML.
  * It also allows for easy storage of arbitrary complex objects, within the
  * bounds of XStream.
  * See <a href="http://xstream.codehaus.org">xstream.codehaus.org</a>
- * for details.</p>
- * <p/>
- * <p>The properties can be overridden from the command line, by setting the
- * environment in the following manner:<br/>
+ * for details.
+ *
+ * The properties can be overridden from the command line, by setting the
+ * environment in the following manner:
  * <code>-DXProperty:foo=bar -DXProperty:mysubproperty/foo=bar</code>
  * Slashes separates sub properties. {@code -?[0-9]+} are stored as integers,
  * {@code -?[0-9]+\.[0-9]+} are stored as doubles, {@code true} and
  * {@code false} are stored as booleans, all other values are stored as
- * {@link String}s.</p>
- * <p/>
+ * {@link String}s.
+ *
  * <h2>File Format</h2>
  * FIXME: The file format is currently broken.
  * See
@@ -521,7 +521,7 @@ public class XProperties extends Properties implements Converter {
      * Fetch stored properties from the given resource. This uses
      * ContextClassLoader, so as long as the
      * resource is in the CLASSPATH, it should be accessible.
-     * <p/>
+     *
      * The resource is searched for in the following order:
      * - If the resource can be found in defaultPath, use this
      * - Else if the resource can be found in current directory use this

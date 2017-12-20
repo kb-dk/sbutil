@@ -85,7 +85,11 @@ public class Checksums {
      * Calculate the checksum of a given {@link String}. If you need a
      * String version of the digest use {@link Bytes#toHex(byte[])}.
      *
+     * @param algorithm the algorithm to use, e.g. {@code SHA-1}.
+     * @param in the input to digest.
+     * @return the digested input.
      * @see #digest(String, java.io.InputStream)
+     * @throws NoSuchAlgorithmException if the algorithm was unknown.
      */
     public static byte[] digest(String algorithm, String in) throws NoSuchAlgorithmException {
         return digest(algorithm, in.getBytes());
@@ -94,19 +98,23 @@ public class Checksums {
     /**
      * Calculate the checksum of a given {@link File}. If you need a
      * String version of the digest use {@link Bytes#toHex(byte[])}.
-     *
+     * @param algorithm the algorithm to use, e.g. {@code SHA-1}.
+     * @param in the input to digest.
+     * @return the digested input.
      * @see #digest(String, java.io.InputStream)
+     * @throws NoSuchAlgorithmException if the algorithm was unknown.
+     * @throws IOException if there is an error reading the stream
      */
-    public static byte[] digest(String algorithm, File in)
-            throws NoSuchAlgorithmException, IOException {
-        return digest(
-                algorithm, new BufferedInputStream(new FileInputStream(in)));
+    public static byte[] digest(String algorithm, File in) throws NoSuchAlgorithmException, IOException {
+        return digest(algorithm, new BufferedInputStream(new FileInputStream(in)));
     }
 
     /**
      * Calculate the {@code SHA-1} checksum of a given stream. If you need a
      * String version of the digest use {@link Bytes#toHex(byte[])}.
      *
+     * @param in the input to digest.
+     * @return the digested input.
      * @throws IOException if there is an error reading the stream
      */
     public static byte[] sha1(InputStream in) throws IOException {
@@ -121,8 +129,9 @@ public class Checksums {
      * Calculate the {@code SHA-1} checksum of a string. If you need a
      * String version of the digest use {@link Bytes#toHex(byte[])}.
      *
-     * @throws DigestException if the JVM doesn't know the
-     *                         {@code SHA-1} algorithm
+     * @param in the input to digest.
+     * @return the digested input.
+     * @throws DigestException if the JVM doesn't know the {@code SHA-1} algorithm
      */
     public static byte[] sha1(String in) {
         try {
@@ -136,6 +145,8 @@ public class Checksums {
      * Calculate the {@code SHA-1} checksum of a {@link File}. If you need a
      * String version of the digest use {@link Bytes#toHex(byte[])}.
      *
+     * @param in the input to digest.
+     * @return the digested input.
      * @throws IOException     if there is an error reading the file.
      * @throws DigestException if the JVM doesn't know the {@code SHA-1} algorithm.
      */
@@ -151,6 +162,8 @@ public class Checksums {
      * Calculate the {@code MD5} checksum of a given stream. If you need a
      * String version of the digest use {@link Bytes#toHex(byte[])}.
      *
+     * @param in the input to digest.
+     * @return the digested input.
      * @throws IOException     if there is an error reading the stream.
      * @throws DigestException if the JVM doesn't know the {@code MD5} algorithm.
      */
@@ -166,6 +179,8 @@ public class Checksums {
      * Calculate the {@code MD5} checksum of a string. If you need a
      * String version of the digest use {@link Bytes#toHex(byte[])}.
      *
+     * @param in the input to digest.
+     * @return the digested input.
      * @throws DigestException if the JVM doesn't know the {@code MD5} algorithm
      */
     public static byte[] md5(String in) {
@@ -180,6 +195,8 @@ public class Checksums {
      * Calculate the {@code MD5} checksum of a {@link File}. If you need a
      * String version of the digest use {@link Bytes#toHex(byte[])}.
      *
+     * @param in the input to digest.
+     * @return the digested input.
      * @throws IOException     if there is an error reading the file
      * @throws DigestException if the JVM doesn't know the {@code MD5} algorithm
      */

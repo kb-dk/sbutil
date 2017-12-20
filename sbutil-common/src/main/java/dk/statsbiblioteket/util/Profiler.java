@@ -404,7 +404,7 @@ public class Profiler {
     /**
      * Pause the Profiler. Call {@link #unpause} in order to continue.
      * Calling {@link #beat} will automatically unpause.
-     * </p><p>
+     *
      * Note: The larger the {@link #bpsSpan}, the longer it takes to unpause.
      */
     public synchronized void pause() {

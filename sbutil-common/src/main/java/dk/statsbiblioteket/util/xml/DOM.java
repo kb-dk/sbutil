@@ -203,10 +203,10 @@ public class DOM {
      * Create a new {@link XPathSelector} instance with a given namespace
      * mapping. The arguments are parsed as
      * {@code prefix1, uri1, prefix2, uri2, ...}.
-     * <p/>
+     *
      * If you want to apply XPath expressions without namespaces use the static
      * {@code select*} methods directly on the {@code DOM} class.
-     * <p/>
+     *
      * Note that if you want to apply XPath selections on a DOM constructed from
      * either {@link DOM#streamToDOM(InputStream, boolean)} or
      * {@link DOM#stringToDOM(String, boolean)} you must pass
@@ -307,10 +307,10 @@ public class DOM {
     /**
      * Extract the given value from the node as a String or if the value cannot
      * be extracted, {@code defaultValue} is returned.
-     * <p/>
+     *
      * Example: To get the value of the attribute "foo" in the node, specify
      * "@foo" as the path.
-     * <p/>
+     *
      * Note: This method does not handle namespaces explicitely.
      *
      * @param node         the node with the wanted attribute
@@ -326,10 +326,10 @@ public class DOM {
     /**
      * Extract the given value from the node as a String or if the value cannot
      * be extracted, the empty string is returned
-     * <p/>
+     *
      * Example: To get the value of the attribute "foo" in the node, specify
      * "@foo" as the path.
-     * <p/>
+     *
      * Note: This method does not handle namespaces explicitely.
      *
      * @param node  the node with the wanted attribute
@@ -343,7 +343,7 @@ public class DOM {
 
     /**
      * Select the {@link NodeList} with the given XPath.
-     * </p><p>
+     *
      * Note: This is a convenience method that logs exceptions instead of
      * throwing them.
      *
@@ -357,7 +357,7 @@ public class DOM {
 
     /**
      * Select the Node with the given XPath.
-     * </p><p>
+     *
      * Note: This is a convenience method that logs exceptions instead of
      * throwing them.
      *

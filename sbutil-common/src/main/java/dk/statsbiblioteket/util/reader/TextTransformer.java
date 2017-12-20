@@ -27,7 +27,7 @@ import java.io.Reader;
 /**
  * Defines a text-oriented transformer (chars and Strings) with the main focus
  * on performance of multiple transformations with the same rules.
- * </p><p>
+ *
  * While a lot of the methods seem to do the exactly same thing, having them
  * explicitely defined allows for an implementation to do optimizations.
  */
@@ -64,7 +64,7 @@ public interface TextTransformer {
 
     /**
      * Transforms an array of chars to an array of chars.
-     * </p><p>
+     *
      * If the transformation results in exactly the same number of chars as
      * the input, it is allowed for the implementation to re-use the input
      * array.

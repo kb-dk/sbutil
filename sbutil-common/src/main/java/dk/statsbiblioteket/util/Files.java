@@ -108,14 +108,14 @@ public class Files {
     /**
      * Copy a file or directory (recursively) to a destination path. Generally
      * it behaves as a standard posix command line copy tool.
-     * </p><p>
+     *
      * If the input path is a directory and the destination path already
      * exists, the input directory will be copied as a subdir to the destination
      * directory.
-     * </p><p>
+     *
      * If the destination directory does not exist it will be created and the
      * contents of the input dire3ctory will be copied here.
-     * </p><p>
+     *
      * Note: The recursive copy is not transactional. If an error occurs halfway
      * through the copy, the already copied files will not be removed.
      *
@@ -146,14 +146,14 @@ public class Files {
     /**
      * Move a file with the same semantics as the standard Unix {@code move}
      * command.
-     * <p></p>
+     *
      * In contrast to the standard Java {@link File#renameTo} this method
      * does extensive sanity checking and throws appropriate exceptions
      * if something is wrong.
-     * <p></p>
+     *
      * This method will cause quite a bit of {@code stat} dancing on the
      * file system, so don't use this method in performance critical regions.
-     * <p></p>
+     *
      * If {@code dest} is a directory {@code source} will be moved there keeping
      * its base name.
      * If {@code dest} does not exist {@code source} will be renamed to
@@ -257,8 +257,12 @@ public class Files {
     }
 
     /**
-     * As {@link #move(File, File, boolean)}, with {@code overwrite} set to
-     * {@code false}.
+     * Copy without clobbering (no overwrite if the destination exists).
+     * As {@link #move(File, File, boolean)}, with {@code overwrite} set to {@code false}.
+     *
+     * @param source source file.
+     * @param dest destination file.
+     * @throws IOException if the file could not be copied.
      */
     public static void move(File source, File dest) throws IOException {
         move(source, dest, false);
@@ -359,14 +363,14 @@ public class Files {
      * Generally it behaves as a standard posix command line copy tool,
      * with the addendum that files are moved by performing a complete copy
      * of all files followed by a delete.
-     * </p><p>
+     *
      * If the source is a directory and the destination already exists as a
      * directory, the source directory will be copied as a subdir to the
      * destination directory.
-     * </p><p>
+     *
      * If the destination directory does not exist it will be created and the
      * contents of the input directory will be copied here.
-     * </p><p>
+     *
      * Note: The recursive move is partly transactional. If an error occurs
      *       halfway through the move, the already copied files will not be
      *       removed, but no files from the source will be deleted.
@@ -462,14 +466,14 @@ public class Files {
      *
      * @param file the file to extract the base name for
      * @return file's basename
-     * @deprecated use {@link File#getName)} instead.
+     * @deprecated use {@link File#getName()} instead.
      */
     public static String baseName(File file) {
         return file.getName();
     }
 
     /**
-     * <p>Return the base name of a file. For example</p>
+     * Return the base name of a file. For example
      * <code>
      * "autoexec.bat" = baseName ("C:\autoexec.bat")
      * "fstab" = basename ("/etc/fstab")
@@ -485,15 +489,15 @@ public class Files {
     }
 
     /**
-     * <p>Download the contents of an {@link URL} and store it on disk.</p>
-     * <p/>
-     * <p>if {@code target} argument is a directory the file will be stored
+     * Download the contents of an {@link URL} and store it on disk.
+     *
+     * if {@code target} argument is a directory the file will be stored
      * here with the basename as extracted from the url. If it points to
-     * a non-existing file it will be written to a file with that name.</p>
-     * <p/>
-     * <p>If the {@code target} argument points to an already existing file
+     * a non-existing file it will be written to a file with that name.
+     *
+     * If the {@code target} argument points to an already existing file
      * and {@code overwrite == false} a {@link FileAlreadyExistsException}
-     * will be thrown. Otherwise the file will be overwritten.</p>
+     * will be thrown. Otherwise the file will be overwritten.
      *
      * @param url       where the data should be downloaded from.
      * @param target    the place to store the downloaded data. This can be either a file or a directory.

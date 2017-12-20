@@ -38,7 +38,7 @@ public class CircuitBreakerStatus {
   
   /**
    * 
-   * @param the state of the circuit breaker, either CLOSED, OPEN or HALF-OPEN
+   * @return the state of the circuit breaker, either CLOSED, OPEN or HALF-OPEN
    */
   public String getState() {
     return state;
@@ -63,7 +63,6 @@ public class CircuitBreakerStatus {
   /**
    * 
    * @return configuration value for maximum failures in a row
-   * @return
    */
   public int getMaxFailures() {
     return maxFailures;

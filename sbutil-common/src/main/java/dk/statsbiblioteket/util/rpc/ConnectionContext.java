@@ -55,16 +55,16 @@ public class ConnectionContext<E> {
     /**
      * Get the {@code connectionId} as passed to the constructor.
      *
-     * @return
+     * @return the ID for the connection.
      */
     public String getConnectionId() {
         return connectionId;
     }
 
     /**
-     * Get the refernce count for this context - only for debugging!
+     * Get the reference count for this context - only for debugging!
      *
-     * @return
+     * @return the reference count for the connection.
      */
     public synchronized int getRefCount() {
         return refCount;

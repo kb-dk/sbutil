@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * An extension of CompletionService that supports non-blocking result polling as well as non-terminating wait for
@@ -30,8 +31,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         author = "te")
 public class JobController<R> extends ExecutorCompletionService<R> {
     private final Executor executor;
-    private final AtomicInteger issued = new AtomicInteger(0);
-    private final AtomicInteger tasks = new AtomicInteger(0);
+    private final AtomicLong issued = new AtomicLong(0); // Issued tasks
+    private final AtomicInteger tasks = new AtomicInteger(0);  // Active task count
     private boolean autoEmpty = false;
 
     /**
@@ -52,8 +53,8 @@ public class JobController<R> extends ExecutorCompletionService<R> {
     }
 
     /**
-     * Shortcut for {@code JobController(maxConcurrentThreads, false, autoEmpty, null)}.<br/>
-     * Constructs a JobController that automatically empties the queue for finished jobs.<br/>
+     * Shortcut for {@code JobController(maxConcurrentThreads, false, autoEmpty, null)}.
+     * Constructs a JobController that automatically empties the queue for finished jobs.
      * Post-finish processing of the results from the jobs are handled by overriding
      * {@link #afterExecute(java.util.concurrent.Future)}.
      * @param autoEmpty if true, finished jobs are automatically removed.
@@ -114,6 +115,8 @@ public class JobController<R> extends ExecutorCompletionService<R> {
     /**
      * Non-blocking.
      * @return the result of all finished Futures.
+     * @throws ExecutionException if an error occurred during the processing of the Future task.
+     * @throws InterruptedException if an interrupt were raised during blocking take.
      */
     public List<R> popFinishedResults() throws ExecutionException, InterruptedException {
         List<R> finished = new ArrayList<R>();
@@ -127,6 +130,7 @@ public class JobController<R> extends ExecutorCompletionService<R> {
     /**
      * Blocking. Waits for all running tasks to finish, the returns their Futures.
      * @return all tasks.
+     * @throws InterruptedException if an interruption was raised during popping.
      */
     public List<Future<R>> popAll() throws InterruptedException {
         List<Future<R>> finished = new ArrayList<Future<R>>();
@@ -145,10 +149,12 @@ public class JobController<R> extends ExecutorCompletionService<R> {
 
     /**
      * Blocking. Waits at most the given time for all running tasks to finish, the returns their Futures.
-     * </p><p>
+     *
      * To avoid synchronized callbacks, all running tasks are collected before they are issued to callback.
-     * </p>
+     *
      * Important: The JobController is not guaranteed to be empty after this call.
+     * @param timeout timeout for popping.
+     * @param unit time unit for popping.
      * @return all tasks.
      * @throws java.lang.InterruptedException if interrupted during poll.
      */
@@ -252,7 +258,7 @@ public class JobController<R> extends ExecutorCompletionService<R> {
     /**
      * @return the total number of issued tasks.
      */
-    public int getIssued() {
+    public long getIssued() {
         return issued.get();
     }
 

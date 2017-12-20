@@ -14,7 +14,7 @@ import java.util.concurrent.Callable;
 
 
 /**
- * <p>Native command executor. Based on ProcessBuilder.
+ * Native command executor. Based on ProcessBuilder.
  * <ul>
  * <li> Incorporates timeout for spawned processes.
  * <li> Handle automatic collection of bytes from the output and
@@ -23,15 +23,15 @@ import java.util.concurrent.Callable;
  * <li> Blocking while executing
  * <li> Implements Runnable, to be wrapped in a Thread.
  * </ul>
- * </p>
- * <p/>
+ *
+ *
  * Use the Assessor methods to configure the Enviroment, input, collecting
  * behavoiur, timeout and startingDir.
  * Use the getters to get the output and error streams as strings, along with
  * the return code and if the process timed out.
- * <p/>
- * <p> This code is not yet entirely thread safe. Be sure to only call a given
- * processRunner from one thread, and do not reuse it. </p>
+ *
+ * This code is not yet entirely thread safe. Be sure to only call a given
+ * processRunner from one thread, and do not reuse it. 
  */
 @QAInfo(level = QAInfo.Level.NORMAL,
         state = QAInfo.State.IN_DEVELOPMENT,

@@ -48,11 +48,10 @@ public class XMLUtil {
             };
 
     /**
-     * Performs a simple entity-encoding of input, making it safe to include in
-     * XML.
+     * Performs a simple entity-encoding of input, making it safe to include in XML.
      *
      * @param input the text to encode.
-     * @return the text with &, ", < and > encoded.
+     * @return the text with &amp;, ", &lt; and &gt; encoded.
      */
     public static String encode(String input) {
         ReplaceReader r = localEncoder.get();

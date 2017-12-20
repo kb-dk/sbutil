@@ -8,18 +8,18 @@ import java.util.Collection;
 import java.util.HashMap;
 
 /**
- * <p>Helper class to maintain a collection of connections.
+ * Helper class to maintain a collection of connections.
  * Connections are created on request and are kept around for a predefined
- * amount of time settable vi {@link #setLingerTime}.</p>
- * <p/>
- * <p>One of the core benefits of using this class is that it allows
+ * amount of time settable vi {@link #setLingerTime}.
+ *
+ * One of the core benefits of using this class is that it allows
  * the Client to use stateless connections - ie not fail if the
  * service crashes and and comes back up by "magical" means. Failure
- * handling is provided free of charge.</p>
- * <p/>
- * <p>Using a connection manager to manage RMI connections is simple.
+ * handling is provided free of charge.
+ *
+ * Using a connection manager to manage RMI connections is simple.
  * Assume we want to use a remote interface {@code Pingable}:
- * <p/>
+ *
  * <pre>
  * interface Pingable extends Remote {
  *
@@ -27,9 +27,9 @@ import java.util.HashMap;
  *
  * }
  * </pre>
- * <p/>
+ *
  * If you export that interface over RMI you can connect to it like so:
- * <p/>
+ *
  * <pre>
  * // Basic set up
  * ConnectionFactory&lt;Pingable&gt; cf = new RMIConnectionFactory&lt;Pingable&gt;();
@@ -41,15 +41,15 @@ import java.util.HashMap;
  * System.out.println ("Ping response: " + server.ping());
  * ctx.unref()
  * </pre>
- * </p>
- * <p/>
+ *
+ *
  * <h2>Abstracting Out The RPC Implementation</h2>
- * <p>Here follows how to abstract out the RMI dependency on the client side in the
- * previous example.</p>
- * <p/>
- * <p>Modify {@code Pingable} to be non-{@code Remote} and throw
+ * Here follows how to abstract out the RMI dependency on the client side in the
+ * previous example.
+ *
+ * Modify {@code Pingable} to be non-{@code Remote} and throw
  * {@code IOException}s instead:
- * <p/>
+ *
  * <pre>
  * interface Pingable {
  *
@@ -57,9 +57,9 @@ import java.util.HashMap;
  *
  * }
  * </pre>
- * <p/>
+ *
  * Now extend that interface with a remote interface:
- * <p/>
+ *
  * <pre>
  * interface RemotePingable extends Remote, Pingable {
  *
@@ -67,10 +67,10 @@ import java.util.HashMap;
  *
  * }
  * </pre>
- * <p/>
+ *
  * Create a {@link ConnectionFactory}{@code <Pingable>} using a
  * {@link RMIConnectionFactory} or something else underneath:
- * <p/>
+ *
  * <pre>
  * public class MyConnectionFactory extends ConnectionFactory&lt;Pingable&gt; {
  *
@@ -82,9 +82,9 @@ import java.util.HashMap;
  *     }
  * }
  * </pre>
- * <p/>
+ *
  * With this in hand we can do
- * <p/>
+ *
  * <pre>
  * // Basic set up
  * ConnectionFactory&lt;Pingable&gt; mycf = new MyConnectionFactory();
@@ -96,8 +96,8 @@ import java.util.HashMap;
  * System.out.println ("Ping response: " + server.ping());
  * ctx.unref()
  * </pre>
- * <p/>
- * </p>
+ *
+ *
  */
 public class ConnectionManager<E> {
 
@@ -296,9 +296,9 @@ public class ConnectionManager<E> {
     }
 
     /**
-     * <p>Use this method to obtain a connection to the service with id
+     * Use this method to obtain a connection to the service with id
      * {@code connectionId}. Make sure you call {@link #release} on the
-     * returned context when you are done using the connection.</p>
+     * returned context when you are done using the connection.
      *
      * @param connectionId instance id of the service to get a connection for
      * @return a connection to a service or {@code null} on error
@@ -339,15 +339,15 @@ public class ConnectionManager<E> {
     }
 
     /**
-     * <p>Any call to {@link #get} should be followed by a matching call to
+     * Any call to {@link #get} should be followed by a matching call to
      * this method. It is equivalent to remembering closing your file
-     * descriptors.</p>
-     * <p/>
-     * <p>Equivalently you may call {@link ConnectionContext#unref} instead
-     * of calling this method.</p>
-     * <p/>
-     * <p>It is advised that consumers release their connections in a
-     * <code>finally</code> clause.</p>
+     * descriptors.
+     *
+     * Equivalently you may call {@link ConnectionContext#unref} instead
+     * of calling this method.
+     *
+     * It is advised that consumers release their connections in a
+     * <code>finally</code> clause.
      *
      * @param ctx context to be released
      * @throws NullPointerException if {@code ctx} is {@code null}
@@ -399,8 +399,8 @@ public class ConnectionManager<E> {
      * cause, is of a type that is associated with network errors.
      * If it is {@code ctx} will be marked
      * as errorneous by a call to {@link #reportError}.
-     * <p></p>
-     * A common pattern would be:<br/>
+     *
+     * A common pattern would be:
      * <pre>
      * if (checkError(ctx, t)) {
      *     ctx = connManager.get (connId);
@@ -423,11 +423,11 @@ public class ConnectionManager<E> {
     }
 
     /**
-     * <p>Close the manager for any further connections, and release all currently
-     * cached connections.</p>
-     * <p/>
-     * <p>Calling {@link #get} or {@link #setLingerTime} on a closed manager
-     * raises an {@link IllegalStateException}.</p>
+     * Close the manager for any further connections, and release all currently
+     * cached connections.
+     *
+     * Calling {@link #get} or {@link #setLingerTime} on a closed manager
+     * raises an {@link IllegalStateException}.
      */
     public void close() {
         log.debug("Closed");

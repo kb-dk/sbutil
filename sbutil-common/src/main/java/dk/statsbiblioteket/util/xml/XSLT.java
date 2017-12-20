@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.w3c.dom.Document;
 
+import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -39,13 +40,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Helpers for transforming XML using XSLTs. All methods are Thread-safe,
  * as long as Threads do not share the same Transformer.
- * </p><p>
+ *
  * Most of the helpers have an option for ifnoring XML namespace. Setting this
  * to true strips namespaces from the input by doing a full DOM-parsing.
  * Besides being fairly expensive in terms of processing time and temporary
  * memory allocation, this is also a bad practice with regard to QA of the
  * input.
- * </p><p>
+ *
  * Note: Transformer-errors and exceptions are thrown when they occur while
  * warnings are logged on {@link #warnlog}.
  */
@@ -162,7 +163,7 @@ public class XSLT {
     /**
      * Create or re-use a Transformer for the given xsltLocation.
      * The Transformer is {@link ThreadLocal}, so the method is thread-safe.
-     * </p><p>
+     *
      * Warning: A list is maintained for all XSLTs so changes to the xslt will
      * not be reflected. Call {@link #clearTransformerCache} to clear
      * the list.
@@ -178,7 +179,7 @@ public class XSLT {
     /**
      * Create or re-use a Transformer for the given xsltLocation.
      * The Transformer is {@link ThreadLocal}, so the method is thread-safe.
-     * </p><p>
+     *
      * Warning: A list is maintained for all XSLTs so changes to the xslt will
      * not be reflected. Call {@link #clearTransformerCache} to clear
      * the list.
@@ -224,7 +225,7 @@ public class XSLT {
      * This is safe to call as it only affects performance. Clearing the cache
      * means that changes to underlying XSLTs will be reflected and that any
      * memory allocated for caching is freed.
-     * </p><p>
+     *
      * Except for special cases, such as a huge number of different XSLTs,
      * the cache should only be cleared when the underlying XSLTs are changed.
      */
@@ -687,6 +688,11 @@ public class XSLT {
 
         /**
          * Shorthand for calling {@link #take(URL)} and {@link XSLT#transform(Transformer, String, boolean)}
+         * @param xslt       used together with {@link #cacheSize} to get or create the cache.
+         * @param xml the input to transform.
+         * @param ignoreXMLNamespaces true if namespaces should be removed from the input before transforming.
+         * @return the xml transformed by the xslt.
+         * @throws TransformerException if the transformation failed or a Transformer could not be created.
          */
         public String transform(URL xslt, String xml, boolean ignoreXMLNamespaces) throws TransformerException {
             return transform(xslt, xml, null, ignoreXMLNamespaces);
@@ -694,6 +700,12 @@ public class XSLT {
 
         /**
          * Shorthand for calling {@link #take(URL, Map)} and {@link XSLT#transform(Transformer, String, boolean)}
+         * @param xslt       used together with {@link #cacheSize} to get or create the cache.
+         * @param xml the input to transform.
+         * @param parameters for the Transformer.
+         * @param ignoreXMLNamespaces true if namespaces should be removed from the input before transforming.
+         * @return the xml transformed by the xslt.
+         * @throws TransformerException if the transformation failed or a Transformer could not be created.
          */
         public String transform(URL xslt, String xml, Map<String, String> parameters, boolean ignoreXMLNamespaces)
                 throws TransformerException {
@@ -746,7 +758,7 @@ public class XSLT {
     /**
      * A cache of Transformers, initialized from the same XSLT.
      * The cache is fixed size, completely filled upon creation and and blocks on {@link TransformerCache#take()}.
-     * </p><p>
+     *
      * It is essential for the calling code to return Transformers after use.
      */
     public static class TransformerCache {
@@ -838,6 +850,10 @@ public class XSLT {
 
         /**
          * Shorthand for calling {@link #take()} and {@link XSLT#transform(Transformer, String, boolean)}
+         * @param xml the input to transform.
+         * @return the xml transformed by the Transformer.
+         * @param ignoreXMLNamespaces true if namespaces should be removed from the input before transforming.
+         * @throws TransformerException if a Transformer could not be created from the xslt.
          */
         public String transform(String xml, boolean ignoreXMLNamespaces) throws TransformerException {
             return transform(xml, null, ignoreXMLNamespaces);
@@ -845,6 +861,11 @@ public class XSLT {
 
         /**
          * Shorthand for calling {@link #take(Map)} and {@link XSLT#transform(Transformer, String, boolean)}
+         * @param xml the input to transform.
+         * @param parameters parameters for the Transformer.
+         * @param ignoreXMLNamespaces true if namespaces should be removed from the input before transforming.
+         * @return the xml transformed by the Transformer.
+         * @throws TransformerException if the transformation failed.
          */
         public String transform(String xml, Map<String, String> parameters, boolean ignoreXMLNamespaces)
                 throws TransformerException {

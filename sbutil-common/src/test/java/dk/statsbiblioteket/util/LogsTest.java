@@ -35,7 +35,7 @@ import java.util.*;
  *
  * @author Toke Eskildsen
  * @since <pre>07/05/2007</pre>
- *        <p/>
+ *
  *        $Id: LogsTest.java,v 1.5 2007/12/04 13:22:01 mke Exp $
  */
 public class LogsTest extends TestCase {
