@@ -17,10 +17,12 @@ RELEASING
 When code has been added or changed, do the following:
 This will release the current snapshot version and increase the snapshot version in the pom automatic.
 
+git commit & push if you haven't already done so.
+
 mvn release:prepare
 
-
   Or speed up the process if you are a test-hating villain:
+  
 mvn -Darguments='-Dmaven.test.skip=true' release:prepare
 
   Check the suggested versions. If everything builds and looks ok then
@@ -30,3 +32,7 @@ mvn -Darguments='-Dmaven.test.skip=true'  release:perform
   If everything is still OK, perform a
 
 git push
+
+  If something goes wrong, e.g. JavaDoc failing, reset with
+
+git reset origin/$(git branch | grep '\*' | cut -d\  -f2)  --hard
