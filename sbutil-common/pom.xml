@@ -5,7 +5,7 @@
     <parent>
         <groupId>dk.statsbiblioteket.sbutil</groupId>
         <artifactId>sbutil</artifactId>
-        <version>0.5.56</version>
+        <version>0.5.57-SNAPSHOT</version>
     </parent>
 
     <artifactId>sbutil-common</artifactId>
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>dk.statsbiblioteket.sbutil</groupId>
             <artifactId>sbutil-qa</artifactId>
-            <version>0.5.56</version>
+            <version>0.5.57-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>log4j</groupId>
