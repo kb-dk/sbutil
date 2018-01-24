@@ -101,6 +101,8 @@ public class XProperties extends Properties implements Converter {
         xstream.alias("entry", XPropertiesEntry.class);
         xstream.alias("xproperties", XProperties.class);
         xstream.registerConverter(this);
+        XStream.setupDefaultSecurity(xstream);
+        xstream.allowTypesByWildcard(new String[]{"dk.statsbiblioteket.**", "dk.kb.**"});
     }
 
     /**
@@ -117,8 +119,7 @@ public class XProperties extends Properties implements Converter {
      * @throws IOException                if resourceName is found but has io errors while
      *                                    reading.
      */
-    public XProperties(String resourceName, XProperties defaults)
-            throws InvalidPropertiesException, IOException {
+    public XProperties(String resourceName, XProperties defaults) throws InvalidPropertiesException, IOException {
         this(defaults);
         load(resourceName, true, false);
         fillFromEnvironment();
@@ -145,8 +146,7 @@ public class XProperties extends Properties implements Converter {
      * @see #load(String, boolean, boolean) for details about how resources are
      *      loaded.
      */
-    public XProperties(String resourceName)
-            throws InvalidPropertiesException, IOException {
+    public XProperties(String resourceName) throws InvalidPropertiesException, IOException {
         this(resourceName, null);
     }
 
@@ -162,8 +162,7 @@ public class XProperties extends Properties implements Converter {
      * @throws IOException                if resourceName is found but has io errors while
      *                                    reading.
      */
-    public XProperties(String resourceName, boolean fetchProperties)
-            throws InvalidPropertiesException, IOException {
+    public XProperties(String resourceName, boolean fetchProperties) throws InvalidPropertiesException, IOException {
         this();
         if (fetchProperties) {
             load(resourceName, true, false);
@@ -189,8 +188,7 @@ public class XProperties extends Properties implements Converter {
      * @throws IOException                if the resource was invalid or if the resource did
      *                                    not exist and failOnNotFound was true.
      */
-    public XProperties(String resource, boolean createNew,
-                       boolean failOnNotFound)
+    public XProperties(String resource, boolean createNew, boolean failOnNotFound)
             throws InvalidPropertiesException, IOException {
         if (createNew) {
             this.resourceName = resource;
@@ -537,15 +535,10 @@ public class XProperties extends Properties implements Converter {
      * @throws IOException                thrown if there are IO errors during read OR if
      *                                    resource is not found and ignoreNonExisting is false.
      */
-    public synchronized void load(String resourceName,
-                                  boolean ignoreNonExisting,
-                                  boolean ignoreMalformed)
+    public synchronized void load(String resourceName, boolean ignoreNonExisting, boolean ignoreMalformed)
             throws InvalidPropertiesException, IOException {
-        log.trace(String.format("Loading resource %s with"
-                                + " ignoreNonExisting %s and"
-                                + " ignoreMalformed %s",
-                                resourceName, ignoreNonExisting,
-                                ignoreMalformed));
+        log.trace(String.format("Loading resource %s with ignoreNonExisting %s and ignoreMalformed %s",
+                                resourceName, ignoreNonExisting, ignoreMalformed));
         this.resourceName = resourceName;
         clear();
         InputStream instream;
@@ -587,8 +580,7 @@ public class XProperties extends Properties implements Converter {
      * Fetch stored properties from the given stream.
      *
      * @param instream Input stream to read properties from.
-     * @throws InvalidPropertiesException if the stream contains unknown
-     *                                    or invalid classes
+     * @throws InvalidPropertiesException if the stream contains unknown or invalid classes
      * @throws IOException                thrown if there are IO errors during read OR if
      *                                    resource is not found and ignoreNonExisting is false.
      */
@@ -613,21 +605,17 @@ public class XProperties extends Properties implements Converter {
         } catch (ClassNotFoundException excl) {
             clear();
             String msg = String.format(
-                    "ClassNotFoundException loading properties from"
-                    + " resource %s", resourceName);
+                    "ClassNotFoundException loading properties from resource %s", resourceName);
             log.warn(msg);
             throw new InvalidPropertiesException(msg, excl);
         } catch (StreamException exst) {
             clear();
             String msg = String.format(
-                    "StreamException loading properties from"
-                    + " resource %s", resourceName);
+                    "StreamException loading properties from resource %s", resourceName);
             log.warn(msg);
             throw new InvalidPropertiesException(msg, exst);
         } catch (ClassCastException e) {
-            throw new InvalidPropertiesException("Input stream does not look "
-                                                 + "like a valid XProperties "
-                                                 + "file", e);
+            throw new InvalidPropertiesException("Input stream does not look like a valid XProperties file", e);
         } finally {
             instream.close();
         }
@@ -707,8 +695,7 @@ public class XProperties extends Properties implements Converter {
      *                 java.util.Properties.
      * @throws IOException if the resource could not be stored
      */
-    public synchronized void store(OutputStream out, String comments)
-            throws IOException {
+    public synchronized void store(OutputStream out, String comments) throws IOException {
         store(new PrintWriter(out));
     }
 
@@ -720,8 +707,7 @@ public class XProperties extends Properties implements Converter {
      *                 java.util.Properties.
      * @throws IOException if the resource could not be stored
      */
-    public synchronized void storeToXML(OutputStream out, String comments)
-            throws IOException {
+    public synchronized void storeToXML(OutputStream out, String comments) throws IOException {
         store(new PrintWriter(out));
     }
 
@@ -734,8 +720,7 @@ public class XProperties extends Properties implements Converter {
      * @param encoding Encoding to store in
      * @throws IOException if the resource could not be stored
      */
-    public synchronized void storeToXML(OutputStream out, String comments,
-                                        String encoding)
+    public synchronized void storeToXML(OutputStream out, String comments, String encoding)
             throws IOException {
         store(new OutputStreamWriter(out, encoding));
     }
@@ -746,8 +731,7 @@ public class XProperties extends Properties implements Converter {
      * @param out the writer to store the properties to
      * @throws IOException if the resource could not be stored
      */
-    private void store(Writer out)
-            throws IOException {
+    private void store(Writer out) throws IOException {
         log.debug("Storing resource");
         // xmlns="http://statsbiblioteket.dk/dtd/XProperties.dtd"
         ObjectOutputStream objectOut
@@ -764,11 +748,8 @@ public class XProperties extends Properties implements Converter {
         return XProperties.class.equals(aClass);
     }
 
-    public void marshal(Object xpropertiesObject,
-                        HierarchicalStreamWriter writer,
-                        MarshallingContext context) {
-        for (Map.Entry<Object, Object> entry :
-                ((XProperties) xpropertiesObject).getEntries()) {
+    public void marshal(Object xpropertiesObject, HierarchicalStreamWriter writer, MarshallingContext context) {
+        for (Map.Entry<Object, Object> entry : ((XProperties) xpropertiesObject).getEntries()) {
             String key = (String) entry.getKey();
             Object value = entry.getValue();
             XPropertiesEntry hrentry = new XPropertiesEntry(key, value);
@@ -778,13 +759,11 @@ public class XProperties extends Properties implements Converter {
         }
     }
 
-    public Object unmarshal(HierarchicalStreamReader reader,
-                            UnmarshallingContext context) {
+    public Object unmarshal(HierarchicalStreamReader reader, UnmarshallingContext context) {
         XProperties properties = new XProperties();
         while (reader.hasMoreChildren()) {
             reader.moveDown();
-            XPropertiesEntry entry = (XPropertiesEntry) context.convertAnother(
-                    properties, XPropertiesEntry.class);
+            XPropertiesEntry entry = (XPropertiesEntry) context.convertAnother(properties, XPropertiesEntry.class);
             reader.moveUp();
             properties.put(entry.key, entry.value);
         }
