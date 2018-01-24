@@ -210,12 +210,23 @@ public class XSLT {
      * @return the given transformer, with the given parameters assigned.
      */
     public static Transformer assignParameters(Transformer transformer, Map parameters) {
-        transformer.clearParameters(); // Is this safe? Any defaults lost?
-        if (parameters != null) {
-            for (Object entryObject : parameters.entrySet()) {
-                Map.Entry entry = (Map.Entry) entryObject;
-                transformer.setParameter((String) entry.getKey(), entry.getValue());
+        try {
+            transformer.clearParameters(); // Is this safe? Any defaults lost?
+            if (parameters != null) {
+                for (Object entryObject : parameters.entrySet()) {
+                    Map.Entry entry = (Map.Entry) entryObject;
+                    if (entry.getKey() == null || entry.getValue() == null) {
+                        log.warn(String.format("Skipping assignment of key/value pair '%s/%s' to Transformer " +
+                                               "as null is not an acceptable value",
+                                               entry.getKey(), entry.getValue()));
+                    }
+                    transformer.setParameter((String) entry.getKey(), entry.getValue());
+                }
             }
+        } catch (Exception e) {
+            // We catch all exceptions (although not Errors) as the cache will be depleted and never refilled otherwise
+            log.error("Unhandled Exception assigning parameters to Transformer." +
+                      "The Transformer is unlikely to function properly", e);
         }
         return transformer;
     }
