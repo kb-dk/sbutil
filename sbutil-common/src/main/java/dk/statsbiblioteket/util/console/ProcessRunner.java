@@ -64,12 +64,30 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
     protected int return_code = -2;
     protected boolean timedOut;
 
+    private OutputStream customOut;
+    private OutputStream customError;
+
     /**
      * Create a new ProcessRunner. Cannot run, until you specify something with
      * the assessor methods.
      */
     public ProcessRunner() {
         pb = new ProcessBuilder();
+    }
+
+    /**
+     * Create a new ProcessRunner with the given command. Each element in the
+     * list should be a command or argument. If the element should not be parsed
+     * enclose it in \"'s.
+     *
+     * @param command the command to run
+     */
+    public ProcessRunner(String command, List<String> arguments) {
+        this();
+        List<String> l = new ArrayList<String>();
+        l.add(command);
+        l.addAll(arguments);
+        setCommand(l);
     }
 
     /**
@@ -85,6 +103,7 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
         l.add(command);
         setCommand(l);
     }
+
 
     /**
      * Create a new ProcessRunner with the given command. Each element in the
@@ -158,6 +177,29 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
         pb.command(commands);
     }
 
+
+    /**
+     * Set the command for this ProcessRunner
+     *
+     * @param commands the new command.
+     */
+    public void setCommand(String... commands) {
+        setCommand(Arrays.asList(commands));
+    }
+
+    /**
+     * Set the command for this ProcessRunner
+     *
+     * @param command the new command.
+    *  @param arguments arguments to the new command
+     */
+    public void setCommand(String command, List<String> arguments) {
+        ArrayList<String> commands = new ArrayList<String>(Collections.singletonList(command));
+        commands.addAll(arguments);
+        setCommand(commands);
+    }
+
+
     /**
      * Set the timeout. Default to Long.MAX_VALUE in millisecs
      *
@@ -197,6 +239,15 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
     public void setOutputCollectionByteSize(int maxOutput) {
         this.maxOutput = maxOutput;
     }
+
+    public void setCustomProcessOutput(OutputStream out){
+        this.customOut = out;
+    }
+
+    public void setCustomProcessError(OutputStream err){
+        this.customError = err;
+    }
+
 
     /**
      * The OutputStream will either be the OutputStream directly from the
@@ -311,8 +362,8 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
             Process p = pb.start();
 
             if (collect) {
-                ByteArrayOutputStream pOut = collectProcessOutput(p.getInputStream(), this.maxOutput);
-                ByteArrayOutputStream pError = collectProcessOutput(p.getErrorStream(), this.maxError);
+                ByteArrayOutputStream pOut = collectProcessOutput(p.getInputStream(), this.maxOutput, customOut);
+                ByteArrayOutputStream pError = collectProcessOutput(p.getErrorStream(), this.maxError, customError);
                 return_code = execute(p);
                 waitForThreads();
                 processOutput = new ByteArrayInputStream(pOut.toByteArray());
@@ -370,7 +421,7 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
 
 
     protected ByteArrayOutputStream collectProcessOutput(
-            final InputStream inputStream, final int maxCollect) {
+            final InputStream inputStream, final int maxCollect, final OutputStream customOut) {
         final ByteArrayOutputStream stream;
         if (maxCollect < 0) {
             stream = new ByteArrayOutputStream();
@@ -390,6 +441,9 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
                         int counter = 0;
                         while ((c = reader.read()) != -1) {
                             counter++;
+                            if (customOut != null){
+                                customOut.write(c);
+                            }
                             if (maxCollect < 0 || counter < maxCollect) {
                                 writer.write(c);
                             }

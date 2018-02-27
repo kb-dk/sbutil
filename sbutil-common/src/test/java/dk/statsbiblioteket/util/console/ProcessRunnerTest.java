@@ -181,6 +181,46 @@ public class ProcessRunnerTest extends TestCase {
         }
     }
 
+
+    public void testCustomOutputCollection() throws InterruptedException, ExecutionException {
+        final int RUNS = 1;
+        final int JOBS = 100;
+        final String COMMAND = "echo start ; sleep 1 ; echo stop";
+        final String EXPECTED = "start\nstop\n";
+
+        JobController<ProcessRunner> controller = new JobController<ProcessRunner>(JOBS);
+
+        Thread.setDefaultUncaughtExceptionHandler(new DebugExceptionHandler());
+
+
+        for (int r = 0 ; r < RUNS ; r++) {
+            Map<ProcessRunner, ByteArrayOutputStream> customOutputs = new HashMap<ProcessRunner, ByteArrayOutputStream>();
+
+            for (int i = 0 ; i < JOBS ; i++) {
+                ProcessRunner runner = new ProcessRunner(Arrays.asList("bash", "-c", COMMAND));
+                ByteArrayOutputStream customOutput = new ByteArrayOutputStream();
+                customOutputs.put(runner,customOutput);
+                runner.setCustomProcessOutput(customOutput);
+                try {
+                    controller.submit(runner);
+                } catch (OutOfMemoryError e) {
+                    fail("OutOfMemory (or threads) with return code " + runner.getReturnCode() + " and return output "
+                            + runner.getProcessOutputAsString());
+                }
+            }
+
+            for (int t = 0 ; t < JOBS ; t++) {
+
+                ProcessRunner processRunner = controller.take().get();
+
+                String result = customOutputs.get(processRunner).toString();
+
+                assertEquals("The output from run " + r + ", take " + t + " should be as expected", EXPECTED, result);
+            }
+        }
+    }
+
+
     private final class DebugExceptionHandler implements Thread.UncaughtExceptionHandler {
         @Override
         public void uncaughtException(Thread t, Throwable e) {
