@@ -221,6 +221,65 @@ public class ProcessRunnerTest extends TestCase {
     }
 
 
+    public void testCustomOutputCollectionClosed() throws IOException, InterruptedException {
+        final int RUNS = 1;
+        final int JOBS = 100;
+        final String COMMAND = "echo start ; sleep 1 ; echo stop";
+
+        JobController<ProcessRunner> controller = new JobController<ProcessRunner>(JOBS);
+
+        Thread.setDefaultUncaughtExceptionHandler(new DebugExceptionHandler());
+
+
+        for (int r = 0 ; r < RUNS ; r++) {
+            for (int i = 0 ; i < JOBS ; i++) {
+                ProcessRunner runner = new ProcessRunner(Arrays.asList("bash", "-c", COMMAND));
+                OutputStream customOutput = new FileOutputStream("test.txt");
+                customOutput.close();
+                runner.setCustomProcessOutput(customOutput);
+                try {
+                    controller.submit(runner);
+                } catch (OutOfMemoryError e) {
+                    fail("OutOfMemory (or threads) with return code " + runner.getReturnCode() + " and return output "
+                            + runner.getProcessOutputAsString());
+                }
+            }
+
+            for (int t = 0 ; t < JOBS ; t++) {
+
+                try {
+                    controller.take().get();
+                    fail("Excepted runtime exception");
+                } catch (ExecutionException e) {
+//                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
+
+
+    public void testCustomOutputCollectionWithClosed() throws IOException {
+        final String COMMAND = "echo start ; sleep 15 ; echo stop";
+
+        ProcessRunner runner = new ProcessRunner(Arrays.asList("bash", "-c", COMMAND));
+
+        OutputStream customOutput = new FileOutputStream("test.txt");
+        customOutput.close();
+        runner.setCustomProcessOutput(customOutput);
+
+        try {
+            runner.run();
+            fail("Expected RuntimeException");
+        } catch (RuntimeException e){
+//            e.printStackTrace();
+            //good
+        }
+        assertEquals("The execution  should have failed with return code -3",
+                -3, runner.getReturnCode());
+
+    }
+
     private final class DebugExceptionHandler implements Thread.UncaughtExceptionHandler {
         @Override
         public void uncaughtException(Thread t, Throwable e) {
@@ -265,6 +324,29 @@ public class ProcessRunnerTest extends TestCase {
                                                                "boo"));
     }
 
+    public void testFeedProcessClosed() throws Exception {
+        Map<String, String> env = new HashMap<String, String>();
+
+        File f = new File("testfile");
+        f.createNewFile();
+        f.deleteOnExit();
+        InputStream in = new FileInputStream(f);
+        ProcessRunner runner =
+                new ProcessRunner(Arrays.asList("/bin/sh"));
+        runner.setEnviroment(env);
+        in.close();
+        runner.setInputStream(in);
+        try {
+            runner.run();
+            fail("Excepted RuntimeException");
+        } catch (RuntimeException e){
+
+        }
+
+        assertEquals("The execution of echo should have failed with return code -4",
+                -4, runner.getReturnCode());
+
+    }
 
     public void testFeedProcess() throws Exception {
         Map<String, String> env = new HashMap<String, String>();

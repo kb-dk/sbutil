@@ -67,6 +67,18 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
     private OutputStream customOut;
     private OutputStream customError;
 
+    private boolean started = false;
+
+    /**
+     * The thread used for blocking on exitcode. This thread is interrupted when the process fails
+     */
+    private Thread executePollingThread;
+
+    /**
+     * The exception that caused the executePollingThread to be interrupted.
+     */
+    private Throwable interruptedException;
+
     /**
      * Create a new ProcessRunner. Cannot run, until you specify something with
      * the assessor methods.
@@ -235,15 +247,30 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
      *
      * @param maxOutput number of bytes to max collect.
      */
-
     public void setOutputCollectionByteSize(int maxOutput) {
         this.maxOutput = maxOutput;
     }
 
+    /**
+     * Specify an additional OutputStream for the process to print to. Output will be written to this stream as it is
+     * read from the process when Collection is true.
+     *
+     * Note that the outputstream will NOT be closed afterwards, and that the output collection will fail if data cannot
+     * be written.
+     *
+     * @param out the outputstream to write stdout of the process to
+     * @see #setCollection(boolean)
+     */
     public void setCustomProcessOutput(OutputStream out){
         this.customOut = out;
     }
 
+    /**
+     * Specify an additional OutputStream for the process to print stderr to. StdErr output will be written to this stream as it is
+     * read from the process when Collection is true
+     * @param err the outputstream to write stderr of the process to
+     * @see #setCollection(boolean)
+     */
     public void setCustomProcessError(OutputStream err){
         this.customError = err;
     }
@@ -274,6 +301,8 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
     /**
      * Get the return code of the process. If the process timed out and was
      * killed, the return code will be -1. If the process has not be started at all, it will be -2.
+     * If we encountered exceptions while trying to read the output of the process, the return code will be -3.
+     * If we encountered exceptions while trying to feed input to the process, the return code will be -4.
      * But this is not exclusive to this scenario, other programs can also use this return code.
      *
      * @return the return code
@@ -322,7 +351,11 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
             try {
                 Thread.sleep(POLLING_INTERVAL);
             } catch (InterruptedException e) {
-                // Ignore, as we are just waiting
+                //do not just go on.
+                if (interruptedException != null) {
+                    throw new RuntimeException(interruptedException);
+                }
+                //just go on now
             }
         }
     }
@@ -357,8 +390,11 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
      * Blocking.
      */
     @Override
-    public void run() {
+    public synchronized void run() {
         try {
+            if (started){
+                throw new RuntimeException("Process already started");
+            }
             Process p = pb.start();
 
             if (collect) {
@@ -380,17 +416,26 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
     }
 
     @Override
-    public ProcessRunner call() throws Exception {
+    public synchronized ProcessRunner call() throws Exception {
         run();
         return this;
     }
 
     protected int execute(Process p) {
+        //Reset the interruptedException
+        interruptedException = null;
+        //Set the executePollingThread so other threads can interrupt it.
+        executePollingThread = Thread.currentThread();
+
         long startTime = System.currentTimeMillis();
         feedProcess(p, processInput);
         int return_value;
 
         while (true) {
+            if (interruptedException != null){
+                p.destroy();
+                throw new RuntimeException(interruptedException);
+            }
             //is the thread finished?
             try {
                 //then return
@@ -409,18 +454,24 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
             }
             //else sleep again
             try {
-                Thread.sleep(POLLING_INTERVAL);
+                //relinquesh locks so the other threads can set interruptedException if they meet errors
+                wait(POLLING_INTERVAL);
             } catch (InterruptedException e) {
                 //just go on.
             }
 
         }
-        return return_value;
+        if (interruptedException != null) {
+            p.destroy();
+            throw new RuntimeException(interruptedException);
+        } else {
+            return return_value;
+        }
 
     }
 
 
-    protected ByteArrayOutputStream collectProcessOutput(
+    protected synchronized ByteArrayOutputStream collectProcessOutput(
             final InputStream inputStream, final int maxCollect, final OutputStream customOut) {
         final ByteArrayOutputStream stream;
         if (maxCollect < 0) {
@@ -428,8 +479,10 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
         } else {
             stream = new ByteArrayOutputStream(Math.min(MAXINITIALBUFFER, maxCollect));
         }
+        final ProcessRunner processRunner = this;
 
-        Thread t = new Thread() {
+        Thread t = new Thread(new Runnable() {
+            @Override
             public void run() {
                 try {
                     InputStream reader = null;
@@ -439,14 +492,26 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
                         writer = new BufferedOutputStream(stream);
                         int c;
                         int counter = 0;
-                        while ((c = reader.read()) != -1) {
-                            counter++;
-                            if (customOut != null){
-                                customOut.write(c);
+                        try {
+                            while ((c = reader.read()) != -1) {
+                                counter++;
+                                if (customOut != null) {
+                                    try {
+                                        customOut.write(c);
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Could not write output to custom OutputStream", e);
+                                    }
+                                }
+                                if (maxCollect < 0 || counter < maxCollect) {
+                                    try {
+                                        writer.write(c);
+                                    } catch (IOException e) {
+                                        throw new RuntimeException("Could not write output to internal collecting OutputStream", e);
+                                    }
+                                }
                             }
-                            if (maxCollect < 0 || counter < maxCollect) {
-                                writer.write(c);
-                            }
+                        } catch (IOException e) {
+                            throw new RuntimeException("Couldn't read output from process.", e);
                         }
                     } finally {
                         if (reader != null) {
@@ -456,27 +521,33 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
                             writer.close();
                         }
                     }
-                } catch (IOException e) {
-                    // This seems ugly
-                    throw new RuntimeException("Couldn't read output from process.", e);
+                } catch (Throwable e){
+                    synchronized (processRunner) {
+                        if (executePollingThread != null) {
+                            interruptedException = e;
+                            return_code = -3;
+                            executePollingThread.interrupt();
+                        }
+                    }
                 }
-                threads.remove(this);
+                threads.remove(Thread.currentThread());
             }
-        };
+        }
+        );
         t.setDaemon(true); // Allow the JVM to exit even if t is alive
         threads.add(t);
         t.start();
         return stream;
     }
 
-    protected void feedProcess(final Process process, InputStream processInput) {
+    protected void feedProcess(final Process process, final InputStream processInput) {
         if (processInput == null) {
             // No complaints here - null just means no input
             return;
         }
 
+        final ProcessRunner processRunner = this;
         final OutputStream pIn = process.getOutputStream();
-        final InputStream given = processInput;
         Thread t = new Thread() {
             public void run() {
                 try {
@@ -484,7 +555,7 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
                     try {
                         writer = new BufferedOutputStream(pIn);
                         int c;
-                        while ((c = given.read()) != -1) {
+                        while ((c = processInput.read()) != -1) {
                             writer.write(c);
                         }
                     } finally {
@@ -493,23 +564,19 @@ public class ProcessRunner implements Runnable, Callable<ProcessRunner> {
                         }
                         pIn.close();
                     }
-                } catch (IOException e) {
-                    // This seems ugly
-                    throw new RuntimeException("Couldn't write input to " +
-                                               "process.", e);
+                } catch (Throwable e) {
+                    synchronized (processRunner) {
+                        if (executePollingThread != null) {
+                            interruptedException = e;
+                            return_code = -4;
+                            executePollingThread.interrupt();
+                        }
+                    }
                 }
             }
         };
 
-        Thread.UncaughtExceptionHandler u =
-                new Thread.UncaughtExceptionHandler() {
-                    public void uncaughtException(Thread t, Throwable e) {
-                        //Might not be the prettiest solution...
-                    }
-                };
         t.setDaemon(true); // Allow the JVM to exit even if t lives
-        t.setUncaughtExceptionHandler(u);
         t.start();
-
     }
 }
