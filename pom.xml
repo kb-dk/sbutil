@@ -23,6 +23,19 @@
         <module>sbutil-webservices</module>
     </modules>
 
+    <repositories>
+        <repository>
+            <id>sbforge-nexus</id>
+            <url>https://sbforge.org/nexus/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencyManagement>
         <dependencies>
             <!-- jaxws 2.2.8 caused the XMLStepper limiter to stop working -->
