@@ -2,11 +2,20 @@ language: java
 sudo: false
 jdk:
   - openjdk7
-branches:
-  except:
-    - travis
-script: mvn clean install
-deploy:
-  if: branch = master
-    script: "mvn deploy --settings travis-maven-settings.xml -DskipTests"
-
+stages:
+  - compile
+  - test
+  - deploy
+jobs:
+  include:
+    - stage: compile
+      script: mvn clean install -DskipTests
+    - stage: test
+      script: mvn test
+    - stage: deploy
+      script: mvn deploy --settings travis-maven-settings.xml -DskipTests
+stages:
+  - compile
+  - test
+  - name: deploy
+    if: branch = master
