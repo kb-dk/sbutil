@@ -2,12 +2,11 @@ language: java
 sudo: false
 jdk:
   - openjdk7
-  - openjdk8
-  - oraclejdk8
-  - oraclejdk9
-before_install: "git clone -b travis `git config --get remote.origin.url` target/travis"
-after_script: "mvn deploy --settings target/travis/maven-settings.xml"
+#  - openjdk8
+#  - oraclejdk8
+#  - oraclejdk9
+after_script: "git clone -b travis `git config --get remote.origin.url` target/travis; mvn deploy --settings target/travis/maven-settings.xml"
 branches:
   except:
     - travis
-script: mvn clean install --batch-mode
+script: mvn clean install
