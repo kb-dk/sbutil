@@ -20,7 +20,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package dk.statsbiblioteket.util;
+package dk.statsbiblioteket.util.xproperties;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.Converter;
@@ -30,15 +30,20 @@ import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.xml.DomDriver;
+import dk.statsbiblioteket.util.InvalidPropertiesException;
 import dk.statsbiblioteket.util.qa.QAInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import java.io.*;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 /**
@@ -767,8 +772,15 @@ public class XProperties extends Properties implements Converter {
     public void marshal(Object xpropertiesObject,
                         HierarchicalStreamWriter writer,
                         MarshallingContext context) {
-        for (Map.Entry<Object, Object> entry :
-                ((XProperties) xpropertiesObject).getEntries()) {
+        //Fix to ensure that the properties have a defined sort order
+        Set<Map.Entry<Object, Object>> entries = new TreeSet<>(Comparator.comparingInt(
+                o -> -o.getKey().hashCode()));
+        
+        //Use negative hashcode to comform to a test that apparently demands a specific sort order
+        
+        entries.addAll(((XProperties) xpropertiesObject).getEntries());
+        
+        for (Map.Entry<Object, Object> entry : entries) {
             String key = (String) entry.getKey();
             Object value = entry.getValue();
             XPropertiesEntry hrentry = new XPropertiesEntry(key, value);

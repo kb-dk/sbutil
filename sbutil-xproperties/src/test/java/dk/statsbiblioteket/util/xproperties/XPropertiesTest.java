@@ -20,7 +20,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-package dk.statsbiblioteket.util;
+package dk.statsbiblioteket.util.xproperties;
 
 import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
@@ -517,7 +517,7 @@ public class XPropertiesTest extends TestCase {
         ByteArrayOutputStream ba = new ByteArrayOutputStream();
         properties.put("Foo2", 7);
         properties.list(new PrintStream(ba));
-        Assert.assertTrue("Should generate simple output 2 but was:\n" + sw.toString(),
+        Assert.assertTrue("Should generate simple output 2 but was:\n" + ba.toString(),
                 ba.toString().matches("(?s)(?m)\\s*<xstream>\\s*"
                         + "<xproperties>\\s*"
                         + "<entry>\\s*"
