@@ -21,6 +21,17 @@
             <artifactId>xstream</artifactId>
             <version>1.4.10</version>
             <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>xmlpull</groupId>
+                    <artifactId>xmlpull</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>xpp3</groupId>
+            <artifactId>xpp3_min</artifactId>
+            <version>1.1.4c</version>
         </dependency>
 
         <dependency>

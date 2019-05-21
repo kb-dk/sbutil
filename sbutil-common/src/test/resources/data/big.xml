@@ -223,7 +223,7 @@
             <test name="dk.statsbiblioteket.util.ProfilerTest"/>
             <test name="dk.statsbiblioteket.util.StreamsTest"/>
             <test name="dk.statsbiblioteket.util.StringsTest"/>
-            <test name="dk.statsbiblioteket.util.XPropertiesTest"/>
+            <test name="dk.statsbiblioteket.util.xproperties.XPropertiesTest"/>
             <test name="dk.statsbiblioteket.util.ZipsTest"/>
             <test name="dk.statsbiblioteket.util.watch.FolderWatcherTest"/>
             <test name="dk.statsbiblioteket.util.watch.RecursiveFolderWatcherTest"/>

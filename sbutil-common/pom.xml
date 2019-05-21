@@ -17,6 +17,24 @@
             <type>jar</type>
             <scope>compile</scope>
         </dependency>
+       <!-- <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.26</version>
+        </dependency>
+        &lt;!&ndash; https://mvnrepository.com/artifact/org.slf4j/jul-to-slf4j &ndash;&gt;
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+            <version>1.7.26</version>
+        </dependency>
+
+        &lt;!&ndash; https://mvnrepository.com/artifact/org.slf4j/jcl-over-slf4j &ndash;&gt;
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>1.7.26</version>
+        </dependency>-->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
