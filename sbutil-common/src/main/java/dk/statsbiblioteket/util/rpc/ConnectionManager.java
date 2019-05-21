@@ -99,7 +99,7 @@ import java.util.HashMap;
  *
  *
  */
-public class ConnectionManager<E> {
+public class ConnectionManager<E> implements AutoCloseable {
 
     private int lingerTime;
 
@@ -429,6 +429,7 @@ public class ConnectionManager<E> {
      * Calling {@link #get} or {@link #setLingerTime} on a closed manager
      * raises an {@link IllegalStateException}.
      */
+    @Override
     public void close() {
         log.debug("Closed");
         connectionMonitor.stop();
@@ -437,6 +438,7 @@ public class ConnectionManager<E> {
     }
 
     @Override
+    @Deprecated
     protected void finalize() throws Throwable {
         close();
         super.finalize();

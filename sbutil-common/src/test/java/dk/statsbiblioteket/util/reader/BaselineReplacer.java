@@ -43,15 +43,8 @@ public class BaselineReplacer extends ReplaceReader {
     public BaselineReplacer(Reader in, Map<String, String> rules) {
         super(in);
 
-        this.rules = new ArrayList<Map.Entry<String, String>>(rules.entrySet());
-        Collections.sort(
-                this.rules,
-                new Comparator<Map.Entry<String, String>>() {
-                    public int compare(Map.Entry<String, String> o1,
-                                       Map.Entry<String, String> o2) {
-                        return -1 * (new Integer(o1.getKey().length()).compareTo(o2.getKey().length()));
-                    }
-                });
+        this.rules = new ArrayList<>(rules.entrySet());
+        this.rules.sort((o1, o2) -> -1 * (Integer.compare(o1.getKey().length(), o2.getKey().length())));
 
         // Recalc the internal buffer
         setSource(in);

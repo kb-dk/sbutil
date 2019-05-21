@@ -48,6 +48,7 @@ public abstract class ConnectionFactory<E> {
      * @see #initialGraceTime
      * @deprecated use {@link #setInitialGraceTimeMS} instead.
      */
+    @Deprecated
     public void setGraceTime(int seconds) {
         initialGraceTime = seconds * 1000;
     }
@@ -59,6 +60,7 @@ public abstract class ConnectionFactory<E> {
      * @see #initialGraceTime
      * @deprecated use {@link #getInitialGraceTimeMS} instead.
      */
+    @Deprecated
     public int getGraceTime() {
         return initialGraceTime / 1000;
     }
@@ -69,6 +71,7 @@ public abstract class ConnectionFactory<E> {
      * @see #initialConnectionRetries
      * @deprecated use {@link #setInitialNumRetries} instead.
      */
+    @Deprecated
     public void setNumRetries(int retries) {
         initialConnectionRetries = retries;
     }
@@ -79,6 +82,7 @@ public abstract class ConnectionFactory<E> {
      * @see #initialConnectionRetries
      * @deprecated use {@link #getInitialNumRetries} instead.
      */
+    @Deprecated
     public int getNumRetries() {
         return initialConnectionRetries;
     }

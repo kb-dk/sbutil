@@ -468,6 +468,7 @@ public class Files {
      * @return file's basename
      * @deprecated use {@link File#getName()} instead.
      */
+    @Deprecated
     public static String baseName(File file) {
         return file.getName();
     }
