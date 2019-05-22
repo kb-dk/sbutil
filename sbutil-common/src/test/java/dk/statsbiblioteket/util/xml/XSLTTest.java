@@ -22,8 +22,8 @@ package dk.statsbiblioteket.util.xml;
 import dk.statsbiblioteket.util.Files;
 import dk.statsbiblioteket.util.Profiler;
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -51,7 +51,7 @@ import static org.junit.Assert.fail;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class XSLTTest {
-    private static Log log = LogFactory.getLog(XSLTTest.class);
+    private static Logger log = LoggerFactory.getLogger(XSLTTest.class);
 
 
     @Before

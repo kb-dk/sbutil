@@ -23,8 +23,8 @@
 package dk.statsbiblioteket.util.i18n;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -61,7 +61,7 @@ public class Translator {
     private Locale locale;
     private MessageFormat formatter;
     private HashMap<String, String> unknownMessages;
-    private Log log;
+    private Logger log;
     private boolean usingFallBack;
 
     /**
@@ -81,7 +81,7 @@ public class Translator {
         this.locale = locale;
         this.formatter = new MessageFormat("", locale);
         this.unknownMessages = new HashMap<String, String>();
-        this.log = LogFactory.getLog(Translator.class);
+        this.log = LoggerFactory.getLogger(Translator.class);
 
         try {
             this.bundle = BundleCache.getBundle(bundleName, locale);

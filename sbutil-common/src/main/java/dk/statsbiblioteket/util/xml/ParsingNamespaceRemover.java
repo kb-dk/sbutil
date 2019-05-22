@@ -42,7 +42,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
         author = "te")
 @Deprecated()
 class ParsingNamespaceRemover extends XMLFilterImpl {
-//    private static Log log = LogFactory.getLog(ParsingNamespaceRemover.class);
+//    private static Logger log = LoggerFactory.getLogger(ParsingNamespaceRemover.class);
 
     public ParsingNamespaceRemover(XMLReader parent) {
         super(parent);

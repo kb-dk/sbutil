@@ -20,8 +20,8 @@
 package dk.statsbiblioteket.util.xml;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
 import javax.xml.stream.XMLStreamException;
@@ -54,8 +54,8 @@ import java.util.concurrent.atomic.AtomicInteger;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class XSLT {
-    private static Log warnlog = LogFactory.getLog(XSLT.class.getName() + "#warnings");
-    private static Log log = LogFactory.getLog(XSLT.class);
+    private static Logger warnlog = LoggerFactory.getLogger(XSLT.class.getName() + "#warnings");
+    private static Logger log = LoggerFactory.getLogger(XSLT.class);
 
     /**
      * Creates a new transformer based on the given XSLTLocation.

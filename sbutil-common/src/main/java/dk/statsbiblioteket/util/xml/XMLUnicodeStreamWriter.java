@@ -15,8 +15,8 @@
 package dk.statsbiblioteket.util.xml;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import javax.xml.namespace.NamespaceContext;
 import javax.xml.stream.XMLOutputFactory;
@@ -34,7 +34,7 @@ import java.io.Writer;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class XMLUnicodeStreamWriter implements XMLStreamWriter {
-    private static final Log log = LogFactory.getLog(XMLUnicodeStreamWriter.class);
+    private static final Logger log = LoggerFactory.getLogger(XMLUnicodeStreamWriter.class);
     private static final XMLOutputFactory xmlOutputFactory = XMLOutputFactory.newInstance();
 
     private final Writer out;

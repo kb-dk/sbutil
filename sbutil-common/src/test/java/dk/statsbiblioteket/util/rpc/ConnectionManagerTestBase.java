@@ -1,8 +1,8 @@
 package dk.statsbiblioteket.util.rpc;
 
 import junit.framework.TestCase;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.Ignore;
 
 /**
@@ -12,7 +12,7 @@ import org.junit.Ignore;
 @Ignore
 public class ConnectionManagerTestBase extends TestCase {
 
-    static final Log log = LogFactory.getLog(ConnectionManagerTestBase.class);
+    static final Logger log = LoggerFactory.getLogger(ConnectionManagerTestBase.class);
 
     ConnectionManager<? extends TestIFace> cm;
     ConnectionFactory<? extends TestIFace> cf;

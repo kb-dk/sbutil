@@ -17,8 +17,8 @@ package dk.statsbiblioteket.util.xml;
 import dk.statsbiblioteket.util.Profiler;
 import dk.statsbiblioteket.util.Strings;
 import junit.framework.TestCase;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.*;
 import java.io.*;
@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 public class XMLStepperTest extends TestCase {
-    private static Log log = LogFactory.getLog(XMLStepperTest.class);
+    private static Logger log = LoggerFactory.getLogger(XMLStepperTest.class);
 
     private static final String SAMPLE =
             "<foo><bar xmlns=\"http://www.example.com/bar_ns/\">"

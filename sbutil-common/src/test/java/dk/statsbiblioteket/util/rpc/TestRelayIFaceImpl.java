@@ -1,7 +1,7 @@
 package dk.statsbiblioteket.util.rpc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.rmi.Naming;
 import java.rmi.RMISecurityManager;
@@ -15,12 +15,12 @@ import java.rmi.server.UnicastRemoteObject;
  */
 public class TestRelayIFaceImpl extends UnicastRemoteObject implements TestRelayIFace {
 
-    private Log log;
+    private Logger log;
 
     public TestRelayIFaceImpl() throws Exception {
         super(6827);
 
-        log = LogFactory.getLog(TestRelayIFaceImpl.class);
+        log = LoggerFactory.getLogger(TestRelayIFaceImpl.class);
 
         Registry reg;
         try {

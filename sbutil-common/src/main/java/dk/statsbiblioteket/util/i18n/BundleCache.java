@@ -23,8 +23,8 @@
 package dk.statsbiblioteket.util.i18n;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,13 +49,13 @@ import java.util.*;
         level = QAInfo.Level.NORMAL)
 public class BundleCache {
 
-    private Log log;
+    private Logger log;
     private Map<String, ResourceBundle> cache;
     private static BundleCache self;
 
     private BundleCache() {
         cache = new HashMap<String, ResourceBundle>();
-        log = LogFactory.getLog(BundleCache.class);
+        log = LoggerFactory.getLogger(BundleCache.class);
     }
 
     public static BundleCache getInstance() {

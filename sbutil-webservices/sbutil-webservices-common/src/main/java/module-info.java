@@ -1,6 +1,6 @@
 module sbutil.webservices.common {
     
-    requires commons.logging;
+    requires slf4j.api;
     requires servlet.api;
     
     requires java.activation;

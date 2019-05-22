@@ -21,8 +21,8 @@ package dk.statsbiblioteket.util.reader;
 
 import dk.statsbiblioteket.util.Strings;
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -43,7 +43,7 @@ import static org.junit.Assert.assertEquals;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class ReplacerTest {
-    private static Log log = LogFactory.getLog(ReplacerTest.class);
+    private static Logger log = LoggerFactory.getLogger(ReplacerTest.class);
 
 
     // 'f' => 'b'

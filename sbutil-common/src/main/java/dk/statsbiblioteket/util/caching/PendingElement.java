@@ -20,8 +20,8 @@
 package dk.statsbiblioteket.util.caching;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wrapper for T that delays the getter for the element until set has been
@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class PendingElement<T> {
-    private static Log log = LogFactory.getLog(PendingElement.class);
+    private static Logger log = LoggerFactory.getLogger(PendingElement.class);
 
     private T value = null;
     private boolean hasBeenSet = false; // null is a valid assignment

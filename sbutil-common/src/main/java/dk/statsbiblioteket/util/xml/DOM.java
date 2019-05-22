@@ -20,8 +20,10 @@
 package dk.statsbiblioteket.util.xml;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -49,7 +51,7 @@ import java.io.StringWriter;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te, mke")
 public class DOM {
-    private static Log log = LogFactory.getLog(DOM.class);
+    private static Logger log = LoggerFactory.getLogger(DOM.class);
 
     public static final String XML_HEADER =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";

@@ -22,8 +22,8 @@
  */
 package dk.statsbiblioteket.util.qa;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -51,7 +51,7 @@ public class PackageScanner {
     private File baseSource;
     private String target;
     private Report report;
-    private Log log;
+    private Logger log;
 
     /**
      * Create a new PackageScanner scanning a specific file or a recursively
@@ -69,7 +69,7 @@ public class PackageScanner {
         this.report = finalReport;
         this.baseSource = baseDir;
         this.target = className;
-        log = LogFactory.getLog(PackageScanner.class);
+        log = LoggerFactory.getLogger(PackageScanner.class);
     }
 
     /**

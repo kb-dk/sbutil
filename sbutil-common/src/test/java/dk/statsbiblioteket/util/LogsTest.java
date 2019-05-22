@@ -25,8 +25,8 @@ package dk.statsbiblioteket.util;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -54,7 +54,7 @@ public class LogsTest extends TestCase {
     }
 
     public void testNullExpansion() {
-        Log log = LogFactory.getLog(LogsTest.class);
+        Logger log = LoggerFactory.getLogger(LogsTest.class);
         Logs.logExpand(log, Logs.Level.WARN, "Null expansion:", (Object[]) null);
     }
 
@@ -67,7 +67,7 @@ public class LogsTest extends TestCase {
      * throw exceptions
      */
     public void testLogging() {
-        Log log = LogFactory.getLog(LogsTest.class);
+        Logger log = LoggerFactory.getLogger(LogsTest.class);
         Exception e = new RuntimeException("Dummy exception");
         List<Integer> list = new ArrayList<Integer>();
         int[] intArray = new int[0];

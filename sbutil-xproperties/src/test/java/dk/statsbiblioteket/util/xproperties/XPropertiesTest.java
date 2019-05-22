@@ -23,9 +23,9 @@
 package dk.statsbiblioteket.util.xproperties;
 
 import junit.framework.TestCase;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.junit.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -52,11 +52,11 @@ import java.util.Properties;
  * @since <pre>2005-11-22</pre>
  */
 public class XPropertiesTest extends TestCase {
-    private static Log log;
+    private static Logger log;
 
     public XPropertiesTest(String name) {
         super(name);
-        log = LogFactory.getLog(XPropertiesTest.class);
+        log = LoggerFactory.getLogger(XPropertiesTest.class);
     }
 
     public void setUp() throws Exception {

@@ -30,8 +30,8 @@
 package dk.statsbiblioteket.util;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -65,7 +65,7 @@ import java.util.*;
         author = "te",
         comment = "getCollationKey is poorly implemented due to the CollationKeyclass being final")
 public class CachedCollator extends Collator {
-    private static Log log = LogFactory.getLog(CachedCollator.class);
+    private static Logger log = LoggerFactory.getLogger(CachedCollator.class);
 
     /**
      * ASCII-chars that are not special characters and not letters. It should be

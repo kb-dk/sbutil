@@ -27,7 +27,7 @@
 package dk.statsbiblioteket.util;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
+import org.slf4j.Logger;
 
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ public class Logs {
      * Logging levels corresponding to Log.
      */
     public static enum Level {
-        TRACE, DEBUG, INFO, WARN, ERROR, FATAL
+        TRACE, DEBUG, INFO, WARN, ERROR
     }
 
     /**
@@ -72,7 +72,7 @@ public class Logs {
      * @param message  the message for the log.
      * @param elements the elements to log.
      */
-    public static void log(Log log, Level level, String message, Throwable error, boolean verbose, Object... elements) {
+    public static void log(Logger log, Level level, String message, Throwable error, boolean verbose, Object... elements) {
         int maxLength = verbose ? VERBOSE_MAXLENGTH : DEFAULT_MAXLENGTH;
         int maxDepth = verbose ? VERBOSE_MAXDEPTH : DEFAULT_MAXDEPTH;
         String expanded = message;
@@ -130,16 +130,6 @@ public class Logs {
                     log.error(expanded, error);
                 }
                 break;
-            case FATAL:
-                if (!log.isFatalEnabled()) {
-                    return;
-                }
-                if (error == null) {
-                    log.fatal(expanded);
-                } else {
-                    log.fatal(expanded, error);
-                }
-                break;
             default:
                 throw new IllegalArgumentException("The level '" + level + "' is unknown");
         }
@@ -153,7 +143,7 @@ public class Logs {
      * @param message Message string to log
      * @param t       Throwable which' stack trace will be included in the log
      */
-    public static void log(Log destLog, Level level, String message, Throwable t) {
+    public static void log(Logger destLog, Level level, String message, Throwable t) {
         log(destLog, level, message, t, false);
     }
 
@@ -164,7 +154,7 @@ public class Logs {
      * @param level    The log level at which the log entry shold be registered
      * @param message  Message string to log
      */
-    public static void log(Log destLog, Level level, String message) {
+    public static void log(Logger destLog, Level level, String message) {
         log(destLog, level, message, null, false);
     }
 
@@ -176,7 +166,7 @@ public class Logs {
      * @param message  Message string to log
      * @param elements will be appended to message if there is an appender for the given level
      */
-    public static void logExpand(Log destLog, Level level, String message, Object... elements) {
+    public static void logExpand(Logger destLog, Level level, String message, Object... elements) {
         log(destLog, level, message, null, false, elements);
     }
 

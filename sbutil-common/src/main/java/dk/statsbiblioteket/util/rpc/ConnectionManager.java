@@ -1,7 +1,7 @@
 package dk.statsbiblioteket.util.rpc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.SocketException;
 import java.util.Collection;
@@ -105,7 +105,7 @@ public class ConnectionManager<E> implements AutoCloseable {
 
     private ConnectionFactory<? extends E> connFactory;
     private HashMap<String, ConnectionContext<E>> connections;
-    private Log log;
+    private Logger log;
     private ConnectionMonitor<E> connectionMonitor;
     private boolean isClosed;
 
@@ -113,13 +113,13 @@ public class ConnectionManager<E> implements AutoCloseable {
     private class ConnectionMonitor<T> implements Runnable {
 
         private ConnectionManager<T> owner;
-        private Log log;
+        private Logger log;
         private boolean mayRun;
         private Thread thread;
 
         private ConnectionMonitor(ConnectionManager<T> owner) {
             this.owner = owner;
-            this.log = LogFactory.getLog(ConnectionMonitor.class);
+            this.log = LoggerFactory.getLogger(ConnectionMonitor.class);
             this.mayRun = true;
         }
 
@@ -221,7 +221,7 @@ public class ConnectionManager<E> implements AutoCloseable {
             throw new NullPointerException("ConnectionFactory is null");
         }
 
-        log = LogFactory.getLog(ConnectionManager.class);
+        log = LoggerFactory.getLogger(ConnectionManager.class);
 
         connFactory = connFact;
         connections = new HashMap<String, ConnectionContext<E>>();

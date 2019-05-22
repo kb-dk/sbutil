@@ -1,7 +1,7 @@
 package dk.statsbiblioteket.util.xml;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -14,7 +14,7 @@ import javax.xml.xpath.*;
  */
 public class XPathSelectorImpl implements XPathSelector {
 
-    private static final Log log = LogFactory.getLog(XPathSelector.class);
+    private static final Logger log = LoggerFactory.getLogger(XPathSelector.class);
 
     /**
      * Importatnt: All access to the xpathCompiler should be synchronized on it

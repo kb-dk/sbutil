@@ -1,7 +1,7 @@
 package dk.statsbiblioteket.util.rpc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.rmi.Naming;
@@ -16,7 +16,7 @@ import java.rmi.RemoteException;
  */
 public class RMIConnectionFactory<E extends Remote> extends ConnectionFactory<E> {
 
-    private Log log = LogFactory.getLog(RMIConnectionFactory.class);
+    private Logger log = LoggerFactory.getLogger(RMIConnectionFactory.class);
 
     public RMIConnectionFactory() {
         super();

@@ -36,7 +36,7 @@ import java.util.*;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class BaselineReplacer extends ReplaceReader {
-//    private static Log log = LogFactory.getLog(BaselineReplacer.class);
+//    private static Logger log = LoggerFactory.getLogger(BaselineReplacer.class);
 
     private List<Map.Entry<String, String>> rules;
 

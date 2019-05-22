@@ -27,8 +27,8 @@
 package dk.statsbiblioteket.util.watch;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.io.File;
@@ -53,7 +53,7 @@ import java.util.regex.Pattern;
         author = "te")
 public class CurrentWatcher extends Observable<CurrentListener> implements
                                                                 FolderListener {
-    private static Log log = LogFactory.getLog(CurrentWatcher.class);
+    private static Logger log = LoggerFactory.getLogger(CurrentWatcher.class);
     private FolderWatcher watcher;
     private Pattern targets;
 

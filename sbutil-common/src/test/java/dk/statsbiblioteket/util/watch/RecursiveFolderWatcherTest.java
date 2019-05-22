@@ -2,8 +2,8 @@ package dk.statsbiblioteket.util.watch;
 
 import dk.statsbiblioteket.util.Files;
 import junit.framework.TestCase;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class RecursiveFolderWatcherTest extends TestCase {
 
-    static final Log log = LogFactory.getLog(RecursiveFolderWatcherTest.class);
+    static final Logger log = LoggerFactory.getLogger(RecursiveFolderWatcherTest.class);
 
     RecursiveFolderWatcher watcher;
     Listener listener;

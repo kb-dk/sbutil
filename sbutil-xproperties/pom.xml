@@ -11,6 +11,13 @@
     <artifactId>sbutil-xproperties</artifactId>
 
     <dependencies>
+
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>dk.statsbiblioteket.sbutil</groupId>
             <artifactId>sbutil-common</artifactId>

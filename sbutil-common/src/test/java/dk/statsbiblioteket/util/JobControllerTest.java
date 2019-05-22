@@ -16,8 +16,8 @@ package dk.statsbiblioteket.util;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
 import junit.framework.TestCase;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class JobControllerTest extends TestCase {
-    private static Log log = LogFactory.getLog(JobControllerTest.class);
+    private static Logger log = LoggerFactory.getLogger(JobControllerTest.class);
 
     public void testPopFinished() throws Exception {
         final int JOBS = 10;

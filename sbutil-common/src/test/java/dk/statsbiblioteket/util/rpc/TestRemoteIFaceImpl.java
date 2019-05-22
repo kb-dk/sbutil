@@ -1,7 +1,7 @@
 package dk.statsbiblioteket.util.rpc;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.rmi.RMISecurityManager;
 import java.rmi.registry.LocateRegistry;
@@ -15,12 +15,12 @@ public class TestRemoteIFaceImpl extends UnicastRemoteObject
         implements TestRemoteIFace {
 
     String msg;
-    Log log;
+    Logger log;
 
     public TestRemoteIFaceImpl(String msg) throws Exception {
         super(2768);
 
-        log = LogFactory.getLog(TestRemoteIFaceImpl.class);
+        log = LoggerFactory.getLogger(TestRemoteIFaceImpl.class);
         this.msg = msg;
 
         Registry reg;

@@ -8,8 +8,8 @@ import dk.statsbiblioteket.util.Profiler;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -21,7 +21,7 @@ import java.util.*;
  */
 @SuppressWarnings({"DuplicateStringLiteralInspection"})
 public class ReplacePerformanceTest extends TestCase {
-    public Log log = LogFactory.getLog(ReplacePerformanceTest.class);
+    public Logger log = LoggerFactory.getLogger(ReplacePerformanceTest.class);
 
     public ReplacePerformanceTest(String name) {
         super(name);

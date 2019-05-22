@@ -51,7 +51,7 @@ import java.util.regex.Pattern;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class NamespaceRemover extends ReplaceReader {
-//    private static Log log = LogFactory.getLog(NamespaceRemover.class);
+//    private static Logger log = LoggerFactory.getLogger(NamespaceRemover.class);
 
     private enum Mode {PLAIN, CDATA, COMMENT}
 

@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The circuit breaker has three states, Closed, Open and Half-Open
@@ -80,7 +80,7 @@ public class CircuitBreaker<IN,OUT> {
     private long totalFailed;
     private long totalRejected;
 
-    private static Log log = LogFactory.getLog(CircuitBreaker.class);
+    private static Logger log = LoggerFactory.getLogger(CircuitBreaker.class);
 
     private static Map<String,CircuitBreaker<Object,Object>> circuitBreakerMap = new HashMap<String,CircuitBreaker<Object,Object>>();
 

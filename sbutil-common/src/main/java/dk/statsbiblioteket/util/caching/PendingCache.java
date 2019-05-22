@@ -20,8 +20,8 @@
 package dk.statsbiblioteket.util.caching;
 
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -36,7 +36,7 @@ import java.util.*;
         state = QAInfo.State.IN_DEVELOPMENT,
         author = "te")
 public class PendingCache<V, T> implements Map<V, T> {
-    private static Log log = LogFactory.getLog(PendingCache.class);
+    private static Logger log = LoggerFactory.getLogger(PendingCache.class);
 
     private final TimeSensitiveCache<V, PendingElement<T>> inner;
 

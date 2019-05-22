@@ -32,8 +32,9 @@ import com.thoughtworks.xstream.io.StreamException;
 import com.thoughtworks.xstream.io.xml.DomDriver;
 import dk.statsbiblioteket.util.InvalidPropertiesException;
 import dk.statsbiblioteket.util.qa.QAInfo;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 import java.io.*;
 import java.net.URL;
@@ -76,7 +77,7 @@ import java.util.regex.Pattern;
 @QAInfo(state = QAInfo.State.QA_NEEDED,
         level = QAInfo.Level.NORMAL)
 public class XProperties extends Properties implements Converter {
-    public Log log = LogFactory.getLog(XProperties.class);
+    public Logger log = LoggerFactory.getLogger(XProperties.class);
 
     /**
      * The xstream instance used for storing properties in human readable
