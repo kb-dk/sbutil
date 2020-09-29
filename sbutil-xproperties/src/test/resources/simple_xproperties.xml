@@ -1,0 +1,14 @@
+<xproperties>
+    <xproperties>
+        <entry><key>stringKey</key> <value class="string">stringValue</value></entry>
+        <entry><key>intKey</key> <value class="string">intValue</value></entry>
+         <entry><key>subPropertiesListKey</key> <value class="list">
+            <xproperties>
+                <entry><key>subStringKey1</key> <value class="string">Foo</value></entry>
+            </xproperties>
+            <xproperties>
+                <entry><key>subStringKey2</key> <value class="string">Bar</value></entry>
+            </xproperties>
+         </value></entry>
+    </xproperties>
+</xproperties>

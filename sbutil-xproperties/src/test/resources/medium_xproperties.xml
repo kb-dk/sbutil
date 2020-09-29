@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Setup for LuceneSearcher -->
+<xproperties>
+    <xproperties>
+        <entry><key>summa.control.service.registry.port</key> <value class="string">${site.portrange}00</value></entry>
+        <entry><key>summa.control.service.port</key> <value class="string">${site.portrange}29</value></entry>
+        <entry><key>summa.searcher.port</key> <value class="string">${site.portrange}19</value></entry>
+        <entry><key>summa.searcher.rmi.registry.port</key> <value class="string">${site.portrange}00</value></entry>
+        <entry><key>summa.searcher.rmi.name</key> <value class="string">doms-searcher</value></entry>
+        <entry><key>control.launcher.service.class</key> <value class="string">dk.statsbiblioteket.summa.control.service.SearchService</value></entry>
+
+        <!-- Core class to use for the search engine -->
+        <entry><key>summa.searcher.class</key> <value class="string">dk.statsbiblioteket.summa.search.rmi.RMISearcherProxy</value></entry>
+
+        <!-- What backend class to support the RMI proxy-->
+        <entry><key>summa.searcher.rmi.backend</key> <value class="string">dk.statsbiblioteket.summa.search.SummaSearcherImpl</value></entry>
+        <entry><key>summa.search.uselocalindex</key> <value class="boolean">false</value></entry>
+        <entry><key>summa.search.searcheravailability.timeout</key> <value class="int">5000</value></entry>
+
+        <!-- The internal search node used by the SummaSearcherImpl -->
+        <entry><key>summa.search.node.class</key> <value class="string">dk.statsbiblioteket.summa.support.harmonise.AdjustingSearchNode</value></entry>
+        <entry><key>adjuster.id</key> <value class="string">doms</value></entry>
+
+        <entry><key>adjuster.response.fields.enabled</key> <value class="string">false</value></entry>
+        <entry><key>adjuster.facet.tags</key>
+        <value class="list">
+            <xproperties>
+                <entry><key>tagadjuster.facet.name</key> <value class="string">lma_long</value></entry>
+                <entry>
+                    <key>tagadjuster.tags</key>
+                    <value class="list">
+                        <value class="string">radio;tv;reklamefilm - 07</value>
+                        <value class="string">radio;tv - 07d</value>
+                    </value>
+                </entry>
+            </xproperties>
+        </value></entry>
+
+        <entry><key>adjuster.inner.searchnode</key>
+        <value class="xproperties">
+            <entry><key>summa.search.node.class</key> <value class="string">dk.statsbiblioteket.summa.support.solr.SBSolrSearchNode</value></entry>
+            <entry><key>summa.search.id</key> <value class="string">doms</value></entry>
+            <entry><key>solr.host</key><value class="string">${solr.host}</value></entry>
+            <entry><key>solr.restcall</key><value class="string">${solr.urlpath}/${solr.collection}/select</value></entry>
+            <entry><key>solr.read.timeout</key><value class="int">30000</value></entry>
+            <entry><key>summa.search.nonescapedfields</key> <value class="string">shortformat</value></entry>
+            <entry><key>solr.purenegativefilters.support</key> <value class="boolean">true</value></entry>
+            <entry><key>summa.search.numberofconcurrentsearches</key> <value class="int">30</value></entry>
+            <entry>
+                <!-- This is duplicated in the indexdescriptor -->
+                <key>solr.facets</key> <value class="string">recordBase, lsubject, author_normalised, llfo, lma_long, location_normalised, year, iso_date, llang, lcl_all, su_dk, su_lc, mesh, ldk5, lddc, lnlm, lkl, lti, lperi, ava, channel_name_facet, lhovedgenre, commercial_type_facet</value>
+
+                <!--                                                                <value class="string">recordBase, lma_long, lsubject, location_normalised, author_normalised, llfo, year, llang, lcl_all, su_dk, su_lc, mesh, ldk5, lddc, lnlm, lkl, lti, lperi, ava</value>-->
+                <!--                                                                <value class="string">recordBase(50), lma_long(75 ALPHA), llang</value>-->
+            </entry>
+            <entry><key>solr.facets.defaultpagesize</key> <value class="string">15</value></entry>
+            <entry><key>solr.facets.combinemode</key> <value class="string">and</value></entry>
+
+        </value></entry>
+    </xproperties>
+</xproperties>

@@ -312,6 +312,44 @@ public class XPropertiesTest extends TestCase {
         Assert.assertTrue("Cleaning up", deleteResource(resourceName));
     }
 
+    public void testXPropertiesCreate() throws IOException {
+        XProperties xprop = new XProperties("simple_xproperties.xml");
+        assertEquals("stringValue", xprop.getString("stringKey"));
+    }
+
+    public void testXPropertiesLoad() throws IOException {
+        XProperties xprop = new XProperties();
+        xprop.load("simple_xproperties.xml", false, false);
+        assertEquals("stringValue", xprop.getString("stringKey"));
+    }
+
+    public void testXPropertiesStringListLoad() throws IOException {
+        new XProperties("stringlist_xproperties.xml");
+    }
+
+    public void testXPropertiesSubLoad() throws IOException {
+        XProperties xprop = new XProperties();
+        xprop.load("sub_xproperties.xml", false, false);
+        assertEquals(7, xprop.getInteger("seven"));
+    }
+
+    public void testXPropertiesStream() throws IOException {
+        XProperties xprop = new XProperties();
+        xprop.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("simple_xproperties.xml"));
+        assertEquals("stringValue", xprop.getString("stringKey"));
+    }
+
+    public void testPropertiesCreate() throws IOException {
+        XProperties xprop = new XProperties("simple_properties.xml");
+        assertEquals("stringValue", xprop.getString("stringKey"));
+    }
+
+    public void testPropertiesLoad() throws IOException {
+        XProperties xprop = new XProperties();
+        xprop.load("simple_properties.xml", false, false);
+        assertEquals("stringValue", xprop.getString("stringKey"));
+    }
+
     public void testPopulateWithDefaults() throws Exception {
         log.trace("Entered testPopulateWithDefaults");
         final String resourceName = "JUnit_HRProperties_testfile3.tmp";
