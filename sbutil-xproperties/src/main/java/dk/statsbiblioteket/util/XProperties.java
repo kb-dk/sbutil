@@ -804,6 +804,10 @@ public class XProperties extends Properties implements Converter {
          */
         Object value;
 
+        private XPropertiesEntry() {
+            // Do nothing. This only exists for reflection to work.
+        }
+
         /**
          * A simple key-value pair, used for incapsulation, when properties are
          * stored.
