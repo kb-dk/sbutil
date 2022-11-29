@@ -1,6 +1,41 @@
 SB Util README
 ---------------
 
+
+***********************************************************
+IMPORTANT IMPORTANT IMPORTANT IMPORTANT IMPORTANT IMPORTANT
+
+
+
+
+
+
+The SB Util project is heavily deprecated.
+Do not use it for new projects!
+
+The successor is kb-util: https://github.com/kb-dk/kb-util
+
+        <dependency>
+            <groupId>dk.kb.util</groupId>
+            <artifactId>kb-util</artifactId>
+            <version>1.4.11</version>
+        </dependency>
+
+(the version in the dependency snippet is not up to date)
+
+If any sb-util functionality is needed, please port it to
+kb-util and use that project instead. Do note that kb-util
+requires Java 11.
+
+
+
+
+
+
+
+IMPORTANT IMPORTANT IMPORTANT IMPORTANT IMPORTANT IMPORTANT 
+***********************************************************
+
 ABOUT
 sbutil is a generic Java utility module containing commonly
 needed functionality for coding work done in The State and
