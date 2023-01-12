@@ -312,6 +312,13 @@ public class XPropertiesTest extends TestCase {
         Assert.assertTrue("Cleaning up", deleteResource(resourceName));
     }
 
+    // This one fails under the summa project
+    public void testLoadII() throws IOException {
+        final String resourcename = "simple_xstorage.xml";
+        XProperties props = new XProperties();
+        props.load(resourcename, false, false);
+    }
+
     public void testPopulateWithDefaults() throws Exception {
         log.trace("Entered testPopulateWithDefaults");
         final String resourceName = "JUnit_HRProperties_testfile3.tmp";
