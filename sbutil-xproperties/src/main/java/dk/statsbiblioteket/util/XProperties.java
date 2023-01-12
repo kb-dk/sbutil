@@ -805,6 +805,13 @@ public class XProperties extends Properties implements Converter {
         Object value;
 
         /**
+         * No-arg constructor to maximize serializability with XStream.
+         */
+        XPropertiesEntry() {
+
+        }
+
+        /**
          * A simple key-value pair, used for incapsulation, when properties are
          * stored.
          *
